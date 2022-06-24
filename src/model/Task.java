@@ -8,7 +8,7 @@ public class Task {
     private int duration;
     private int startTime;
     private int endTime;
-     private boolean isStrict;
+    private boolean isStrict;
     private boolean isTimeDependent;
     private int timeDependentOffsetInterval;
     private int weight;
@@ -16,6 +16,15 @@ public class Task {
     private Point location;
     private short id;
     private boolean prioritized;
+
+    /**
+     *  Transport type = 0 if driving was used to this task, and 1 if walking was used to this task
+     *  Transported by refers to the id of the shift that transported you here (i.e., carpooling was used)
+     */
+
+    // 0 = drive, 1 = walk
+    private int transportType;
+    private int transportedBy;
 
     public Task(){};
 }
