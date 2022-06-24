@@ -22,28 +22,19 @@ public class Shift {
     }
 
     // Getters
-    public Integer getShiftId(){
-        return this.id;
-    }
-    public Point getStartLocation(){
-        return this.startLocation;
-    }
-    public Point getEndLocation(){
-        return this.endLocation;
-    }
-    public int getTransportMode(){
-        return this.transportMode;
-    }
-    public int getCapacity(){
-        return this.capacity;
-    }
-    public int getStartTime(){
-        return this.startTime;
-    }
-    public int getEndTime(){
-        return this.endTime;
-    }
-    public int getShiftDuration(){
-        return (this.endTime - this.startTime);
-    }
+    public Integer getShiftId(){ return this.id; }
+
+    public Point getStartLocation(){ return this.startLocation; }
+
+    public Point getEndLocation(){ return this.endLocation; } 
+
+    public int getTransportMode(){ return this.transportMode; }
+
+    public int getCapacity(){ return this.capacity; }
+
+    public int getStartTime(){ return this.startTime; }
+
+    public int getEndTime(){ return this.endTime;}
+
+    public int getShiftDuration(){ return (this.endTime - this.startTime); }
 }
