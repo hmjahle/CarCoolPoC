@@ -7,7 +7,7 @@ public class Solver {
 
     public Solver(Model model) {
         name = "VRPTRWCP";
-        model = model;
+        this.model = model;
     }
 
     public void solve() {
