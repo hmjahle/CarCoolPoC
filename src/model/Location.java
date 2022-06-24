@@ -5,6 +5,6 @@ public class Location{
     private int id;
 
     public Location(Integer id){
-        this.id
+        this.id = id;
     }
 }
