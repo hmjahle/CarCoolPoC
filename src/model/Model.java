@@ -10,11 +10,15 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.Collection;
 import java.lang.Short;
 
 public class Model {
     // Stuff that goes in the model here
     private final String filePath;
+    private final Collection<Task> tasks;
+    private final Map<Short, Shift> idsShifts;
+    private final 
     
     // denne har vi ikke helt enda: private final Map<Integer, ITravelTimeMatrix> travelTimeMatrix;
 

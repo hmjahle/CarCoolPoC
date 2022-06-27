@@ -13,6 +13,9 @@ public class Task {
     private Location location;
     private short id;
     private boolean prioritized;
+    // 0 - drive, 1 - walk
+    private int transportType;
+    private int transportedBy;
 
     public Task(){};
     
