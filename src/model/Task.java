@@ -15,16 +15,37 @@ public class Task {
     private boolean requirePhysicalAppearance;
     private Point location;
     private short id;
+    private short idFirstVirtual;
+    private short idSecondVisit;
+    private short idSecondVisitVirtual;
     private boolean prioritized;
 
-    /**
-     *  Transport type = 0 if driving was used to this task, and 1 if walking was used to this task
-     *  Transported by refers to the id of the shift that transported you here (i.e., carpooling was used)
-     */
 
-    // 0 = drive, 1 = walk
-    private int transportType;
-    private int transportedBy;
+    public Task(short id, short numTasks ){
+        this.id = id;
+        this.idFirstVirtual = (short) (id + 2 * numTasks);
+        this.idSecondVisit = (short) (id + numTasks);
+        this.idSecondVisitVirtual = (short) (id + 3 * numTasks);
 
-    public Task(){};
+    };
+
+    public short getId(){
+        return this.id;
+    }
+
+    public short getFirstVisitVirtualId() {
+        return this.idFirstVirtual;
+    }
+
+    public short getSecondVisitVirtualId() {
+        return this.idSecondVisitVirtual;
+    }
+
+    public short getFirstVisitId() {
+        return this.id;
+    }
+
+    public short getSecondVisitId() {
+        return this.idSecondVisits;
+    }
 }
