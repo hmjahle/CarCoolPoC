@@ -22,7 +22,7 @@ public class Shift {
     }
 
     // Getters
-    public Integer getShiftId(){
+    public Integer getId(){
         return this.id;
     }
     public Point getStartLocation(){
