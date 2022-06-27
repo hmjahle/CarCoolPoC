@@ -19,10 +19,46 @@ public class Solver {
 
     public void solve() {
         System.out.println("Solver running!");
-        // Where do we validate solution? Do we need to send in validation function?
         LargeNeighborhoodSearch lns = new LargeNeighborhoodSearch(model);
-        var problem = intializeLNS(model, lns);
+        var problem = initializeLNS(model, lns);
+        // Orginally: call newBestSolutionFound to update listeners
         Problem newBestSolution = lns.solveWithConstructionHeuristic(problem);
+    }
+
+
+    public static Problem initializeLNS(Model model, LargeNeighborhoodSearch lns) {
+        lns.setUnallocatedTasksAreHierarchical(true);
+        Problem problem = new Problem(model);
+        problem.addTasksToUnallocatedTasks(model.getTasks());
+
+        lns.initializeStandardOperators();
+
+        initializeStandardIntraRouteObjectives(model, problem);
+
+        initializeExtraRouteConstraints(model, problem);
+        initializeExtraRouteObjectives(model, problem);
+
+        initializeRelaxedIntraRouteConstraints(model, problem);
+        initializeRelaxedExtraRouteConstraints(model, problem);
+
+        problem.calculateAndSetObjectiveValuesForSolution(model);
+        return problem;
+    }
+
+
+    /**
+     * Initialize and add the standard intra route objectives.
+     */
+    public static void initializeStandardIntraRouteObjectives(Model model, Problem problem) {
+        TravelTimeObjectiveFunction travelTimeObjectiveFunction = new TravelTimeObjectiveFunction();
+        TimeWindowLowHighObjectiveFunction timeWindowObjectiveFunction = new TimeWindowLowHighObjectiveFunction(300, 3);
+        OvertimeObjectiveFunction overtimeObjectiveFunction = new OvertimeObjectiveFunction();
+        for (Map.Entry<Short, RouteEvaluator<Task>> shiftIdRouteEvaluator : problem.getRouteEvaluators().entrySet()) {
+            shiftIdRouteEvaluator.getValue().addObjectiveIntraShift(TravelTimeObjectiveFunction.class.getSimpleName(), model.getConfiguration().getTravelTimeWeight(), travelTimeObjectiveFunction);
+            shiftIdRouteEvaluator.getValue().addObjectiveIntraShift(TimeWindowObjectiveFunction.class.getSimpleName(), model.getConfiguration().getTimeWindowWeight(), timeWindowObjectiveFunction);
+            if (model.getConfiguration().getOvertimeWeight() > 0)
+                shiftIdRouteEvaluator.getValue().addObjectiveIntraShift(OvertimeObjectiveFunction.class.getSimpleName(), getOvertimeShiftWeight(model, shiftIdRouteEvaluator.getKey()), overtimeObjectiveFunction);
+        }
     }
 
 }

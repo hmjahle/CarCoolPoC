@@ -13,6 +13,7 @@ public class LargeNeighborhoodSearch {
     private static final double INFEASIBILITY_STEPS = 0.01;
     public static final long MINIMUM_MILLISECONDS_BETWEEN_CONVERGENCE_IS_CHECKED_DEFAULT = 30 * 1000L;
     private static final double WORSE_SOLUTION_ACCEPTED_AT_PROBABILITY = 0.5;
+    private static final double PROPORTION_OF_RUNTIME_USED_FOR_DEEP_DIVE = 0.2;
     private static final boolean UNALLOCATED_TASKS_ARE_HIERARCHICAL_OBJECTIVE = true;
     private static final double MINIMUM_IMPROVEMENT_PERCENTAGE_TO_BE_SIGNIFICANT = 0.0005;
 
