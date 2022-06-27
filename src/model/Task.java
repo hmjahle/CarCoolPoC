@@ -46,4 +46,8 @@ public class Task {
     public boolean isPrioritized(){ return this.prioritized; }
 
     public Location getLocation(){ return this.location; }
+
+    public int getTransportType(){ return this.transportType; }
+
+    public int getTransportedBy(){ return this.transportedBy; }
 }

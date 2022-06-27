@@ -16,9 +16,11 @@ import java.lang.Short;
 public class Model {
     // Stuff that goes in the model here
     private final String filePath;
-    private final Collection<Task> tasks;
-    private final Map<Short, Shift> idsShifts;
-    private final 
+    private Collection<Task> tasks;
+    private Map<Short, Shift> idsShifts;
+    private Map<Integer, TravelTimeMatrix> travelTimeMatrix;
+
+
     
     // denne har vi ikke helt enda: private final Map<Integer, ITravelTimeMatrix> travelTimeMatrix;
 
