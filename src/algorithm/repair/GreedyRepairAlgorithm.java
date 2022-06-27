@@ -18,12 +18,12 @@ public class GreedyRepairAlgorithm implements IRepairAlgorithm {
 
     protected final Model model;
     private final Random random;
-    private final FeasibilityChecker feasibilityChecker;
+    //private final FeasibilityChecker feasibilityChecker;
 
     public GreedyRepairAlgorithm(Model model, Random random) {
         this.model = model;
         this.random = random;
-        this.feasibilityChecker = FeasibilityChecker.getInstance();
+        //this.feasibilityChecker = FeasibilityChecker.getInstance();
     }
 
     /**
@@ -116,16 +116,18 @@ public class GreedyRepairAlgorithm implements IRepairAlgorithm {
                 //feasibilty check p2,d2 for driver after Ti2,j2
                     // if feasible: Get objective
                     // check if it is better
-                //feasibilty check for bothe insert p1, d1 and p2,d2 for driver after Ti2,j2
+                //feasibilty check for both insert p1, d1 and p2,d2 for driver after Ti2,j2
             // choose which shift??? 
                 // algorithm 3 in paper
             // run route evaluter for all three (possibly two) shifts.
             
 
         // else do as before
-        if (feasibilityChecker.canNotBeInsertedInRoute(model, problem.getConstraints(), solution, shift, task)) {
+
+        // Feasibility checker is only for syncronized taskes, so we dont need to use it
+        /* if (feasibilityChecker.canNotBeInsertedInRoute(model, problem.getConstraints(), solution, shift, task)) {
             return null;
-        }
+        } */
         // Add the extra tasks as well
         return getEvaluatorResult(task, problem, shift);
     }
