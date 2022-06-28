@@ -2,7 +2,7 @@ package model;
 
 public class Visit {
 
-    private short id;
+    private int id;
     private Task task;
 
     /**
@@ -14,7 +14,7 @@ public class Visit {
     private int transportType;
     private int transportedBy;
 
-    public Visit(short id, Task task) {
+    public Visit(int id, Task task) {
         this.id = id;
         this.task = task;
     }
@@ -23,7 +23,7 @@ public class Visit {
         return task;
     }
 
-    public short getId() {
+    public int getId() {
         return id;
     }
 }
