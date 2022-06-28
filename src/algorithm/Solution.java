@@ -13,6 +13,7 @@ public class Solution {
     private Shift[] taskAssignedToShift;
     private Shift[] visitAssignedToShift;
     private Set<Task> unallocatedTasks;
+    private Set<Task> allocatedTasks;
     private Set<Visit> unallocatedVisits;
 
     private int numTasks;
@@ -20,6 +21,7 @@ public class Solution {
     public Solution(Model model) {
         unallocatedTasks = new HashSet<>();
         unallocatedVisits= new HashSet<>();
+        allocatedTasks= new HashSet<>();
         taskAssignedToShift = new Shift[model.getTasks().size()];
         visitAssignedToShift = new Shift[model.getVisits().size()];
         shiftRoutes = new ArrayList<>();
@@ -28,21 +30,6 @@ public class Solution {
 
         }
 
-    }
-
-    protected void completeTaskIfPossible(Shift shift, int index) {
-        if (index >= 0) {
-            List<Visit> route = getRoute(shift);
-            Visit visit = route.get(index);
-            Task task = visit.getTask();
-            // Added for debug purposes
-            if (!unallocatedTasks.contains(task)) {
-                throw new IllegalStateException(
-                        "Solution tries to complete a task that is not in the unallocated task set"
-                );
-            }
-            unallocatedTasks.remove(task);
-        }
     }
 
     /**
@@ -104,7 +91,7 @@ public class Solution {
     }
 
     public List<Visit> getRoute(Shift shift) {
-        return getRoute(shift.getId());
+        return getRoute(shift.getShiftId());
     }
 
     public List<Visit> getRoute(int shiftid) {
