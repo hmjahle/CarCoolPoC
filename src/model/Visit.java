@@ -4,6 +4,7 @@ public class Visit {
 
     private int id;
     private Task task;
+    private boolean isVirtual;
 
     /**
      *  Transport type = 0 if driving was used to this task, and 1 if walking was used to this task
@@ -17,6 +18,7 @@ public class Visit {
     public Visit(int id, Task task) {
         this.id = id;
         this.task = task;
+        this.isVirtual = isVirtual;
     }
 
     public Task getTask() {
@@ -25,5 +27,17 @@ public class Visit {
 
     public int getId() {
         return id;
+    }
+
+    public boolean isVirtual() {
+        return isVirtual;
+    }
+
+    public int getTransportType() {
+        return transportType;
+    }
+
+    public void setTransportType(int transportType) {
+        this.transportType = transportType;
     }
 }

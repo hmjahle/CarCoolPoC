@@ -5,10 +5,7 @@ import model.Shift;
 import model.Task;
 import model.Visit;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class Solution {
 
@@ -23,34 +20,66 @@ public class Solution {
     public Solution(Model model) {
         unallocatedTasks = new HashSet<>();
         unallocatedVisits= new HashSet<>();
+        taskAssignedToShift = new Shift[model.getTasks().size()];
+        visitAssignedToShift = new Shift[model.getVisits().size()];
         shiftRoutes = new ArrayList<>();
         for (int i = 0; i < model.getShifts().size(); i++) {
             shiftRoutes.add(new ArrayList<>());
 
         }
+
     }
 
-    protected void addVisitToShift(Shift shift, Visit visit, int index) {
-        setTaskId(visit, shift);
-        addTaskToRoute(shift, visit, index);
+    protected void completeTaskIfPossible(Shift shift, int index) {
+        if (index >= 0) {
+            List<Visit> route = getRoute(shift);
+            Visit visit = route.get(index);
+            Task task = visit.getTask();
+            // Added for debug purposes
+            if (!unallocatedTasks.contains(task)) {
+                throw new IllegalStateException(
+                        "Solution tries to complete a task that is not in the unallocated task set"
+                );
+            }
+            unallocatedTasks.remove(task);
+        }
     }
 
-    protected Visit removeVisitFromShift(Shift shift, Visit removedVisit) {
-        removeFromRoute(shift, removedVisit);
-        setTaskId(removedVisit, null);
-        return removedVisit;
+    /**
+     * Add a visit that is not currently in the solution to a shift and update the affected tata structures
+     * @param visit Visit to be inserted
+     * @param shift Shift to insert the visit into
+     * @param index Position in the route to insert the visit into
+     */
+
+    protected void addVisitToShift(Visit visit, Shift shift, int index) {
+        setVisitId(visit, shift);
+        addVisitToRoute(shift, visit, index);
     }
 
-    private void setTaskId(Visit visit, Shift shift) {
-        taskAssignedToShift[visit.getId()] = shift;
+    protected void assignVisitToShift(Visit visit, Shift shift, int index) {
+        unallocatedVisits.remove(visit);
+        setVisitId(visit, shift);
+        addVisitToRoute(shift, visit, index);
     }
 
-    private void addTaskToRoute(Shift shift, Visit visit, int index) {
+    protected Visit unAssignVisitFromShift(Shift shift, int index) {
+        Visit visit = removeFromRoute(shift, index);
+        setVisitId(visit, null);
+        unallocatedVisits.add(visit);
+        return visit;
+    }
+
+    private void setVisitId(Visit visit, Shift shift) {
+        visitAssignedToShift[visit.getId()] = shift;
+    }
+
+    private void addVisitToRoute(Shift shift, Visit visit, int index) {
         getRoute(shift).add(index, visit);
     }
 
-    protected boolean removeFromRoute(Shift shift, Visit visit) {
-        return getRoute(shift).remove(visit);
+    protected Visit removeFromRoute(Shift shift, int index) {
+        return getRoute(shift).remove(index);
     }
 
     public List<Visit> getRoute(Shift shift) {

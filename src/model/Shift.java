@@ -7,7 +7,7 @@ public class Shift {
     private final int id;
     private Point startLocation;
     private Point endLocation;
-    private int transportMode;
+    private int motorized;
     private int capacity;
     private int startTime;
     private int endTime;
