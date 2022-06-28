@@ -5,12 +5,16 @@ import java.util.HashMap;
 
 public class TravelTimeMatrix {
     
-    private Map<Location, Map<Location, Integer>> travelTimes;
+    private Map<Location, Map<Location, Double>> travelTimes;
 
-    public TravelTimeMatrix(){this.travelTimes = new HashMap<>();}
+    public TravelTimeMatrix(Map<Location, Map<Location, Double>> travelTimes){this.travelTimes = travelTimes; }
     
     public boolean connected(Location from, Location to){
         return this.travelTimes.containsKey(from) && travelTimes.get(from).containsKey(to);
+    }
+
+    public Map<Location, Map<Location, Double>> getTravelTimes() {
+        return this.travelTimes;
     }
 
     // pluss masse greier her
