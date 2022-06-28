@@ -12,11 +12,20 @@ public class Task {
     private boolean requirePhysicalAppearance;
     private Location location;
     private int id;
+    private short idFirstVirtual;
+    private short idSecondVisit;
+    private short idSecondVisitVirtual;
     private boolean prioritized;
     private int transportType;     // 0 - drive, 1 - walk
     private int transportedBy;
 
-    public Task(Integer id){ this.id = id;};
+    public Task(int id, short numTasks ){
+        this.id = id;
+        this.idFirstVirtual = (short) (id + 2 * numTasks);
+        this.idSecondVisit = (short) (id + numTasks);
+        this.idSecondVisitVirtual = (short) (id + 3 * numTasks);
+
+    };
     
     // Setters 
     
@@ -59,4 +68,20 @@ public class Task {
     public int getTransportType(){ return this.transportType; }
 
     public int getTransportedBy(){ return this.transportedBy; }
+
+    public short getFirstVisitVirtualId() {
+        return this.idFirstVirtual;
+    }
+
+    public short getSecondVisitVirtualId() {
+        return this.idSecondVisitVirtual;
+    }
+
+    public short getFirstVisitId() {
+        return this.id;
+    }
+
+    public short getSecondVisitId() {
+        return this.idSecondVisits;
+    }
 }

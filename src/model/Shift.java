@@ -37,4 +37,5 @@ public class Shift {
     public int getEndTime(){ return this.endTime;}
 
     public int getShiftDuration(){ return (this.endTime - this.startTime); }
+
 }
