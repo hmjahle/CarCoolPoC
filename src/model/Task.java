@@ -1,37 +1,73 @@
 package model;
-
-import java.awt.Point; // bruker bare denne strukturen før vi får orden på noe annet
-
 public class Task {
 
     // initierer med alle attributtene fra orginal ORP, så får vi heller se an hva vi fjerner underveis 
-    private int duration;
-    private int startTime;
-    private int endTime;
+    private Long duration;
+    private Long startTime;
+    private Long endTime;
     private boolean isStrict;
     private boolean isTimeDependent;
     private int timeDependentOffsetInterval;
-    private int weight;
+    private Long weight;
     private boolean requirePhysicalAppearance;
-    private Point location;
-    private short id;
+    private Location location;
+    private int id;
     private short idFirstVirtual;
     private short idSecondVisit;
     private short idSecondVisitVirtual;
     private boolean prioritized;
+    private int transportType;     // 0 - drive, 1 - walk
+    private int transportedBy;
 
-
-    public Task(short id, short numTasks ){
+    public Task(int id, short numTasks ){
         this.id = id;
         this.idFirstVirtual = (short) (id + 2 * numTasks);
         this.idSecondVisit = (short) (id + numTasks);
         this.idSecondVisitVirtual = (short) (id + 3 * numTasks);
 
     };
+    
+    // Setters 
+    
+    public void setTimeDependentOfSetInterval(int time) { this.timeDependentOffsetInterval = time;}
 
-    public short getId(){
-        return this.id;
-    }
+    public void setDuration(Long duration){ this.duration = duration;}
+
+    public void setWeight(Long weight){ this.weight = weight;}
+
+    public void setStartTime(Long startTime){ this.startTime = startTime;}
+    
+    public void setEndTime(Long endTime){ this.endTime = endTime;}
+
+    public void setLocation(Location location){ this.location = location;}
+
+    // Getters
+
+    public int getId(){ return this.id; }
+
+    public Long getStartTime(){ return this.startTime; }
+
+    public Long getEndTime(){ return this.endTime; }
+
+    public Long getTaskDuration(){ return this.duration; }
+
+    public int getIsTimeDependentOfSetInterval(){ return this.timeDependentOffsetInterval; }
+
+    public Long getWeight(){ return this.weight; }
+
+    public boolean isStrict(){ return this.isStrict; }
+
+    public boolean isTimeDependent(){ return this.isTimeDependent; }
+
+    public boolean requirePhysicalAppearance(){ return this.requirePhysicalAppearance; }
+
+    public boolean isPrioritized(){ return this.prioritized; }
+
+    public Location getLocation(){ return this.location; }
+
+    public int getTransportType(){ return this.transportType; }
+
+    public int getTransportedBy(){ return this.transportedBy; }
 
     public short getFirstVisitVirtualId() {
         return this.idFirstVirtual;
