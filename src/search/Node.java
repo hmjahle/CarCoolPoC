@@ -33,23 +33,22 @@ public class Node {
     public void setLocationId(int locationId) {
         this.locationId = locationId;
     }
-
-    public boolean getRequirePhysicalAppearance() {
-        return task == null || task.getRequirePhysicalAppearance();
-    }
-
     public int getDurationSeconds() {
         return task == null ? 0 : task.getDuration();
     }
 
-    public int getStartTime() {
-        return task == null ? 0 : task.getStartTime();
+    /* public boolean getRequirePhysicalAppearance() {
+        return task == null || task.getRequirePhysicalAppearance();
     }
 
     public boolean isSynced() {
         return task != null && task.isSynced();
-    }
+    } */
 
+    public int getStartTime() {
+        return task == null ? 0 : task.getStartTime();
+    }
+    
     @Override
     public boolean equals(Object other) {
         if ((other instanceof Node))

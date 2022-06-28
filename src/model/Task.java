@@ -2,13 +2,13 @@ package model;
 public class Task {
 
     // initierer med alle attributtene fra orginal ORP, så får vi heller se an hva vi fjerner underveis 
-    private Long duration;
-    private Long startTime;
-    private Long endTime;
+    private int duration;
+    private int startTime;
+    private int endTime;
     private boolean isStrict;
     private boolean isTimeDependent;
     private int timeDependentOffsetInterval;
-    private Long weight;
+    private int weight;
     private boolean requirePhysicalAppearance;
     private Location location;
     private int id;
@@ -31,13 +31,13 @@ public class Task {
     
     public void setTimeDependentOfSetInterval(int time) { this.timeDependentOffsetInterval = time;}
 
-    public void setDuration(Long duration){ this.duration = duration;}
+    public void setDuration(int duration){ this.duration = duration;}
 
-    public void setWeight(Long weight){ this.weight = weight;}
+    public void setWeight(int weight){ this.weight = weight;}
 
-    public void setStartTime(Long startTime){ this.startTime = startTime;}
+    public void setStartTime(int startTime){ this.startTime = startTime;}
     
-    public void setEndTime(Long endTime){ this.endTime = endTime;}
+    public void setEndTime(int endTime){ this.endTime = endTime;}
 
     public void setLocation(Location location){ this.location = location;}
 
@@ -45,15 +45,15 @@ public class Task {
 
     public int getId(){ return this.id; }
 
-    public Long getStartTime(){ return this.startTime; }
+    public int getStartTime(){ return this.startTime; }
 
-    public Long getEndTime(){ return this.endTime; }
+    public int getEndTime(){ return this.endTime; }
 
-    public Long getTaskDuration(){ return this.duration; }
+    public int getDuration(){ return this.duration; }
 
     public int getIsTimeDependentOfSetInterval(){ return this.timeDependentOffsetInterval; }
 
-    public Long getWeight(){ return this.weight; }
+    public int getWeight(){ return this.weight; }
 
     public boolean isStrict(){ return this.isStrict; }
 
@@ -68,6 +68,7 @@ public class Task {
     public int getTransportType(){ return this.transportType; }
 
     public int getTransportedBy(){ return this.transportedBy; }
+
 
     public  int getFirstVisitVirtualId() {
         return this.idFirstVirtual;

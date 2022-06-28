@@ -101,10 +101,10 @@ public class Model {
         for (int i = 1; i < jsonTasks.size()+1; i++){
             Task task = new Task(i, this.numTasks);
             JSONObject jsonAttributes = (JSONObject) jsonTasks.get(Integer.toString(i));
-            task.setDuration((Long) jsonAttributes.get("care_time"));
-            task.setWeight((Long) jsonAttributes.get("demand"));
-            task.setStartTime((Long) jsonAttributes.get("start_time"));
-            task.setEndTime((Long) jsonAttributes.get("end_time"));
+            task.setDuration((int) jsonAttributes.get("care_time"));
+            task.setWeight((int) jsonAttributes.get("demand"));
+            task.setStartTime((int) jsonAttributes.get("start_time"));
+            task.setEndTime((int) jsonAttributes.get("end_time"));
             Location location = new Location(i, (Long) jsonAttributes.get("x_coord"), (Long) jsonAttributes.get("x_coord"));
             locations.put(i, location);
             task.setLocation(location);

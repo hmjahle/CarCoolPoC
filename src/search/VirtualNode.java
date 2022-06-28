@@ -17,28 +17,26 @@ public class VirtualNode extends Node {
         return -1;
     }
 
-    @Override
+    /* @Override
 
     public boolean getRequirePhysicalAppearance() {
         return false;
-    }
+    } */
 
     @Override
-
     public int getDurationSeconds() {
         return 0;
     }
 
     @Override
-
     public int getStartTime() {
         return 0;
     }
 
-    @Override
+   /*  @Override
     public boolean isSynced() {
         return false;
-    }
+    } */
 
     @Override
     public Task getTask() {

@@ -13,7 +13,7 @@ public class SearchGraph {
     private Node destination;
     private final List<Node> nodes;
     private final Map< Task, Node> taskToNodes;
-    private Integer[][] travelTimeMatrix;
+    private Double[][] travelTimeMatrix;
     private int nodeIdCounter;
     private int sourceId;
     private int sinkId;
@@ -38,7 +38,7 @@ public class SearchGraph {
         this.nodes = new ArrayList<>();
         this.taskToNodes = new HashMap<>();
         copyNodes(other);
-        this.travelTimeMatrix = new Integer[other.travelTimeMatrix.length][other.travelTimeMatrix.length];
+        this.travelTimeMatrix = new Double[other.travelTimeMatrix.length][other.travelTimeMatrix.length];
         for (int i = 0; i < travelTimeMatrix.length; i++) {
             System.arraycopy(other.travelTimeMatrix[i], 0, this.travelTimeMatrix[i], 0, other.travelTimeMatrix[i].length);
         }
@@ -109,7 +109,7 @@ public class SearchGraph {
         return nodes;
     }
 
-    public Integer getTravelTime(int locationIdA, int locationIdB) {
+    public Double getTravelTime(int locationIdA, int locationIdB) {
         return travelTimeMatrix[locationIdA][locationIdB];
     }
 
@@ -179,7 +179,7 @@ public class SearchGraph {
 
     private void updateTravelTimeInformation( TravelTimeMatrix travelTimeMatrixInput) {
         int n = createLocations(travelTimeMatrixInput);
-        this.travelTimeMatrix = new Integer[n][n];
+        this.travelTimeMatrix = new Double[n][n];
         for ( Location locationA : travelTimeMatrixInput.getLocations()) {
             for ( Location locationB : travelTimeMatrixInput.getLocations()) {
                 addTravelTime(travelTimeMatrixInput, locationA, locationB);
@@ -227,7 +227,7 @@ public class SearchGraph {
 
         if (!travelTimeMatrixInput.connected(fromLocation, toLocation))
             return;
-        int travelTime = travelTimeMatrixInput.getTravelTime(fromLocation, toLocation);
+        double travelTime = travelTimeMatrixInput.getTravelTime(fromLocation, toLocation);
         this.travelTimeMatrix[fromId][toId] = travelTime;
     }
 
