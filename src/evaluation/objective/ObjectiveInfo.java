@@ -1,7 +1,7 @@
-package objective;
+package evaluation.objective;
 
-import routeEvaluator.RouteEvaluationInfoAbstract;
 import model.Task;
+import evaluation.routeEvaluator.RouteEvaluationInfoAbstract;
 import model.Shift;
 
 public class ObjectiveInfo extends RouteEvaluationInfoAbstract {

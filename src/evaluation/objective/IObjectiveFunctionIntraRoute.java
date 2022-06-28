@@ -1,4 +1,4 @@
-package objective;
+package evaluation.objective;
 
 /**
  * Interface for objectives that is solely evaluated within the route.
