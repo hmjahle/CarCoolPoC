@@ -2,13 +2,8 @@ package util;
 
 public class Constants {
 
-    static class TransportMode {
-        public static
+    public static class TransportMode {
+        public static final int WALK = 1;
+        public static final int DRIVE = 0;
     }
-
-    public static final int TRANSPORT_MODE_WALK = 1;
-
-    public static final int TRANSPORT_MODE_DRIVE = 0;
-
-
 }
