@@ -46,6 +46,6 @@ public class Task {
     }
 
     public short getSecondVisitId() {
-        return this.idSecondVisits;
+        return this.idSecondVisit;
     }
 }
