@@ -28,6 +28,7 @@ public class Model {
     private Map<Integer, TravelTimeMatrix> travelTimeMatrix;
     private Collection<Visit> visits;
     private List<Shift> shifts;
+    private int numTasks;
 
     public Model(int modelInstance) {
         this.filePath = System.getProperty("user.dir") + "/resources/train_" + modelInstance + ".json";
@@ -59,20 +60,21 @@ public class Model {
             }
 
             JSONObject patients = (JSONObject) data.get("patients");
+            this.numTasks = patients.size();
             Iterator keys  = patients.keySet().iterator();
             while (keys.hasNext()) {
                 Object key = keys.next();
                 if (patients.get(key) instanceof JSONObject) {
-                    Task task = new Task((short) (Integer.parseInt((String) key) - 1), (short) patients.size());
+                    Task task = new Task((Integer.parseInt((String) key) - 1), (int) patients.size());
 
                     // Creating tasks
                     tasks.add(task);
 
                     // Creating corresponding visits
-                    Visit visit1 = new Visit((short) (Integer.parseInt((String) key) - 1), task);
-                    Visit visit1Virtual= new Visit((short) (Integer.parseInt((String) key) - 1 + 2 * patients.size()), task);
-                    Visit visit2 = new Visit((short) (Integer.parseInt((String) key) - 1 + patients.size()), task);
-                    Visit visit2Virtual = new Visit((short) (Integer.parseInt((String) key) - 1 + 3 * patients.size()), task);
+                    Visit visit1 = new Visit((Integer.parseInt((String) key) - 1), task);
+                    Visit visit1Virtual= new Visit((Integer.parseInt((String) key) - 1 + 2 * patients.size()), task);
+                    Visit visit2 = new Visit((Integer.parseInt((String) key) - 1 + patients.size()), task);
+                    Visit visit2Virtual = new Visit((Integer.parseInt((String) key) - 1 + 3 * patients.size()), task);
 
                     this.visits.add(visit1);
                     this.visits.add(visit1Virtual);
@@ -97,12 +99,12 @@ public class Model {
         Collection<Task> allTasks = new ArrayList<Task>();
         JSONObject jsonTasks = (JSONObject) this.data.get("patients");
         for (int i = 1; i < jsonTasks.size()+1; i++){
-            Task task = new Task(i);
+            Task task = new Task(i, this.numTasks);
             JSONObject jsonAttributes = (JSONObject) jsonTasks.get(Integer.toString(i));
-            task.setDuration((Long) jsonAttributes.get("care_time"));
-            task.setWeight((Long) jsonAttributes.get("demand"));
-            task.setStartTime((Long) jsonAttributes.get("start_time"));
-            task.setEndTime((Long) jsonAttributes.get("end_time"));
+            task.setDuration(( (Long) jsonAttributes.get("care_time")).intValue());
+            task.setWeight(((Long) jsonAttributes.get("demand")).intValue());
+            task.setStartTime(((Long) jsonAttributes.get("start_time")).intValue());
+            task.setEndTime(((Long) jsonAttributes.get("end_time")).intValue());
             Location location = new Location(i, (Long) jsonAttributes.get("x_coord"), (Long) jsonAttributes.get("x_coord"));
             locations.put(i, location);
             task.setLocation(location);

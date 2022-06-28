@@ -4,7 +4,7 @@ import java.awt.Point; // bruker bare denne strukturen før vi får orden på no
 
 public class Shift {
 
-    private final short id;
+    private final int id;
     private Point startLocation;
     private Point endLocation;
     private int transportMode;
@@ -12,7 +12,7 @@ public class Shift {
     private int startTime;
     private int endTime;
 
-    public Shift(Short id){
+    public Shift(int id){
         this.id = id;
     }
 
@@ -22,7 +22,7 @@ public class Shift {
     }
 
     // Getters
-    public Short getShiftId(){ return this.id; }
+    public int getShiftId(){ return this.id; }
 
     public Point getStartLocation(){ return this.startLocation; }
 

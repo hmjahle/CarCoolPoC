@@ -53,6 +53,8 @@ public class Solver {
         TravelTimeObjectiveFunction travelTimeObjectiveFunction = new TravelTimeObjectiveFunction();
         TimeWindowLowHighObjectiveFunction timeWindowObjectiveFunction = new TimeWindowLowHighObjectiveFunction(300, 3);
         OvertimeObjectiveFunction overtimeObjectiveFunction = new OvertimeObjectiveFunction();
+
+        // Iterate through the routeevaluators (number of shifts in the model) stored in the objective in the problem. problem.objective.routeevaluators
         for (Map.Entry<Short, RouteEvaluator<Task>> shiftIdRouteEvaluator : problem.getRouteEvaluators().entrySet()) {
             shiftIdRouteEvaluator.getValue().addObjectiveIntraShift(TravelTimeObjectiveFunction.class.getSimpleName(), model.getConfiguration().getTravelTimeWeight(), travelTimeObjectiveFunction);
             shiftIdRouteEvaluator.getValue().addObjectiveIntraShift(TimeWindowObjectiveFunction.class.getSimpleName(), model.getConfiguration().getTimeWindowWeight(), timeWindowObjectiveFunction);
