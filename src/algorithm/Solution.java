@@ -70,6 +70,27 @@ public class Solution {
         return visit;
     }
 
+    /**
+     * Add a task that is not currently in the solution, and
+     * @param task The task to be inserted into the solution
+     */
+    protected void addTask(Task task) {
+        if (unallocatedTasks.contains(task)) {
+            throw new IllegalArgumentException("This task has already been added to the solution");
+        }
+        unallocatedTasks.add(task);
+    }
+
+    protected void allocateTask(Task task) {
+        allocatedTasks.add(task);
+        unallocatedTasks.remove(task);
+    }
+
+    protected void unAllocateTask(Task task) {
+        unallocatedTasks.add(task);
+        allocatedTasks.remove(task);
+    }
+
     private void setVisitId(Visit visit, Shift shift) {
         visitAssignedToShift[visit.getId()] = shift;
     }
