@@ -5,11 +5,11 @@ import evaluation.routeEvaluator.RouteEvaluationInfoAbstract;
 import model.Shift;
 
 public class ObjectiveInfo extends RouteEvaluationInfoAbstract {
-    private final long travelTime;
-    private final long visitEnd;
-    private final long startOfServiceNextTask;
+    private final int travelTime;
+    private final int visitEnd;
+    private final int startOfServiceNextTask;
 
-    public ObjectiveInfo(long travelTime,  Task task, long visitEnd, long startOfServiceNextTask, long syncedTaskStartTime, Shift employeeWorkShift) {
+    public ObjectiveInfo(int travelTime,  Task task, int visitEnd, int startOfServiceNextTask, int syncedTaskStartTime, Shift employeeWorkShift) {
         super(task, employeeWorkShift, syncedTaskStartTime);
         this.travelTime = travelTime;
         this.visitEnd = visitEnd;
@@ -17,29 +17,29 @@ public class ObjectiveInfo extends RouteEvaluationInfoAbstract {
     }
 
     @Override
-    public long getEndOfWorkShift() {
+    public int getEndOfWorkShift() {
         return endOfWorkShift;
     }
 
-    public long getTravelTime() {
+    public int getTravelTime() {
         return travelTime;
     }
 
-    public long getVisitEnd() {
+    public int getVisitEnd() {
         return visitEnd;
     }
 
-    public long getStartOfServiceNextTask() {
+    public int getStartOfServiceNextTask() {
         return startOfServiceNextTask;
     }
 
-    public short getEmployeeWorkShiftId() {
+    public int getEmployeeWorkShiftId() {
         return shiftId;
     }
 /* 
     public static void main(String[] args) {
         Task task = new Task();
-        Shift shift = new Shift((short) 2);
+        Shift shift = new Shift((int) 2);
         ObjectiveInfo ob = new ObjectiveInfo(12, task, 123, 168, 123456, shift);
         System.out.println("All ok");
     } */
