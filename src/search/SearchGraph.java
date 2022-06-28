@@ -20,6 +20,8 @@ public class SearchGraph {
     private int locationIdCounter;
     private final Map< Location, Integer> locationToLocationIds;
 
+
+    //Trenger vi to constructors?
     public SearchGraph( TravelTimeMatrix travelTimeMatrixInput, Collection<? extends  Task> tasks,
                         Location originLocation,  Location destinationLocation) {
         this.nodes = new ArrayList<>();
