@@ -78,6 +78,10 @@ public class Solution {
         allocatedTasks.remove(task);
     }
 
+    protected boolean isAllocated(Task task) {
+        return this.allocatedTasks.contains(task);
+    }
+
     private void setVisitId(Visit visit, Shift shift) {
         visitAssignedToShift[visit.getId()] = shift;
     }
