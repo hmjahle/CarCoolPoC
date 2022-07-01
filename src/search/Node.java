@@ -1,27 +1,27 @@
 package search;
 
 // OBS: all task used to be ITask
-import model.Task;
+import model.Visit;
 
 public class Node {
 
     protected int nodeId;
-    private  Task task;
+    private  Visit visit;
     private int locationId;
 
     protected Node(int nodeId) {
         this.nodeId = nodeId;
     }
 
-    public Node(int nodeId,  Task task, int locationId) {
-        this.task = task;
+    public Node(int nodeId,  Visit visit, int locationId) {
+        this.visit = visit;
         this.nodeId = nodeId;
         this.locationId = locationId;
     }
 
     public Node(Node other) {
         this.nodeId = other.nodeId;
-        this.task = other.task;
+        this.visit = other.visit;
         this.locationId = other.locationId;
     }
 
@@ -34,19 +34,19 @@ public class Node {
         this.locationId = locationId;
     }
     public int getDurationSeconds() {
-        return task == null ? 0 : task.getDuration();
+        return visit == null ? 0 : visit.getTask().getDuration();
     }
 
     /* public boolean getRequirePhysicalAppearance() {
-        return task == null || task.getRequirePhysicalAppearance();
+        return visit == null || visit.getRequirePhysicalAppearance();
     }
 
     public boolean isSynced() {
-        return task != null && task.isSynced();
+        return visit != null && visit.isSynced();
     } */
 
     public int getStartTime() {
-        return task == null ? 0 : task.getStartTime();
+        return visit == null ? 0 : visit.getStartTime();
     }
     
     @Override
@@ -67,8 +67,8 @@ public class Node {
         return Integer.toString(nodeId);
     }
 
-    public  Task getTask() {
-        return task;
+    public  Visit getTask() {
+        return visit;
     }
 
     public int getNodeId() {

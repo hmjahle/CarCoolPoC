@@ -1,6 +1,6 @@
 package search;
 
-// OBS: was  Task,  Location, ITimetravelmatrix
+// OBS: was  ITask,  ILocation, ITimetravelmatrix
 import model.Location;
 import model.Task;
 import model.TravelTimeMatrix;

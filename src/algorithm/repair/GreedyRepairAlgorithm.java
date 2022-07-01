@@ -132,3 +132,22 @@ public class GreedyRepairAlgorithm implements IRepairAlgorithm {
         return getEvaluatorResult(task, problem, shift);
     }
 }
+
+/*private RouteEvaluatorResult<Task> findRoute(Problem problem, Task task, Solution solution, Shift shift) {
+ *      Boolean feasible, VisitPair (P1, D1), VisitPair (P2, D2) = insertVisitInShift(Visit, Shift);
+ *      if not feasible:
+ *           return null 
+ *      else if P1, D1, P2, D2 is null:
+ *           same logic as before: evaluateRouteByTheOrderOfTasksInsertTask()
+ *      else:
+ *           Iterate over all drivers shifts:
+ *               Test inserting (P1, D2) in driver shift and get delta objective
+ *               Test inserting (P2, D2) in driver shift and get delta objective
+ *               Test inserting both (P1, D1) and (P2, D2) in driver shift and get delta objective
+ *           Choose to insert P1, D1, P2, D2 where the objective is best.
+ *           Total change in objective = delta objective for non-motarised worker
+ *                                       + delta objective motorized worker 1
+ *                                       + delta objective motorized worker 2 
+ * }
+ * Do updates in all shifts affected by the greedy chosen repair visit 
+ */
