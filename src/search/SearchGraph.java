@@ -112,6 +112,7 @@ public class SearchGraph {
     }
 
     public Double getTravelTime(int locationIdA, int locationIdB) {
+        if (locationIdA == locationIdB){return 0.0;} // Transport from Task to Task´
         return travelTimeMatrix[locationIdA][locationIdB];
     }
 
