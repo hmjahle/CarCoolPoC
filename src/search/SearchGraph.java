@@ -1,6 +1,6 @@
 package search;
 
-// OBS: was  Task,  Location, ITimetravelmatrix
+// OBS: was  ITask,  ILocation, ITimetravelmatrix
 import model.Location;
 import model.Task;
 import model.TravelTimeMatrix;
@@ -20,6 +20,8 @@ public class SearchGraph {
     private int locationIdCounter;
     private final Map< Location, Integer> locationToLocationIds;
 
+
+    //Trenger vi to constructors?
     public SearchGraph( TravelTimeMatrix travelTimeMatrixInput, Collection<? extends  Task> tasks,
                         Location originLocation,  Location destinationLocation) {
         this.nodes = new ArrayList<>();
@@ -110,6 +112,7 @@ public class SearchGraph {
     }
 
     public Double getTravelTime(int locationIdA, int locationIdB) {
+        if (locationIdA == locationIdB){return 0.0;} // Transport from Task to Task´
         return travelTimeMatrix[locationIdA][locationIdB];
     }
 
