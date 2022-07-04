@@ -1,6 +1,6 @@
-package evaluation.constraint;
+package evaluation.info;
 
-import evaluation.routeEvaluator.RouteEvaluationInfoAbstract;
+
 import model.Shift;
 import model.Task;
 
@@ -36,3 +36,5 @@ public class ConstraintInfo extends RouteEvaluationInfoAbstract {
         return shiftStartTime;
     }
 }
+
+    
