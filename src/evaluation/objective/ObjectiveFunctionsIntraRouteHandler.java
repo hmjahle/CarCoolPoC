@@ -2,8 +2,10 @@ package evaluation.objective;
 
 import model.Shift;
 import model.Task;
+import model.Visit;
 import evaluation.objective.IObjectiveFunctionIntraRoute;
 import evaluation.objective.ObjectiveInfo;
+import evaluation.routeEvaluator.IRouteEvaluatorObjective;
 
 //import com.visma.of.rp.routeevaluator.solver.algorithm.IRouteEvaluatorObjective;
 
@@ -106,12 +108,12 @@ public class ObjectiveFunctionsIntraRouteHandler {
         return activeObjectiveFunctions.containsKey(name) || inactiveObjectiveFunctions.containsKey(name);
     }
 
-/*     public IRouteEvaluatorObjective calculateObjectiveValue(IRouteEvaluatorObjective currentObjective, long travelTime, ITask task, long startOfServiceNextTask,
-                                                            long visitEnd, long syncedTaskLatestStartTime, IShift employeeWorkShift) {
+    public IRouteEvaluatorObjective calculateObjectiveValue(IRouteEvaluatorObjective currentObjective, int travelTime, Visit visit, int startOfServiceNextTask,
+                                                            int visitEnd, Shift employeeWorkShift) {
 
         IRouteEvaluatorObjective newObjective = currentObjective.initializeNewObjective();
-        ObjectiveInfo objectiveInfo = new ObjectiveInfo(travelTime, task, visitEnd, startOfServiceNextTask,
-                syncedTaskLatestStartTime, employeeWorkShift);
+        ObjectiveInfo objectiveInfo = new ObjectiveInfo(travelTime, visit, visitEnd, startOfServiceNextTask,
+                employeeWorkShift);
 
         for (Map.Entry<String, WeightObjectivePair<IObjectiveFunctionIntraRoute>> objectivePair : activeObjectiveFunctions.entrySet()) {
             newObjective.incrementObjective(objectivePair.getKey(), objectivePair.getValue().getWeight(),
@@ -119,7 +121,7 @@ public class ObjectiveFunctionsIntraRouteHandler {
         }
         return newObjective;
     }
- */
+
 
     public Map<String, WeightObjectivePair<IObjectiveFunctionIntraRoute>> getActiveObjectiveFunctions() {
         return activeObjectiveFunctions;

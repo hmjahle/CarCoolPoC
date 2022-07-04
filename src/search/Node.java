@@ -13,10 +13,11 @@ public class Node {
         this.nodeId = nodeId;
     }
 
-    public Node(int nodeId,  Visit visit, int locationId) {
+    public Node(int nodeId,  Visit visit) {
         this.visit = visit;
         this.nodeId = nodeId;
-        this.locationId = locationId;
+        // If there is no task connected to the visit, the visit location is depot, hence id = 0
+        this.locationId = visit.getTask() == null ? 0 : visit.getTask().getLocation().getId();
     }
 
     public Node(Node other) {
@@ -37,16 +38,8 @@ public class Node {
         return visit == null ? 0 : visit.getTask().getDuration();
     }
 
-    /* public boolean getRequirePhysicalAppearance() {
-        return visit == null || visit.getRequirePhysicalAppearance();
-    }
-
-    public boolean isSynced() {
-        return visit != null && visit.isSynced();
-    } */
-
-    public int getStartTime() {
-        return visit == null ? 0 : visit.getStartTime();
+    public int getTaskStartTime() {
+        return visit == null ? 0 : visit.getTaskStartTime();
     }
     
     @Override
@@ -67,11 +60,15 @@ public class Node {
         return Integer.toString(nodeId);
     }
 
-    public  Visit getTask() {
+    public  Visit getVisit() {
         return visit;
     }
 
     public int getNodeId() {
         return nodeId;
+    }
+
+    public boolean isDepotNode() {
+        return visit == null;
     }
 }

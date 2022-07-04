@@ -7,10 +7,12 @@ import evaluation.constraint.ConstraintsIntraRouteHandler;
 // import com.visma.of.rp.routeevaluator.interfaces.*;
 // import com.visma.of.rp.routeevaluator.results.RouteEvaluatorResult;
 import evaluation.objective.ObjectiveFunctionsIntraRouteHandler;
+import evaluation.objective.WeightedObjective;
 import model.Location;
 import model.Shift;
 import model.Task;
 import model.TravelTimeMatrix;
+import model.Visit;
 import search.NodeList;
 import search.SearchGraph;
 import algorithm.*;
@@ -29,71 +31,67 @@ import java.util.stream.Collectors;
  * Where constraints like two incompatible tasks on same route and heavy tasks will be ignored.
  * It is therefore assumed that input to the evaluator is feasible w.r.t. to these types of constraints.
  */
-public class RouteEvaluator<T extends Task> {
+public class RouteEvaluator {
 
     private final SearchGraph graph;
     private final ObjectiveFunctionsIntraRouteHandler objectiveFunctions;
     private final ConstraintsIntraRouteHandler constraints;
-    private final LabellingAlgorithm<T> algorithm;
+    private final LabellingAlgorithm algorithm;
     private final NodeList firstNodeList;
     private final NodeList secondNodeList;
-    //private final int[] syncedNodesStartTime;
 
-
-    public RouteEvaluator(TravelTimeMatrix distanceMatrixMatrix, Collection<T> tasks) {
+    public RouteEvaluator(TravelTimeMatrix distanceMatrixMatrix, Collection<Visit> tasks) {
         this(distanceMatrixMatrix, tasks, null, null);
     }
 
-    public RouteEvaluator(TravelTimeMatrix distanceMatrixMatrix, Collection<T> tasks, Location officePosition) {
+    public RouteEvaluator(TravelTimeMatrix distanceMatrixMatrix, Collection<Visit> tasks, Location officePosition) {
         this(distanceMatrixMatrix, tasks, officePosition, officePosition);
     }
 
-    public RouteEvaluator(RouteEvaluator<T> other) {
+    public RouteEvaluator(RouteEvaluator other) {
         this.graph = new SearchGraph(other.graph);
         this.objectiveFunctions = new ObjectiveFunctionsIntraRouteHandler(other.objectiveFunctions);
         this.constraints = new ConstraintsIntraRouteHandler(other.constraints);
-        //this.algorithm = new LabellingAlgorithm<>(graph, objectiveFunctions, constraints);
+        this.algorithm = new LabellingAlgorithm(graph, objectiveFunctions, constraints);
         this.firstNodeList = new NodeList(graph.getNodes().size());
         this.secondNodeList = new NodeList(graph.getNodes().size());
-        //this.syncedNodesStartTime = Arrays.copyOf(other.syncedNodesStartTime, other.syncedNodesStartTime.length);
     }
 
-    public RouteEvaluator(TravelTimeMatrix distanceMatrixMatrix, Collection<T> tasks,
+    public RouteEvaluator(TravelTimeMatrix distanceMatrixMatrix, Collection<Visit> visits,
                           Location origin, Location destination) {
-        this.graph = new SearchGraph(distanceMatrixMatrix, tasks, origin, destination);
+        this.graph = new SearchGraph(distanceMatrixMatrix, visits, origin, destination);
         this.objectiveFunctions = new ObjectiveFunctionsIntraRouteHandler();
         this.constraints = new ConstraintsIntraRouteHandler();
-        //this.algorithm = new LabellingAlgorithm<>(graph, objectiveFunctions, constraints);
+        this.algorithm = new LabellingAlgorithm(graph, objectiveFunctions, constraints);
         this.firstNodeList = new NodeList(graph.getNodes().size());
         this.secondNodeList = new NodeList(graph.getNodes().size());
-        // this.syncedNodesStartTime = new int[graph.getNodes().size()];
     }
 
     /**
      * Updates the active and inactive constraints and objectives
      */
-    public void update(RouteEvaluator<T> other) {
+    public void update(RouteEvaluator other) {
         this.objectiveFunctions.update(other.objectiveFunctions);
         this.constraints.update(other.constraints);
     }
 
     /**
-     * Evaluates the route given by the tasks input, the order of the tasks is the order of the route.
+     * Evaluates the route given by the visits input, the order of the visits is the order of the route.
      * Only returns objective value, no route details is returned.
      *
-     * @param tasks                The route to be evaluated, the order of the list is the order of the route.
-     * @param syncedTasksStartTime Map of ALL synced tasks in the route and their start times. Should not contain tasks
+     * @param visits               The route to be evaluated, the order of the list is the order of the route.
+     * @param syncedTasksStartTime Map of ALL synced visits in the route and their start times. Should not contain visits
      *                             that are not in the route, this will reduce performance
      * @param employeeWorkShift    Employee the route applies to.
      * @return A double value representing the objective value of the route.
      */
-    // Changed to not support synced tasks
-    public Double evaluateRouteObjective(List<T> tasks, Shift employeeWorkShift) {
-        ExtendInfoOneElement nodeExtendInfoOneElement = initializeOneElementEvaluator(tasks);
+    // Changed to not support synced visits
+    public Double evaluateRouteObjective(List<Visit> visits, Shift employeeWorkShift) {
+        ExtendInfoOneElement nodeExtendInfoOneElement = initializeOneElementEvaluator(visits);
 
         // Lable is path + cost + time etc
         Label bestLabel = algorithm.
-                runAlgorithm(new WeightedObjective(), nodeExtendInfoOneElement, syncedNodesStartTime, employeeWorkShift);
+                runAlgorithm(new WeightedObjective(), nodeExtendInfoOneElement, employeeWorkShift);
         return bestLabel == null ? null : bestLabel.getObjective().getObjectiveValue();
 
     }
@@ -108,7 +106,7 @@ public class RouteEvaluator<T extends Task> {
      * @param employeeWorkShift    Employee the route applies to.
      * @return A bool value representing the feasibility of the route.
      */
-    public boolean evaluateRouteFeasibilityForAllConstraints(List<T> tasks, Map<Task, Integer> syncedTasksStartTime,
+    public boolean evaluateRouteFeasibilityForAllConstraints(List<Visit> tasks, Map<Task, Integer> syncedTasksStartTime,
                                                              Shift employeeWorkShift) {
         constraints.activateCheckAllActiveAndInactiveConstraints();
         boolean feasible = evaluateRouteObjective(tasks, employeeWorkShift) != null;
@@ -127,7 +125,7 @@ public class RouteEvaluator<T extends Task> {
      * @param employeeWorkShift    Employee the route applies to.
      * @return A double value representing the objective value of the route.
      */
-    public Double evaluateRouteByTheOrderOfTasksInsertTaskObjective(List<T> tasks, T insertTask,
+    public Double evaluateRouteByTheOrderOfTasksInsertTaskObjective(List<Visit> tasks, Visit insertTask,
                                                                     Map<Task, Integer> syncedTasksStartTime, Shift employeeWorkShift) {
         return calcObjectiveInsertTask(tasks, insertTask, syncedTasksStartTime, employeeWorkShift);
     }
@@ -143,7 +141,7 @@ public class RouteEvaluator<T extends Task> {
      * @param employeeWorkShift    Employee the route applies to.
      * @return A double value representing the objective value of the route.
      */
-    public Double evaluateRouteByTheOrderOfTasksRemoveTaskObjective(List<T> tasks, List<Integer> skipTasksAtIndices,
+    public Double evaluateRouteByTheOrderOfTasksRemoveTaskObjective(List<Visit> tasks, List<Integer> skipTasksAtIndices,
                                                                     Map<Task, Integer> syncedTasksStartTime, Shift employeeWorkShift) {
         return calcObjectiveRemoveTask(tasks, skipTasksAtIndices, syncedTasksStartTime, employeeWorkShift);
     }
@@ -160,7 +158,7 @@ public class RouteEvaluator<T extends Task> {
      * @param employeeWorkShift    Employee the route applies to.
      * @return A double value representing the objective value of the route.
      */
-    public Double evaluateRouteByTheOrderOfTasksRemoveTaskObjective(List<T> tasks, int skipTaskAtIndex,
+    public Double evaluateRouteByTheOrderOfTasksRemoveTaskObjective(List<Visit> tasks, int skipTaskAtIndex,
                                                                     Map<Task, Integer> syncedTasksStartTime, Shift employeeWorkShift) {
         return calcObjectiveRemoveTask(tasks, skipTaskAtIndex, syncedTasksStartTime, employeeWorkShift);
     }
@@ -169,8 +167,7 @@ public class RouteEvaluator<T extends Task> {
     /**
      * Used to initialize the route evaluator when
      */
-    private ExtendInfoOneElement initializeOneElementEvaluator(List<T> tasks) {
-        // setSyncedNodesStartTimes(syncedTasksStartTime, tasks);
+    private ExtendInfoOneElement initializeOneElementEvaluator(List<Visit> tasks) {
         updateFirstNodeList(tasks);
         return new ExtendInfoOneElement(firstNodeList);
     }
@@ -184,7 +181,7 @@ public class RouteEvaluator<T extends Task> {
      * @param employeeWorkShift    Employee the route applies to.
      * @return A routeEvaluator result for the evaluated route.
      */
-    public RouteEvaluatorResult<T> evaluateRouteByTheOrderOfTasks(List<T> tasks, Map<Task, Integer> syncedTasksStartTime,
+    public RouteEvaluatorResult<Visit> evaluateRouteByTheOrderOfTasks(List<Visit> tasks, Map<Task, Integer> syncedTasksStartTime,
                                                                   Shift employeeWorkShift) {
         return calcRouteEvaluatorResult(new WeightedObjective(), tasks, syncedTasksStartTime, employeeWorkShift);
     }
@@ -201,10 +198,10 @@ public class RouteEvaluator<T extends Task> {
      * @param criteriaFunction     The function that determines if a tasks should be re-inserted.
      * @return A routeEvaluator result for the evaluated route.
      */
-    public RouteEvaluatorResult<T> evaluateRouteByTheOrderOfReInsertBasedOnCriteriaTasks(List<T> tasks, Map<Task, Integer> syncedTasksStartTime,
-                                                                                         Shift employeeWorkShift, Predicate<T> criteriaFunction) {
-        List<T> fitsCriteria = tasks.stream().filter(criteriaFunction).collect(Collectors.toList());
-        List<T> doesNotFitCriteria = new ArrayList<>(tasks);
+    public RouteEvaluatorResult<Visit> evaluateRouteByTheOrderOfReInsertBasedOnCriteriaTasks(List<Visit> tasks, Map<Task, Integer> syncedTasksStartTime,
+                                                                                         Shift employeeWorkShift, Predicate<Visit> criteriaFunction) {
+        List<Visit> fitsCriteria = tasks.stream().filter(criteriaFunction).collect(Collectors.toList());
+        List<Visit> doesNotFitCriteria = new ArrayList<>(tasks);
         doesNotFitCriteria.removeAll(fitsCriteria);
         return calcRouteEvaluatorResult(new WeightedObjective(), doesNotFitCriteria, fitsCriteria, syncedTasksStartTime, employeeWorkShift);
     }
@@ -221,7 +218,7 @@ public class RouteEvaluator<T extends Task> {
      * @param employeeWorkShift    Employee the route applies to.
      * @return A routeEvaluator result for the evaluated route.
      */
-    public RouteEvaluatorResult<T> evaluateRouteByOrderOfTasksWithObjectiveValues(List<T> tasks,
+    public RouteEvaluatorResult<Visit> evaluateRouteByOrderOfTasksWithObjectiveValues(List<Visit> tasks,
                                                                                   Map<Task, Integer> syncedTasksStartTime,
                                                                                   Shift employeeWorkShift) {
         return calcRouteEvaluatorResult(new WeightedObjectiveWithValues(), tasks, syncedTasksStartTime, employeeWorkShift);
@@ -239,7 +236,7 @@ public class RouteEvaluator<T extends Task> {
      * @param employeeWorkShift    Employee the route applies to.
      * @return A routeEvaluator result for the evaluated route.
      */
-    public RouteEvaluatorResult<T> evaluateRouteByTheOrderOfTasksInsertTask(List<T> tasks, T insertTask,
+    public RouteEvaluatorResult<Visit> evaluateRouteByTheOrderOfTasksInsertTask(List<Visit> tasks, Visit insertTask,
                                                                             Map<Task, Integer> syncedTasksStartTime, Shift employeeWorkShift) {
         return calcRouteEvaluatorResult(new WeightedObjective(), tasks, insertTask, syncedTasksStartTime, employeeWorkShift);
     }
@@ -247,7 +244,7 @@ public class RouteEvaluator<T extends Task> {
     /**
      * Used to calculate objective of routes when inserting one new task
      */
-    private Double calcObjectiveInsertTask(List<T> tasks, T insertTask, Shift employeeWorkShift) {
+    private Double calcObjectiveInsertTask(List<Visit> tasks, Visit insertTask, Shift employeeWorkShift) {
         // setSyncedNodesStartTimes(syncedTasksStartTime, tasks);
         // setSyncedNodesStartTime(syncedTasksStartTime, insertTask);
         updateFirstNodeList(tasks);
@@ -261,7 +258,7 @@ public class RouteEvaluator<T extends Task> {
     /**
      * Used to calculate objective of routes when removing one task
      */
-    private Double calcObjectiveRemoveTask(List<T> tasks, int skipTaskAtIndex,
+    private Double calcObjectiveRemoveTask(List<Visit> tasks, int skipTaskAtIndex,
                                            Map<Task, Integer> syncedTasksStartTime, Shift employeeWorkShift) {
         // setSyncedNodesStartTimes(syncedTasksStartTime, tasks);
         updateFirstNodeList(tasks, skipTaskAtIndex);
@@ -274,7 +271,7 @@ public class RouteEvaluator<T extends Task> {
     /**
      * Used to calculate objective of routes when removing multiple tasks
      */
-    private Double calcObjectiveRemoveTask(List<T> tasks, List<Integer> skipTasksAtIndices,
+    private Double calcObjectiveRemoveTask(List<Visit> tasks, List<Integer> skipTasksAtIndices,
                                            Map<Task, Integer> syncedTasksStartTime, Shift employeeWorkShift) {
         // setSyncedNodesStartTimes(syncedTasksStartTime, tasks);
         updateFirstNodeList(tasks, skipTasksAtIndices);
@@ -299,7 +296,7 @@ public class RouteEvaluator<T extends Task> {
      * @param employeeWorkShift    Employee the route applies to.
      * @return A routeEvaluator result for the evaluated route.
      */
-    public RouteEvaluatorResult<T> evaluateRouteByTheOrderOfTasksInsertTasks(List<T> tasks, List<T> insertTasks,
+    public RouteEvaluatorResult<Visit> evaluateRouteByTheOrderOfTasksInsertTasks(List<Visit> tasks, List<Visit> insertTasks,
                                                                              Map<Task, Integer> syncedTasksStartTime,
                                                                              Shift employeeWorkShift) {
         return calcRouteEvaluatorResult(new WeightedObjective(), tasks, insertTasks, syncedTasksStartTime, employeeWorkShift);
@@ -320,7 +317,7 @@ public class RouteEvaluator<T extends Task> {
      * @param employeeWorkShift    Employee the route applies to.
      * @return The objective value for the evaluated route or null if infeasible.
      */
-    public Double evaluateRouteByTheOrderOfTasksInsertTasksObjective(List<T> tasks, List<T> insertTasks,
+    public Double evaluateRouteByTheOrderOfTasksInsertTasksObjective(List<Visit> tasks, List<Visit> insertTasks,
                                                                      Map<Task, Integer> syncedTasksStartTime,
                                                                      Shift employeeWorkShift) {
         return calcRouteEvaluatorObjective(new WeightedObjective(), tasks, insertTasks, syncedTasksStartTime, employeeWorkShift);
@@ -401,7 +398,7 @@ public class RouteEvaluator<T extends Task> {
     /**
      * Used to calculate routes without inserting new tasks.
      */
-    private RouteEvaluatorResult<T> calcRouteEvaluatorResult(IRouteEvaluatorObjective objective, List<T> tasks, Shift employeeWorkShift) {
+    private RouteEvaluatorResult<Visit> calcRouteEvaluatorResult(IRouteEvaluatorObjective objective, List<Visit> tasks, Shift employeeWorkShift) {
         ExtendInfoOneElement nodeExtendInfoOneElement = initializeOneElementEvaluator(tasks);
         return algorithm.solveRouteEvaluatorResult(objective, nodeExtendInfoOneElement, syncedNodesStartTime, employeeWorkShift);
     }
@@ -409,7 +406,7 @@ public class RouteEvaluator<T extends Task> {
     /**
      * Used to calculate routes when inserting one new task
      */
-    private RouteEvaluatorResult<T> calcRouteEvaluatorResult(IRouteEvaluatorObjective objective, List<T> tasks, T insertTask, Shift employeeWorkShift) {
+    private RouteEvaluatorResult<Visit> calcRouteEvaluatorResult(IRouteEvaluatorObjective objective, List<Visit> tasks, Visit insertTask, Shift employeeWorkShift) {
         // setSyncedNodesStartTimes(syncedTasksStartTime, tasks);
         // setSyncedNodesStartTime(syncedTasksStartTime, insertTask);
         updateFirstNodeList(tasks);
@@ -421,7 +418,7 @@ public class RouteEvaluator<T extends Task> {
     /**
      * Used to calculate routes when inserting multiple new tasks.
      */
-    private RouteEvaluatorResult<T> calcRouteEvaluatorResult(IRouteEvaluatorObjective objective, List<T> tasks, List<T> insertTasks,
+    private RouteEvaluatorResult<Visit> calcRouteEvaluatorResult(IRouteEvaluatorObjective objective, List<Visit> tasks, List<Visit> insertTasks,
                                                             Shift employeeWorkShift) {
         // setSyncedNodesStartTimes(syncedTasksStartTime, tasks);
         // setSyncedNodesStartTimes(syncedTasksStartTime, insertTasks);
@@ -434,7 +431,7 @@ public class RouteEvaluator<T extends Task> {
     /**
      * Used to calculate routes when inserting multiple new tasks.
      */
-    private Double calcRouteEvaluatorObjective(IRouteEvaluatorObjective objective, List<T> tasks, List<T> insertTasks,
+    private Double calcRouteEvaluatorObjective(IRouteEvaluatorObjective objective, List<Visit> tasks, List<Visit> insertTasks,
                                                Shift employeeWorkShift) {
         /* setSyncedNodesStartTimes(syncedTasksStartTime, tasks);
         setSyncedNodesStartTimes(syncedTasksStartTime, insertTasks); */
@@ -445,7 +442,7 @@ public class RouteEvaluator<T extends Task> {
     }
 
 
-    private void updateFirstNodeList(List<T> tasks) {
+    private void updateFirstNodeList(List<Visit> tasks) {
         firstNodeList.initializeWithNodes(graph, tasks);
     }
 
@@ -461,11 +458,11 @@ public class RouteEvaluator<T extends Task> {
         secondNodeList.initializeWithNode(graph, task);
     }
 
-    private void updateSecondNodeList(List<T> tasks) {
+    private void updateSecondNodeList(List<Visit> tasks) {
         secondNodeList.initializeWithNodes(graph, tasks);
     }
 
-    /* private void setSyncedNodesStartTimes(Map<Task, Integer> syncedTasksStartTime, Collection<T> tasks) {
+    /* private void setSyncedNodesStartTimes(Map<Task, Integer> syncedTasksStartTime, Collection<Visit> tasks) {
         for (Task task : tasks)
             setSyncedNodesStartTime(syncedTasksStartTime, task);
     } */
