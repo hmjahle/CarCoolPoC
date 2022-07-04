@@ -16,8 +16,6 @@ public class Task {
     private int idSecondVisit;
     private int idSecondVisitVirtual;
     private boolean prioritized;
-    private int transportType;     // 0 - drive, 1 - walk
-    private int transportedBy;
 
     public Task(int id, int numTasks ){
         this.id = id;
@@ -64,10 +62,6 @@ public class Task {
     public boolean isPrioritized(){ return this.prioritized; }
 
     public Location getLocation(){ return this.location; }
-
-    public int getTransportType(){ return this.transportType; }
-
-    public int getTransportedBy(){ return this.transportedBy; }
 
 
     public  int getFirstVisitVirtualId() {

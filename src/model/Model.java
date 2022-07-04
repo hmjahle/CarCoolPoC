@@ -71,10 +71,10 @@ public class Model {
                     tasks.add(task);
 
                     // Creating corresponding visits
-                    Visit visit1 = new Visit((Integer.parseInt((String) key) - 1), task);
-                    Visit visit1Virtual= new Visit((Integer.parseInt((String) key) - 1 + 2 * patients.size()), task);
-                    Visit visit2 = new Visit((Integer.parseInt((String) key) - 1 + patients.size()), task);
-                    Visit visit2Virtual = new Visit((Integer.parseInt((String) key) - 1 + 3 * patients.size()), task);
+                    Visit visit1 = new Visit((Integer.parseInt((String) key) - 1), task, false);
+                    Visit visit1Virtual= new Visit((Integer.parseInt((String) key) - 1 + 2 * patients.size()), task, true);
+                    Visit visit2 = new Visit((Integer.parseInt((String) key) - 1 + patients.size()), task, false);
+                    Visit visit2Virtual = new Visit((Integer.parseInt((String) key) - 1 + 3 * patients.size()), task, true);
 
                     this.visits.add(visit1);
                     this.visits.add(visit1Virtual);
@@ -123,21 +123,21 @@ public class Model {
         }
         Map<Integer, TravelTimeMatrix> ogTravelTimes = new HashMap<Integer, TravelTimeMatrix>();
         JSONArray jsonDrivingTimes = (JSONArray) this.data.get("travel_times");
-        Map<Location, Map<Location, Double>> drivingTimes = new HashMap<Location,Map<Location,Double>>();
-        Map<Location, Map<Location, Double>> walkingTimes = new HashMap<Location, Map<Location, Double>>();    
+        Map<Location, Map<Location, Integer>> drivingTimes = new HashMap<Location,Map<Location,Integer>>();
+        Map<Location, Map<Location, Integer>> walkingTimes = new HashMap<Location, Map<Location, Integer>>();    
         for (int i = 0; i <jsonDrivingTimes.size(); i++){
             JSONArray indJsonTravelTimes = (JSONArray) jsonDrivingTimes.get(i);
-            Map<Location, Double> indDrivingTimes = new HashMap<Location, Double>();
-            Map<Location, Double> indWalkingTimes = new HashMap<Location, Double>();
+            Map<Location, Integer> indDrivingTimes = new HashMap<Location, Integer>();
+            Map<Location, Integer> indWalkingTimes = new HashMap<Location, Integer>();
             for (int j = 0; j < indJsonTravelTimes.size(); j++){
                 if (indJsonTravelTimes.get(j) instanceof Long){
-                    indDrivingTimes.put(this.locations.get(j), ((Long) indJsonTravelTimes.get(j)).doubleValue());
-                    indWalkingTimes.put(this.locations.get(j), (((Long) indJsonTravelTimes.get(j)).doubleValue())*10); // Ganger med 10 fordi walk
+                    indDrivingTimes.put(this.locations.get(j), ((Long) indJsonTravelTimes.get(j)).intValue());
+                    indWalkingTimes.put(this.locations.get(j), (((Long) indJsonTravelTimes.get(j)).intValue())*10); // Ganger med 10 fordi walk
                     // System.out.println(i + " " +this.locations.get(j).getId()+ " " + ((Long) indJsonTravelTimes.get(j)).doubleValue());
                 }
                 else {
-                    indDrivingTimes.put(this.locations.get(j), (Double) indJsonTravelTimes.get(j));
-                    indWalkingTimes.put(this.locations.get(j), ((Double) indJsonTravelTimes.get(j))*10); // samme her, ganger med 10
+                    indDrivingTimes.put(this.locations.get(j), (Integer) indJsonTravelTimes.get(j));
+                    indWalkingTimes.put(this.locations.get(j), ((Integer) indJsonTravelTimes.get(j))*10); // samme her, ganger med 10
                     //System.out.println(i + " " +this.locations.get(j).getId()+ " " + (Double) indJsonTravelTimes.get(j));
                 }
             }

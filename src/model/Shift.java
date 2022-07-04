@@ -28,7 +28,7 @@ public class Shift {
 
     public Point getEndLocation(){ return this.endLocation; } 
 
-    public int getTransportMode(){ return this.transportMode; }
+    public int getTransportMode(){ return this.motorized; }
 
     public int getCapacity(){ return this.capacity; }
 
