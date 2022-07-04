@@ -40,11 +40,11 @@ public class RouteEvaluator {
     private final NodeList firstNodeList;
     private final NodeList secondNodeList;
 
-    public RouteEvaluator(TravelTimeMatrix distanceMatrixMatrix, Collection<Visit> tasks) {
+    public RouteEvaluator(Map<Integer, TravelTimeMatrix>  distanceMatrixMatrix, Collection<Visit> tasks) {
         this(distanceMatrixMatrix, tasks, null, null);
     }
 
-    public RouteEvaluator(TravelTimeMatrix distanceMatrixMatrix, Collection<Visit> tasks, Location officePosition) {
+    public RouteEvaluator(Map<Integer, TravelTimeMatrix>  distanceMatrixMatrix, Collection<Visit> tasks, Location officePosition) {
         this(distanceMatrixMatrix, tasks, officePosition, officePosition);
     }
 
@@ -57,7 +57,7 @@ public class RouteEvaluator {
         this.secondNodeList = new NodeList(graph.getNodes().size());
     }
 
-    public RouteEvaluator(TravelTimeMatrix distanceMatrixMatrix, Collection<Visit> visits,
+    public RouteEvaluator(Map<Integer, TravelTimeMatrix>  distanceMatrixMatrix, Collection<Visit> visits,
                           Location origin, Location destination) {
         this.graph = new SearchGraph(distanceMatrixMatrix, visits, origin, destination);
         this.objectiveFunctions = new ObjectiveFunctionsIntraRouteHandler();

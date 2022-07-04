@@ -234,7 +234,7 @@ public class LabellingAlgorithm {
             return 0.0; */
 
         //var locationB = newLocation == thisLabel.getCurrentLocationId() ? newLocation : nextNode.getLocationId();
-        return graph.getTravelTime(thisLabel.getCurrentLocationId(), nextNode.getLocationId());
+        return graph.getTravelTime(thisLabel.getCurrentLocationId(), nextNode.getLocationId(), nextNode.getTransportMode());
     }
 
     private int calcEarliestPossibleReturnToOfficeTime(Node nextNode, Integer newLocation, int startOfServiceNextTask) {
@@ -246,7 +246,7 @@ public class LabellingAlgorithm {
         /* if (currentLocation == 0 || currentLocation == graph.getDestination().getLocationId() || graph.getDestination() instanceof VirtualNode) {
             return 0.0;
         } */
-        Integer travelTime = graph.getTravelTime(currentLocation, graph.getDestination().getLocationId());
+        Integer travelTime = graph.getTravelTime(currentLocation, graph.getDestination().getLocationId(), graph.getDestination().getTransportMode());
         return travelTime == null ? 0 : travelTime;
     }
 

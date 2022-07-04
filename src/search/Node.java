@@ -71,4 +71,8 @@ public class Node {
     public boolean isDepotNode() {
         return visit == null;
     }
+
+    public int getTransportMode(){
+        return visit == null ? null : visit.getTransportType();
+    }
 }

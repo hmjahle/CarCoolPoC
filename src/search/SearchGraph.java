@@ -4,6 +4,7 @@ package search;
 import model.Location;
 import model.TravelTimeMatrix;
 import model.Visit;
+import util.Constants;
 
 import java.util.*;
 
@@ -13,14 +14,14 @@ public class SearchGraph {
     private Node destination;
     private final List<Node> nodes;
     private final Map< Visit, Node> visitToNodes;
-    private Integer[][] travelTimeMatrix;
+    private Map<Integer, Integer[][]> travelTimeMatrix;
     private int nodeIdCounter;
     private int sourceId;
     private int sinkId;
 
 
     //Trenger vi to constructors?
-    public SearchGraph( TravelTimeMatrix travelTimeMatrixInput, Collection<? extends  Visit> visits,
+    public SearchGraph( Map<Integer, TravelTimeMatrix>  travelTimeMatrixInput, Collection<? extends  Visit> visits,
                         Location originLocation,  Location destinationLocation) {
         this.nodes = new ArrayList<>();
         this.visitToNodes = new HashMap<>();
@@ -35,10 +36,18 @@ public class SearchGraph {
         this.nodes = new ArrayList<>();
         this.visitToNodes = new HashMap<>();
         copyNodes(other);
-        this.travelTimeMatrix = new Integer[other.travelTimeMatrix.length][other.travelTimeMatrix.length];
-        for (int i = 0; i < travelTimeMatrix.length; i++) {
-            System.arraycopy(other.travelTimeMatrix[i], 0, this.travelTimeMatrix[i], 0, other.travelTimeMatrix[i].length);
+        int walk = Constants.TransportMode.WALK;
+        int drive = Constants.TransportMode.DRIVE;
+        Integer[][] travelTimeMatrixWalk = new Integer[other.travelTimeMatrix.get(walk).length][other.travelTimeMatrix.get(walk).length];
+        for (int i = 0; i < travelTimeMatrixWalk.length; i++) {
+            System.arraycopy(other.travelTimeMatrix.get(walk)[i], 0, this.travelTimeMatrix.get(walk)[i], 0, other.travelTimeMatrix.get(walk)[i].length);
         }
+        Integer[][] travelTimeMatrixDrive = new Integer[other.travelTimeMatrix.get(drive).length][other.travelTimeMatrix.get(drive).length];
+        for (int i = 0; i < travelTimeMatrix.get(drive).length; i++) {
+            System.arraycopy(other.travelTimeMatrix.get(drive)[i], 0, this.travelTimeMatrix.get(drive)[i], 0, other.travelTimeMatrix.get(drive)[i].length);
+        }
+        this.travelTimeMatrix.put(Constants.TransportMode.WALK, travelTimeMatrixWalk);
+        this.travelTimeMatrix.put(Constants.TransportMode.DRIVE, travelTimeMatrixDrive);
         this.origin = other.origin;
         this.destination = other.destination;
     }
@@ -57,16 +66,16 @@ public class SearchGraph {
         return nodes;
     }
 
-    public int getTravelTime(int locationIdA, int locationIdB) {
+    public int getTravelTime(int locationIdA, int locationIdB, int transportmode) {
         if (locationIdA == locationIdB){return 0;} // Transport from Task to Task´
-        return travelTimeMatrix[locationIdA][locationIdB];
+        return travelTimeMatrix.get(transportmode)[locationIdA][locationIdB];
     }
 
     private int getNewNodeId() {
         return nodeIdCounter++;
     }
 
-    private void populateGraph( TravelTimeMatrix travelTimeMatrixInput,
+    private void populateGraph( Map<Integer, TravelTimeMatrix>  travelTimeMatrixInput,
                                Collection<? extends  Visit> visits,  Location originLocation,
                                 Location destinationLocation) {
         updateTravelTimeInformation(travelTimeMatrixInput);
@@ -113,12 +122,22 @@ public class SearchGraph {
         }
     }
 
-    private void updateTravelTimeInformation( TravelTimeMatrix travelTimeMatrixInput) {
-        int n = travelTimeMatrixInput.getLocations().size();
-        this.travelTimeMatrix = new Integer[n][n];
-        for ( Location locationA : travelTimeMatrixInput.getLocations()) {
-            for ( Location locationB : travelTimeMatrixInput.getLocations()) {
-                addTravelTime(travelTimeMatrixInput, locationA, locationB);
+    private void updateTravelTimeInformation( Map<Integer, TravelTimeMatrix> travelTimeMatrixInput) {
+        TravelTimeMatrix travelTimeMatrixInputDrive = travelTimeMatrixInput.get(Constants.TransportMode.DRIVE);
+        TravelTimeMatrix travelTimeMatrixInputWalk = travelTimeMatrixInput.get(Constants.TransportMode.WALK);
+
+        int n = travelTimeMatrixInputDrive.getLocations().size();
+        int m = travelTimeMatrixInputWalk.getLocations().size();
+
+        this.travelTimeMatrix = new HashMap<Integer, Integer[][]>(){{
+            put(Constants.TransportMode.DRIVE, new Integer[n][n]);
+            put(Constants.TransportMode.WALK, new Integer[m][m]);
+        }};
+        // Is the same locations in both, so whould not matter which we iterate through
+        for ( Location locationA : travelTimeMatrixInputDrive.getLocations()) {
+            for ( Location locationB : travelTimeMatrixInputDrive.getLocations()) {
+                addTravelTime(travelTimeMatrixInputDrive, locationA, locationB, Constants.TransportMode.DRIVE);
+                addTravelTime(travelTimeMatrixInputWalk, locationA, locationB, Constants.TransportMode.WALK);
             }
         }
     }
@@ -144,14 +163,13 @@ public class SearchGraph {
         return visitToNodes.get(visit).getLocationId();
     }
 
-    private void addTravelTime(TravelTimeMatrix travelTimeMatrixInput,  Location fromLocation,  Location toLocation) {
+    private void addTravelTime(TravelTimeMatrix travelTimeMatrixInput,  Location fromLocation,  Location toLocation, int transportmode) {
         int fromId = getLocationId(fromLocation);
         int toId = getLocationId(toLocation);
-
         if (!travelTimeMatrixInput.connected(fromLocation, toLocation))
             return;
         int travelTime = travelTimeMatrixInput.getTravelTime(fromLocation, toLocation);
-        this.travelTimeMatrix[fromId][toId] = travelTime;
+        this.travelTimeMatrix.get(transportmode)[fromId][toId] = travelTime;
     }
 
     public Node getOrigin() {
