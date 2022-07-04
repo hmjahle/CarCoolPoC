@@ -1,17 +1,22 @@
 package model;
 
+import util.Constants;
+import util.Constants.TransportMode;
+
 public class Visit {
 
     private int id;
     private Task task;
     private boolean isVirtual;
-
+    private boolean isTransportTask;
     /**
      *  Transport type = 0 if driving was used to this task, and 1 if walking was used to this task
      *  Transported by refers to the id of the shift that transported you here (i.e., carpooling was used)
      */
 
     // 0 = drive, 1 = walk
+    private int startTime;
+    private int endTime;
     private int transportType;
     private int transportedBy;
 
@@ -21,31 +26,30 @@ public class Visit {
         this.isVirtual = true;
     }
 
-    public Task getTask() {
-        return this.task;
-    }
+    // Getters
 
-    public int getId() {
-        return this.id;
-    }
+    public Task getTask() { return this.task; }
 
-    public boolean isVirtual() {
-        return this.isVirtual;
-    }
+    public int getId() { return this.id; }
 
-    public int getTransportType() {
-        return this.transportType;
-    }
+    public boolean isVirtual() { return this.isVirtual; }
 
-    public int getTransportedBy(){
-        return this.transportedBy;
-    }
+    public int getTransportType() { return this.transportType; }
 
-    public void setTransportType(int transportType) {
-        this.transportType = transportType;
-    }
+    public int getTransportedBy(){ return this.transportedBy; }
 
-    public int getVisitDuration(){
-        return 0;
-    }
+    public void setTransportType(int transportType) {this.transportType = transportType; }
+
+    public int getTaskStartTime(){ return this.task.getStartTime(); }
+
+    public int getTaskEndTime(){ return this.task.getEndTime(); }
+
+    public int getStartTime(){ return this.startTime;}
+
+    public int getVisitDuration(){ if (this.isTransportTask){ return TransportMode.TRANSPORTTIME; } else { return this.getTask().getDuration(); } }
+
+    // Setters
+    public void setStartTime(int start_time){ this.startTime = start_time;}
+    
+    public void setEndTime(int end_time){ this.endTime = end_time;}
 }
