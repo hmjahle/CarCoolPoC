@@ -8,4 +8,5 @@ public class Constants {
     }
 
     public static final int MAX_WALK_TIME = 10;
+    public static final int TRANSPORTTIME = 5;
 }

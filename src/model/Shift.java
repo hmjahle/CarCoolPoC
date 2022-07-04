@@ -11,9 +11,11 @@ public class Shift {
     private int capacity;
     private int startTime;
     private int endTime;
+    private boolean carpoolAble;
 
-    public Shift(int id){
+    public Shift(int id, boolean carpoolAble){
         this.id = id;
+        this.carpoolAble = carpoolAble;
     }
 
     // Setters 
@@ -37,5 +39,7 @@ public class Shift {
     public int getEndTime(){ return this.endTime;}
 
     public int getShiftDuration(){ return (this.endTime - this.startTime); }
+
+    public boolean getCarpoolAble(){ return this.carpoolAble;}
 
 }
