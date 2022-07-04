@@ -15,29 +15,37 @@ public class Visit {
     private int transportType;
     private int transportedBy;
 
-    public Visit(int id, Task task) {
+    public Visit(int id, Task task, boolean isVirtual) {
         this.id = id;
         this.task = task;
-        this.isVirtual = isVirtual;
+        this.isVirtual = true;
     }
 
     public Task getTask() {
-        return task;
+        return this.task;
     }
 
     public int getId() {
-        return id;
+        return this.id;
     }
 
     public boolean isVirtual() {
-        return isVirtual;
+        return this.isVirtual;
     }
 
     public int getTransportType() {
-        return transportType;
+        return this.transportType;
+    }
+
+    public int getTransportedBy(){
+        return this.transportedBy;
     }
 
     public void setTransportType(int transportType) {
         this.transportType = transportType;
+    }
+
+    public int getVisitDuration(){
+        return 0;
     }
 }
