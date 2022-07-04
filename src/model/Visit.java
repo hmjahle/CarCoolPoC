@@ -1,6 +1,5 @@
 package model;
 
-import util.Constants;
 import util.Constants.TransportMode;
 
 public class Visit {
@@ -45,6 +44,8 @@ public class Visit {
     public int getTaskEndTime(){ return this.task.getEndTime(); }
 
     public int getStartTime(){ return this.startTime;}
+
+    public int getEndTime(){ return this.endTime;}
 
     public int getVisitDuration(){ if (this.isTransportTask){ return TransportMode.TRANSPORTTIME; } else { return this.getTask().getDuration(); } }
 

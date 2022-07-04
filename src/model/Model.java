@@ -22,28 +22,32 @@ public class Model {
     private final String filePath;
     private JSONObject data;
     private Collection<Task> tasks;
-    private int return_time;
+    private int returnTime;
     private Map<Integer, Location> locations = new HashMap<Integer,Location>();
     private Map<Short, Shift> idsShifts; // denne trenger vi egentlig ikke her fordi sykepleierne er homogene
     private Map<Integer, TravelTimeMatrix> travelTimeMatrix;
     private Collection<Visit> visits;
     private List<Shift> shifts;
+    private List<Shift> carpoolAbleShifts;
     private int numTasks;
 
     public Model(int modelInstance) {
         this.filePath = System.getProperty("user.dir") + "/resources/train_" + modelInstance + ".json";
-        tasks = new ArrayList<>();
-        shifts = new ArrayList<>();
-        visits = new ArrayList<>();
+        this.tasks = new ArrayList<>();
+        this.shifts = new ArrayList<>();
+        this.carpoolAbleShifts = new ArrayList<>();
+        this.visits = new ArrayList<>();
     }
 
-    public List<Shift> getShifts() {
-        return this.shifts;
-    }
+    public List<Shift> getShifts() { return this.shifts; }
+
+    public List<Shift> getCarpoolAbleShifts(){ return this.carpoolAbleShifts;}
 
     public Map<Short, Shift> getIdsShifts(){ return this.idsShifts;}
 
     public Map<Integer, TravelTimeMatrix> getTravelTimeMatrix(){ return this.travelTimeMatrix; }
+
+    public Collection<Visit> getVisits(){ return this.visits;}
 
     public void loadData() {
 
@@ -56,7 +60,11 @@ public class Model {
             this.data = data;
             int numWorkers =  Integer.parseInt(Long.toString((Long) data.get("nbr_nurses")));
             for(int i = 0; i < numWorkers; i ++) {
-                shifts.add(new Shift(i));
+                shifts.add(new Shift(i, true));
+            }
+            for(int i = 0; i < this.shifts.size(); i++){
+                Shift shift = shifts.get(i);
+                if (shift.getCarpoolAble()){this.carpoolAbleShifts.add(shift);}
             }
 
             JSONObject patients = (JSONObject) data.get("patients");
@@ -114,6 +122,7 @@ public class Model {
         // Legge til depop i locations, med indeks 0
         JSONObject jsonDepop = (JSONObject) this.data.get("depot");
         Location depop = new Location(0, (Long) jsonDepop.get("x_coord"), (Long) jsonDepop.get("x_coord"));
+        this.returnTime = ((Long)jsonDepop.get("return_time")).intValue();
         locations.put(0, depop);
     
     }
