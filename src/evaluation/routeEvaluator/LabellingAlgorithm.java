@@ -176,7 +176,7 @@ public class LabellingAlgorithm {
     public IRouteEvaluatorObjective extend(IRouteEvaluatorObjective currentObjective, Node toNode, int travelTime, int startOfServiceNextTask) {
         // Task task = toNode.getTask();
         Visit visit = toNode.getVisit();
-        int visitEnd = visit != null ? startOfServiceNextTask + visit.getDuration() : 0;
+        int visitEnd = visit != null ? startOfServiceNextTask + visit.getVisitDuration() : 0;
         return objectiveFunctions.calculateObjectiveValue(currentObjective, travelTime, visit,
                 startOfServiceNextTask, visitEnd, employeeWorkShift);
     }
