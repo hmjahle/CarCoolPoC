@@ -17,10 +17,10 @@ public class TimeWindowLateArrivalConstraint extends CustomCriteriaConstraint{
     }
 
     private static Function<RouteEvaluationInfoAbstract, Boolean> criteriaFunction() {
-        return i -> !i.isDestination();
+        return i -> !i.isDepot();
     }
 
     private static Function<ConstraintInfo, Boolean> constraintFunction(int maximumLateArrival) {
-        return i -> i.getStartOfServiceNextTask() + i.getTask().getDuration() <= i.getTask().getEndTime() + maximumLateArrival;
+        return i -> i.getStartOfServiceNextTask() + i.getVisit().getVisitDuration() <= i.getVisit().getEndTime() + maximumLateArrival;
     }
 }

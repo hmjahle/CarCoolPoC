@@ -4,7 +4,7 @@ import model.Shift;
 import model.Task;
 import model.Visit;
 import evaluation.objective.IObjectiveFunctionIntraRoute;
-import evaluation.objective.ObjectiveInfo;
+import evaluation.info.ObjectiveInfo;
 import evaluation.routeEvaluator.IRouteEvaluatorObjective;
 
 //import com.visma.of.rp.routeevaluator.solver.algorithm.IRouteEvaluatorObjective;

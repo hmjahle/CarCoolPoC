@@ -1,22 +1,28 @@
 package evaluation.info;
 
 import model.Task;
+import model.Visit;
 import model.Shift;
 
 public class RouteEvaluationInfoAbstract {
-
-    protected Task task;
+    // OBS: in orginal code, use Task, but we use task
+    protected Visit visit;
     protected int shiftId;
     protected int endOfWorkShift;
+    protected int syncedTaskStartTime;
 
-    public RouteEvaluationInfoAbstract(Task task, Shift employeeWorkShift, long syncedTaskStartTime) {
-        this.task = task;
+    public RouteEvaluationInfoAbstract(Visit visit, Shift employeeWorkShift) {
+        this.visit = visit;
         this.shiftId = employeeWorkShift.getId();
         this.endOfWorkShift = employeeWorkShift.getEndTime();
     }
 
-    public Task getTask() {
-        return task;
+    public int getSyncedTaskStartTime() {
+        return syncedTaskStartTime;
+    }
+
+    public Visit getVisit() {
+        return visit;
     }
 
     public int getEndOfWorkShift() {
@@ -24,11 +30,12 @@ public class RouteEvaluationInfoAbstract {
     }
 
     public boolean isStrict() {
-        return task != null && task.isStrict();
+        return visit != null && visit.getTask().isStrict();
     }
 
-    public boolean isDestination() {
-        return task == null;
+    // If task is origin or destination
+    public boolean isDepot() {
+        return visit == null;
     }
-    
+
 }
