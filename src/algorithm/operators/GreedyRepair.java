@@ -1,14 +1,14 @@
 package algorithm.operators;
 
+import java.util.Random;
+import java.util.Set;
+
 import algorithm.NeighborhoodMoveInfo;
+import algorithm.Solution;
 import algorithm.repair.GreedyRepairAlgorithm;
 import algorithm.repair.IRepairAlgorithm;
 import model.Model;
 import model.Task;
-import solution.Solution;
-
-import java.util.Random;
-import java.util.Set;
 
 /**
  * The Greedy insert operator insert the task into the solution in the way that increase the objective value the least.
