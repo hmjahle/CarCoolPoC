@@ -1,15 +1,15 @@
 package algorithm.operators;
 
+import java.util.List;
+import java.util.Random;
+
 import algorithm.NeighborhoodMoveInfo;
+import algorithm.Problem;
+import algorithm.Solution;
 import model.Model;
 import model.Shift;
 import model.Task;
-import solution.Objective;
-import algorithm.Problem;
-import solution.Solution;
-
-import java.util.List;
-import java.util.Random;
+import routeEvaluator.evaluation.objective.Objective;
 
 public abstract class GreedyDestroyAbstract extends DestroyOperatorAbstract {
 

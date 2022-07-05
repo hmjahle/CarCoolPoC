@@ -1,17 +1,15 @@
 package algorithm.repair;
 
+import java.util.*;
+
 import algorithm.NeighborhoodMoveInfo;
+import algorithm.Problem;
+import algorithm.Solution;
 //import com.visma.of.common.FeasibilityChecker;
 import model.Model;
 import model.Shift;
 import model.Task;
-import Problem;
-import Solution;
-import com.visma.of.rp.routeevaluator.results.RouteEvaluatorResult;
-
-import java.util.*;
-
-import static com.visma.of.common.util.RandomUtils.objectiveNoise;
+import routeEvaluator.results.RouteEvaluatorResult;
 
 
 public class GreedyRepairAlgorithm implements IRepairAlgorithm {
@@ -51,7 +49,7 @@ public class GreedyRepairAlgorithm implements IRepairAlgorithm {
         double bestExtraObjectiveValue = 0.0;
         Shift bestShift = null;
         Task bestTask = null;
-        RouteEvaluatorResult<Task> bestRoute = null;
+        RouteEvaluatorResult bestRoute = null;
 
         double deltaIntraObjectiveValue;
         double deltaExtraObjectiveValue;
@@ -62,7 +60,7 @@ public class GreedyRepairAlgorithm implements IRepairAlgorithm {
 
         for (Shift shift : shifts) {
             for (Task insertTask : tasks) {
-                RouteEvaluatorResult<Task> result = findRoute(problem, insertTask, solution, shift);
+                RouteEvaluatorResult result = findRoute(problem, insertTask, solution, shift);
                 if (result == null) continue;
 
                 deltaIntraObjectiveValue1 = result.getObjectiveValue() - objective.getShiftIntraRouteObjectiveValue(shift);
@@ -91,19 +89,19 @@ public class GreedyRepairAlgorithm implements IRepairAlgorithm {
         return deltaObjective;
     }
 
-    protected Double updateSolution(Problem problem, double bestIntraObjective, double bestExtraObjective, Shift bestShift, Task bestTask, RouteEvaluatorResult<Task> bestRoute) {
+    protected Double updateSolution(Problem problem, double bestIntraObjective, double bestExtraObjective, Shift bestShift, Task bestTask, RouteEvaluatorResult bestRoute) {
         Integer index = bestRoute.getRoute().findIndexInRoute(bestTask);
         problem.assignTaskToShiftByIndex(bestShift, bestTask, index, bestIntraObjective, bestExtraObjective);
         return bestIntraObjective + bestExtraObjective;
     }
 
-    protected RouteEvaluatorResult<Task> getEvaluatorResult(Task task, Problem problem, Shift shift) {
+    protected RouteEvaluatorResult getEvaluatorResult(Task task, Problem problem, Shift shift) {
         var solution = problem.getSolution();
         return problem.getRouteEvaluators().get(shift.getId()).evaluateRouteByTheOrderOfTasksInsertTask(
                 solution.getRoute(shift), task, solution.getSyncedTaskStartTimes(), shift);
     }
 
-    private RouteEvaluatorResult<Task> findRoute(Problem problem, Task task, Solution solution, Shift shift) {
+    private RouteEvaluatorResult findRoute(Problem problem, Task task, Solution solution, Shift shift) {
 
         // Must return true, and if true you must insert task p and d as well to one or two drivers
         // Feasibilty must return feasible (boolean), (possible p1 d1) (possible p2 d2)
@@ -133,7 +131,7 @@ public class GreedyRepairAlgorithm implements IRepairAlgorithm {
     }
 }
 
-/*private RouteEvaluatorResult<Task> findRoute(Problem problem, Task task, Solution solution, Shift shift) {
+/*private RouteEvaluatorResult findRoute(Problem problem, Task task, Solution solution, Shift shift) {
  *      Boolean feasible, VisitPair (P1, D1), VisitPair (P2, D2) = insertVisitInShift(Visit, Shift);
  *      if not feasible:
  *           return null 
