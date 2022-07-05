@@ -5,7 +5,7 @@ import java.util.*;
 import algorithm.Solution;
 import model.Model;
 import model.Shift;
-import model.Task;
+import model.Visit;
 import routeEvaluator.results.RouteEvaluatorResult;
 import routeEvaluator.solver.RouteEvaluator;
 
@@ -13,8 +13,8 @@ import routeEvaluator.solver.RouteEvaluator;
  * The objective class holds the total objective values and the objective values for the individual shifts.
  * It is used to calculate objective values using the objective functions. It uses the route evaluator to evaluate
  * objectives that are considered to be intra route objectives and are added to the list of objective function in
- * the route evaluator. The objective functions in the objective class are applied to the list of tasks and are
- * not dependent on distance, time the tasks are executed etc.. Hence it is assumed that these objectives can be
+ * the route evaluator. The objective functions in the objective class are applied to the list of visits and are
+ * not dependent on distance, time the visits are executed etc.. Hence it is assumed that these objectives can be
  * evaluated just by being allocated to the route or not.
  * The objective value for a shift, and in turn for the entire solution is then the sum of the objectives in the
  * route evaluator and the ones in the objective class.
@@ -25,16 +25,9 @@ public class Objective {
     private final Map<String, WeightObjectivePair<IObjectiveFunction>> activeObjectiveFunctions;
     private final Map<String, WeightObjectivePair<IObjectiveFunction>> inActiveObjectiveFunctions;
     private double[] shiftIntraRouteValues;
-    private double[] shiftTotalRouteValues;
+    //private double[] shiftTotalRouteValues;
     private double totalObjectiveValue;
-    private final List<Task> addRemoveTasks;
-
-    public void deActivateExtraObjectiveFunction(String name) {
-        if (!activeObjectiveFunctions.containsKey(name))
-            return;
-        WeightObjectivePair<IObjectiveFunction> weightObjectivePair = activeObjectiveFunctions.remove(name);
-        inActiveObjectiveFunctions.put(name, weightObjectivePair);
-    }
+    private final List<Visit> addRemoveVisits;
 
 
     public void updateObjectiveWeight(String name, double newWeight) {
@@ -42,68 +35,41 @@ public class Objective {
         obj.setWeight(newWeight);
     }
 
-    public void activateExtraObjectiveFunction(String name, Solution solution) {
-        WeightObjectivePair<IObjectiveFunction> weightObjectivePair = inActiveObjectiveFunctions.remove(name);
-        if (weightObjectivePair != null) {
-            activeObjectiveFunctions.put(name, weightObjectivePair);
-        } else {
-            weightObjectivePair = activeObjectiveFunctions.get(name);
-        }
-        weightObjectivePair.getObjectiveFunction().updateState(solution);
-    }
-
-    public void activateExtraObjectiveFunction(String name, WeightObjectivePair<IObjectiveFunction> weightObjectivePairOther) {
-        WeightObjectivePair<IObjectiveFunction> weightObjectivePair = inActiveObjectiveFunctions.remove(name);
-        weightObjectivePair.getObjectiveFunction().update(weightObjectivePairOther.getObjectiveFunction());
-        activeObjectiveFunctions.put(name, weightObjectivePair);
-    }
-
     private Objective() {
         this.activeObjectiveFunctions = new LinkedHashMap<>();
         this.inActiveObjectiveFunctions = new LinkedHashMap<>();
-        this.addRemoveTasks = new ArrayList<>();
+        this.addRemoveVisits = new ArrayList<>();
     }
 
     public Objective(Model model) {
         this();
         this.shiftIntraRouteValues = new double[model.getShifts().size()];
-        this.shiftTotalRouteValues = new double[model.getShifts().size()];
         this.routeEvaluators = initializeRouteEvaluators(model);
     }
 
     public Objective(Model model, Map<Integer, RouteEvaluator> routeEvaluators) {
         this();
         this.shiftIntraRouteValues = new double[model.getShifts().size()];
-        this.shiftTotalRouteValues = new double[model.getShifts().size()];
         this.routeEvaluators = routeEvaluators;
     }
 
     public Map<Integer, RouteEvaluator> initializeRouteEvaluators(Model model) {
         var evaluators = new LinkedHashMap<Integer, RouteEvaluator>();
         for (Shift shift : model.getShifts()) {
+            // Use constructor that sets origin and destination to depot
             RouteEvaluator routeEvaluator = new RouteEvaluator(model.getTravelTimeMatrix(), model.getVisits(), model.getOriginLocation());
-            //updateRouteEvaluatorLocations(shift, routeEvaluator);
             evaluators.put(shift.getId(), routeEvaluator);
         }
         return evaluators;
     }
 
-    // Should not be the case, since all our routes starts in origin
-    /* public static void updateRouteEvaluatorLocations(Shift shift, RouteEvaluator routeEvaluator) {
-        if (shift.getStartLocation() == null) routeEvaluator.useOpenStartRoutes();
-        else routeEvaluator.updateOrigin(shift.getStartLocation());
-        if (shift.getEndLocation() == null) routeEvaluator.useOpenEndedRoutes();
-        else routeEvaluator.updateDestination(shift.getEndLocation());
-    }
-    */
     public Objective(Objective objective) {
         this.shiftIntraRouteValues = Arrays.copyOf(objective.shiftIntraRouteValues, objective.shiftIntraRouteValues.length);
-        this.shiftTotalRouteValues = Arrays.copyOf(objective.shiftTotalRouteValues, objective.shiftTotalRouteValues.length);
         this.totalObjectiveValue = objective.totalObjectiveValue;
         this.routeEvaluators = makeRouteEvaluatorCopy(objective.routeEvaluators);
         this.activeObjectiveFunctions = new LinkedHashMap<>();
         this.inActiveObjectiveFunctions = new LinkedHashMap<>();
-        this.addRemoveTasks = new ArrayList<>();
+        this.addRemoveVisits = new ArrayList<>();
         for (Map.Entry<String, WeightObjectivePair<IObjectiveFunction>> kvp : objective.activeObjectiveFunctions.entrySet()) {
             activeObjectiveFunctions.put(kvp.getKey(),
                     new WeightObjectivePair<>(kvp.getValue().getWeight(), kvp.getValue().getObjectiveFunction().copy()));
@@ -116,7 +82,6 @@ public class Objective {
 
     private Map<Integer, RouteEvaluator> makeRouteEvaluatorCopy(Map<Integer, RouteEvaluator> routeEvaluators) {
         if (routeEvaluators == null) return null;
-
         return new LinkedHashMap<>(routeEvaluators);
     }
 
@@ -130,68 +95,59 @@ public class Objective {
         updateRouteEvaluators(other.routeEvaluators);
         this.totalObjectiveValue = other.totalObjectiveValue;
         System.arraycopy(other.shiftIntraRouteValues, 0, this.shiftIntraRouteValues, 0, this.shiftIntraRouteValues.length);
-        System.arraycopy(other.shiftTotalRouteValues, 0, this.shiftTotalRouteValues, 0, this.shiftIntraRouteValues.length);
 
         for (var kvp : other.activeObjectiveFunctions.entrySet()) {
-            if (this.activeObjectiveFunctions.containsKey(kvp.getKey()))
-                this.activeObjectiveFunctions.get(kvp.getKey()).getObjectiveFunction().update(kvp.getValue().getObjectiveFunction());
-            else {
-                this.activateExtraObjectiveFunction(kvp.getKey(), kvp.getValue());
-            }
+            this.activeObjectiveFunctions.get(kvp.getKey()).getObjectiveFunction().update(kvp.getValue().getObjectiveFunction());
         }
         for (var kvp : other.inActiveObjectiveFunctions.entrySet()) {
-            if (this.inActiveObjectiveFunctions.containsKey(kvp.getKey()))
-                this.inActiveObjectiveFunctions.get(kvp.getKey()).getObjectiveFunction().update(kvp.getValue().getObjectiveFunction());
-            else {
-                this.deActivateExtraObjectiveFunction(kvp.getKey());
-            }
+            this.inActiveObjectiveFunctions.get(kvp.getKey()).getObjectiveFunction().update(kvp.getValue().getObjectiveFunction());
         }
     }
 
-    protected void addTask(Shift shift, Task task) {
+    protected void addVisit(Shift shift, Visit visit) {
         for (WeightObjectivePair<IObjectiveFunction> objectivePair : activeObjectiveFunctions.values()) {
-            objectivePair.getObjectiveFunction().addingTask(shift, task);
+            objectivePair.getObjectiveFunction().addingVisit(shift, visit);
         }
     }
 
-    protected void addTasks(Shift shift, Collection<Task> tasks) {
+    protected void addVisits(Shift shift, Collection<Visit> visits) {
         for (WeightObjectivePair<IObjectiveFunction> objectivePair : activeObjectiveFunctions.values()) {
-            objectivePair.getObjectiveFunction().addingTasks(shift, tasks);
+            objectivePair.getObjectiveFunction().addingVisits(shift, visits);
         }
     }
 
-    protected void removeTasks(Shift shift, Collection<Task> tasks) {
+    protected void removeVisits(Shift shift, Collection<Visit> visits) {
         for (WeightObjectivePair<IObjectiveFunction> objectivePair : activeObjectiveFunctions.values()) {
-            objectivePair.getObjectiveFunction().removingTasks(shift, tasks);
+            objectivePair.getObjectiveFunction().addingVisits(shift, visits);
         }
     }
 
-    protected void removeTask(Shift shift, Task task) {
+    protected void removeVisit(Shift shift, Visit visit) {
         for (WeightObjectivePair<IObjectiveFunction> objectivePair : activeObjectiveFunctions.values()) {
-            objectivePair.getObjectiveFunction().removingTask(shift, task);
+            objectivePair.getObjectiveFunction().removingVisit(shift, visit);
         }
     }
 
-    protected void removeTasks(Shift shift, List<Task> currentRoute, List<Integer> removeTasks) {
-        addRemoveTasks.clear();
-        for (int taskIndex : removeTasks)
-            addRemoveTasks.add(currentRoute.get(taskIndex));
-        removeTasks(shift, addRemoveTasks);
+    protected void removeVisits(Shift shift, List<Visit> currentRoute, List<Integer> removeVisits) {
+        addRemoveVisits.clear();
+        for (int taskIndex : removeVisits)
+            addRemoveVisits.add(currentRoute.get(taskIndex));
+        removeVisits(shift, addRemoveVisits);
     }
 
     /**
-     * Calculates the delta objective value for a route when removing a task at a specific index in a route.
+     * Calculates the delta objective value for a route when removing a visit at a specific index in a route.
      * The delta value is compared to the currently stored objective value for the shift.
      *
      * @param shift                Shift to calculate objective value for.
      * @param route                Route to evaluate.
      * @param index                Index to remove.
-     * @param syncedTasksStartTime Start time for synced tasks.
+     * @param syncedVisitsStartTime Start time for synced visits.
      * @return Change in objective value or null if the change is infeasible.
      */
-    public Double deltaIntraObjectiveRemovingTaskAtIndex(Shift shift, List<Task> route, int index, Map<ITask, Integer> syncedTasksStartTime) {
+    public Double deltaIntraObjectiveRemovingVisitAtIndex(Shift shift, List<Visit> route, int index) {
         RouteEvaluator routeEvaluator = routeEvaluators.get(shift.getId());
-        Double newObj = routeEvaluator.evaluateRouteByTheOrderOfTasksRemoveTaskObjective(route, index, syncedTasksStartTime, shift);
+        Double newObj = routeEvaluator.evaluateRouteByTheOrderOfVisitsRemoveVisitObjective(route, index, shift);
         if (newObj == null)
             return null;
         return newObj - shiftIntraRouteValues[shift.getId()];
@@ -199,98 +155,22 @@ public class Objective {
 
     /**
      * @param shift                Shift to calculate objective value for.
-     * @param removeIndicesInRoute Skips tasks at these indices in the route, e.g., if the set contains index 0 and 2.
-     *                             task number 0 and 2 in the route will not be visited.
-     * @param syncedTasksStartTime Start time for synced tasks.
+     * @param removeIndicesInRoute Skips visits at these indices in the route, e.g., if the set contains index 0 and 2.
+     *                             visit number 0 and 2 in the route will not be visited.
+     * @param syncedVisitsStartTime Start time for synced visits.
      * @return Delta objective or null if infeasible
      */
-    public Double deltaIntraObjectiveNewRoute(Shift shift, List<Task> route, List<Integer> removeIndicesInRoute, Map<ITask, Integer> syncedTasksStartTime) {
+    public Double deltaIntraObjectiveNewRoute(Shift shift, List<Visit> route, List<Integer> removeIndicesInRoute) {
         RouteEvaluator routeEvaluator = routeEvaluators.get(shift.getId());
-        Double newObj = routeEvaluator.evaluateRouteByTheOrderOfTasksRemoveTaskObjective(route, removeIndicesInRoute, syncedTasksStartTime, shift);
+        Double newObj = routeEvaluator.evaluateRouteByTheOrderOfVisitsRemoveVisitObjective(route, removeIndicesInRoute, shift);
         if (newObj == null)
             return null;
         return newObj - shiftIntraRouteValues[shift.getId()];
     }
 
-    public RouteEvaluatorResult<Task> routeEvaluatorResult(Shift shift, List<Task> route, Map<ITask, Integer> syncedTasksStartTime) {
+    public RouteEvaluatorResult routeEvaluatorResult(Shift shift, List<Visit> route) {
         RouteEvaluator routeEvaluator = routeEvaluators.get(shift.getId());
-        return routeEvaluator.evaluateRouteByTheOrderOfTasks(route, syncedTasksStartTime, shift);
-    }
-
-
-    /**
-     * Adds an objective function to the objective. The given weight is the weight used
-     * in the weighted objective.
-     *
-     * @param name              Identifier of the objective.
-     * @param objectiveFunction Objective function to add.
-     * @param weight            Weight objective.
-     */
-    protected void addExtraRouteObjectiveFunction(String name, IObjectiveFunction objectiveFunction, double weight) {
-        activeObjectiveFunctions.put(name, new WeightObjectivePair<>(weight, objectiveFunction));
-    }
-
-    /**
-     * Calculate the objective value of the route for a given shift.
-     * Returns the individual un weighted values for each objective.
-     *
-     * @param shift Shift to calculate objective for.
-     * @param tasks Tasks in the route.
-     * @return Individual unweighted objective values.
-     */
-    public Map<String, Double> calcExtraRouteObjectiveValues(Shift shift, List<Task> tasks) {
-        Map<String, Double> objectiveValues = new HashMap<>();
-        for (Map.Entry<String, WeightObjectivePair<IObjectiveFunction>> nameWeightObjectivePair : activeObjectiveFunctions.entrySet()) {
-            objectiveValues.put(nameWeightObjectivePair.getKey(),
-                    nameWeightObjectivePair.getValue().getObjectiveFunction().calculateObjectiveValueFor(shift, tasks));
-        }
-        return objectiveValues;
-    }
-
-    /**
-     * Calculate the objective value of the route for a given shift.
-     *
-     * @param shift Shift to calculate objective for.
-     * @param tasks Tasks in the route.
-     * @return Weighted total objective.
-     */
-    public double calcExtraRouteObjectiveValue(Shift shift, List<Task> tasks) {
-        double objectiveValue = 0;
-        for (WeightObjectivePair<IObjectiveFunction> objectivePair : activeObjectiveFunctions.values()) {
-            objectiveValue += objectivePair.getWeight() * objectivePair.getObjectiveFunction().calculateObjectiveValueFor(shift, tasks);
-        }
-        return objectiveValue;
-    }
-
-    /**
-     * Calculate the delta objective value when removing a task from a route for a given shift.
-     *
-     * @param shift      Shift to calculate objective for.
-     * @param removeTask Task in the current that should be removed.
-     * @return Weighted delta objective for the shift.
-     */
-    public double deltaExtraRouteObjectiveValueRemove(Shift shift, Task removeTask) {
-        double objectiveValue = 0;
-        for (WeightObjectivePair<IObjectiveFunction> objectivePair : activeObjectiveFunctions.values()) {
-            objectiveValue += objectivePair.getWeight() * objectivePair.getObjectiveFunction().calculateDeltaObjectiveValueRemovingTask(shift, removeTask);
-        }
-        return objectiveValue;
-    }
-
-    /**
-     * Calculate the delta objective value when removing a task from a route for a given shift.
-     *
-     * @param shift        Shift to calculate objective for.
-     * @param currentRoute Tasks in the current route.
-     * @param removeTasks  Task in the current that should be removed, given as indices (sorted) in the list of @param currentTasks.
-     * @return Weighted delta objective for the shift.
-     */
-    public double deltaExtraRouteObjectiveValueRemove(Shift shift, List<Task> currentRoute, List<Integer> removeTasks) {
-        double objectiveValue = 0;
-        for (WeightObjectivePair<IObjectiveFunction> objectivePair : activeObjectiveFunctions.values()) {
-            objectiveValue += objectivePair.getWeight() * objectivePair.getObjectiveFunction().calculateDeltaObjectiveValueRemovingTasks(shift, currentRoute, removeTasks);
-        }
-        return objectiveValue;
+        return routeEvaluator.evaluateRouteByTheOrderOfVisits(route, shift);
     }
 
     /**
@@ -301,22 +181,6 @@ public class Objective {
      */
     protected void setShiftIntraRouteObjectiveValue(Shift shift, double objectiveValue) {
         shiftIntraRouteValues[shift.getId()] = objectiveValue;
-    }
-
-    /**
-     * Calculate the delta objective value when adding a task to a route for a given shift.
-     *
-     * @param shift      Shift to calculate objective for.
-     * @param insertTask Task to add.
-     * @return Weighted delta objective for the shift.
-     */
-    public double calcDeltaExtraRouteObjectiveValueInsert(Shift shift, Task insertTask) {
-        double objectiveValue = 0;
-        for (WeightObjectivePair<IObjectiveFunction> objectivePair : activeObjectiveFunctions.values()) {
-            objectiveValue += objectivePair.getWeight() *
-                    objectivePair.getObjectiveFunction().calculateDeltaObjectiveValueAddingTask(shift, insertTask);
-        }
-        return objectiveValue;
     }
 
     /**
@@ -339,17 +203,7 @@ public class Objective {
      * @return Objective value.
      */
     public double getShiftTotalObjectiveValue(Shift shift) {
-        return shiftTotalRouteValues[shift.getId()];
-    }
-
-    /**
-     * Extra Objective values for the entire shift.
-     *
-     * @param shift Shift to get objective value for.
-     * @return Objective value.
-     */
-    public double getShiftExtraObjectiveValue(Shift shift) {
-        return shiftTotalRouteValues[shift.getId()] - shiftIntraRouteValues[shift.getId()];
+        return shiftIntraRouteValues[shift.getId()];
     }
 
     /**
@@ -361,7 +215,7 @@ public class Objective {
      */
     protected void updateTotalRouteObjective(Shift shift, double deltaValue) {
         totalObjectiveValue += deltaValue;
-        shiftTotalRouteValues[shift.getId()] += deltaValue;
+        shiftIntraRouteValues[shift.getId()] += deltaValue;
     }
 
 
@@ -375,7 +229,6 @@ public class Objective {
     protected void updateIntraRouteObjective(Shift shift, double deltaValue) {
         totalObjectiveValue += deltaValue;
         shiftIntraRouteValues[shift.getId()] += deltaValue;
-        shiftTotalRouteValues[shift.getId()] += deltaValue;
     }
 
     /**
@@ -387,23 +240,23 @@ public class Objective {
      */
     public boolean calculateAndSetObjectiveValues(Model model, Solution solution) {
         double tmpTotalObjectiveValue = 0;
-        double[] tmpShiftIntraRouteValues = new double[model.getShifts().size()];
+        //double[] tmpShiftIntraRouteValues = new double[model.getShifts().size()];
         double[] tmpShiftTotalRouteValues = new double[model.getShifts().size()];
 
         for (Shift shift : model.getShifts()) {
             RouteEvaluator routeEvaluator = routeEvaluators.get(shift.getId());
-            Double intraObjective = routeEvaluator.evaluateRouteObjective(solution.getRoute(shift), solution.getSyncedTaskStartTimes(), shift);
+            Double intraObjective = routeEvaluator.evaluateRouteObjective(solution.getRoute(shift), shift);
             if (intraObjective == null)
                 return false;
-            double extraObjective = calcExtraRouteObjectiveValue(shift, solution.getRoute(shift));
-            tmpShiftIntraRouteValues[shift.getId()] = intraObjective;
-            tmpShiftTotalRouteValues[shift.getId()] = intraObjective + extraObjective;
-            tmpTotalObjectiveValue += intraObjective + extraObjective;
+            // double extraObjective = calcExtraRouteObjectiveValue(shift, solution.getRoute(shift));
+            //tmpShiftIntraRouteValues[shift.getId()] = intraObjective;
+            tmpShiftTotalRouteValues[shift.getId()] = intraObjective;
+            tmpTotalObjectiveValue += intraObjective;
         }
 
         totalObjectiveValue = tmpTotalObjectiveValue;
-        System.arraycopy(tmpShiftIntraRouteValues, 0, shiftIntraRouteValues, 0, shiftIntraRouteValues.length);
-        System.arraycopy(tmpShiftTotalRouteValues, 0, shiftTotalRouteValues, 0, shiftTotalRouteValues.length);
+        //System.arraycopy(tmpShiftIntraRouteValues, 0, shiftIntraRouteValues, 0, shiftIntraRouteValues.length);
+        System.arraycopy(tmpShiftTotalRouteValues, 0, shiftIntraRouteValues, 0, shiftIntraRouteValues.length);
 
         return true;
     }
@@ -417,13 +270,6 @@ public class Objective {
      */
     public Map<Integer, RouteEvaluator> getRouteEvaluators() {
         return routeEvaluators;
-    }
-
-    public List<IObjectiveFunction> extractExtraObjectiveFunctions() {
-        List<IObjectiveFunction> extraObjectiveFunctions = new ArrayList<>();
-        for (WeightObjectivePair<IObjectiveFunction> weightObjectivePair : activeObjectiveFunctions.values())
-            extraObjectiveFunctions.add(weightObjectivePair.getObjectiveFunction());
-        return extraObjectiveFunctions;
     }
 }
 

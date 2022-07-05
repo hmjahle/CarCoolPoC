@@ -41,9 +41,10 @@ public class RouteEvaluator {
     private final NodeList firstNodeList;
     private final NodeList secondNodeList;
 
-    public RouteEvaluator(Map<Integer, TravelTimeMatrix>  distanceMatrixMatrix, Collection<Visit> visits) {
+    // Remove, since origing and destination always has to de depot
+    /* public RouteEvaluator(Map<Integer, TravelTimeMatrix>  distanceMatrixMatrix, Collection<Visit> visits) {
         this(distanceMatrixMatrix, visits, null, null);
-    }
+    } */
 
     public RouteEvaluator(Map<Integer, TravelTimeMatrix>  distanceMatrixMatrix, Collection<Visit> visits, Location officePosition) {
         this(distanceMatrixMatrix, visits, officePosition, officePosition);
@@ -81,7 +82,7 @@ public class RouteEvaluator {
      * Only returns objective value, no route details is returned.
      *
      * @param visits               The route to be evaluated, the order of the list is the order of the route.
-     * @param syncedTasksStartTime Map of ALL synced visits in the route and their start times. Should not contain visits
+     * @param syncedVisitsStartTime Map of ALL synced visits in the route and their start times. Should not contain visits
      *                             that are not in the route, this will reduce performance
      * @param employeeWorkShift    Employee the route applies to.
      * @return A double value representing the objective value of the route.
@@ -103,7 +104,7 @@ public class RouteEvaluator {
      * Only returns whether the route is feasible, no route details is returned.
      *
      * @param visits                The route to be evaluated, the order of the list is the order of the route.
-     * @param syncedTasksStartTime Map of ALL synced visits in the route and their start times. Should not contain visits
+     * @param syncedVisitsStartTime Map of ALL synced visits in the route and their start times. Should not contain visits
      * @param employeeWorkShift    Employee the route applies to.
      * @return A bool value representing the feasibility of the route.
      */
@@ -120,13 +121,13 @@ public class RouteEvaluator {
      * Only returns objective value, no route details is returned.
      *
      * @param visits                The route to be evaluated, the order of the list is the order of the route.
-     * @param skipTasksAtIndices   The indices where the visits to be removed are placed in the route.
-     * @param syncedTasksStartTime Map of ALL synced visits in the route and their start times. Should not contain visits
+     * @param skipVisitsAtIndices   The indices where the visits to be removed are placed in the route.
+     * @param syncedVisitsStartTime Map of ALL synced visits in the route and their start times. Should not contain visits
      * @param employeeWorkShift    Employee the route applies to.
      * @return A double value representing the objective value of the route.
      */
-    public Double evaluateRouteByTheOrderOfTasksRemoveTaskObjective(List<Visit> visits, List<Integer> skipTasksAtIndices, Shift employeeWorkShift) {
-        return calcObjectiveRemoveTask(visits, skipTasksAtIndices, employeeWorkShift);
+    public Double evaluateRouteByTheOrderOfVisitsRemoveVisitObjective(List<Visit> visits, List<Integer> skipVisitsAtIndices, Shift employeeWorkShift) {
+        return calcObjectiveRemoveVisit(visits, skipVisitsAtIndices, employeeWorkShift);
     }
 
 
@@ -136,13 +137,13 @@ public class RouteEvaluator {
      * Only returns objective value, no route details is returned.
      *
      * @param visits                The route to be evaluated, the order of the list is the order of the route.
-     * @param skipTaskAtIndex      The the index where the task to be removed is placed in the route.
-     * @param syncedTasksStartTime Map of ALL synced visits in the route and their start times. Should not contain visits
+     * @param skipVisitAtIndex      The the index where the task to be removed is placed in the route.
+     * @param syncedVisitsStartTime Map of ALL synced visits in the route and their start times. Should not contain visits
      * @param employeeWorkShift    Employee the route applies to.
      * @return A double value representing the objective value of the route.
      */
-    public Double evaluateRouteByTheOrderOfTasksRemoveTaskObjective(List<Visit> visits, int skipTaskAtIndex,Shift employeeWorkShift) {
-        return calcObjectiveRemoveTask(visits, skipTaskAtIndex, employeeWorkShift);
+    public Double evaluateRouteByTheOrderOfVisitsRemoveVisitObjective(List<Visit> visits, int skipVisitAtIndex,Shift employeeWorkShift) {
+        return calcObjectiveRemoveVisit(visits, skipVisitAtIndex, employeeWorkShift);
     }
 
 
@@ -158,12 +159,12 @@ public class RouteEvaluator {
      * Evaluates the route given by the visits input, the order of the visits is the order of the route.
      *
      * @param visits                The route to be evaluated, the order of the list is the order of the route.
-     * @param syncedTasksStartTime Map of ALL synced visits in the route and their start times. Should not contain visits
+     * @param syncedVisitsStartTime Map of ALL synced visits in the route and their start times. Should not contain visits
      *                             that are not in the route, this will reduce performance
      * @param employeeWorkShift    Employee the route applies to.
      * @return A routeEvaluator result for the evaluated route.
      */
-    public RouteEvaluatorResult evaluateRouteByTheOrderOfTasks(List<Visit> visits, Shift employeeWorkShift) {
+    public RouteEvaluatorResult evaluateRouteByTheOrderOfVisits(List<Visit> visits, Shift employeeWorkShift) {
         return calcRouteEvaluatorResult(new WeightedObjective(), visits, employeeWorkShift);
     }
 
@@ -174,13 +175,13 @@ public class RouteEvaluator {
      * functions in the route evaluator.
      *
      * @param visits                The route to be evaluated, the order of the list is the order of the route.
-     * @param syncedTasksStartTime Map of ALL synced visits in the route and their start times. Should not contain visits
+     * @param syncedVisitsStartTime Map of ALL synced visits in the route and their start times. Should not contain visits
      *                             that are not in the route, this will reduce performance
      * @param employeeWorkShift    Employee the route applies to.
      * @return A routeEvaluator result for the evaluated route.
      */
-    /* public RouteEvaluatorResult evaluateRouteByOrderOfTasksWithObjectiveValues(List<Visit> visits,
-                                                                                  Map<Task, Integer> syncedTasksStartTime,
+    /* public RouteEvaluatorResult evaluateRouteByOrderOfVisitsWithObjectiveValues(List<Visit> visits,
+                                                                                  Map<Visit, Integer> syncedVisitsStartTime,
                                                                                   Shift employeeWorkShift) {
         return calcRouteEvaluatorResult(new WeightedObjectiveWithValues(), visits, employeeWorkShift);
     } */
@@ -191,21 +192,21 @@ public class RouteEvaluator {
      * For routes with no synced visits, the new task to be inserted cannot be synced either.
      *
      * @param visits                The route to be evaluated, the order of the list is the order of the route.
-     * @param insertTask           The task to be inserted into the route.
-     * @param syncedTasksStartTime Map of ALL synced visits in the route and their start times. Should not contain visits
+     * @param insertVisit           The task to be inserted into the route.
+     * @param syncedVisitsStartTime Map of ALL synced visits in the route and their start times. Should not contain visits
      *                             that are not in the route, this will reduce performance
      * @param employeeWorkShift    Employee the route applies to.
      * @return A routeEvaluator result for the evaluated route.
      */
-    public RouteEvaluatorResult evaluateRouteByTheOrderOfTasksInsertTask(List<Visit> visits, Visit insertTask, Shift employeeWorkShift) {
-        return calcRouteEvaluatorResult(new WeightedObjective(), visits, insertTask, employeeWorkShift);
+    public RouteEvaluatorResult evaluateRouteByTheOrderOfVisitsInsertVisit(List<Visit> visits, Visit insertVisit, Shift employeeWorkShift) {
+        return calcRouteEvaluatorResult(new WeightedObjective(), visits, insertVisit, employeeWorkShift);
     }
 
     /**
      * Used to calculate objective of routes when removing one task
      */
-    private Double calcObjectiveRemoveTask(List<Visit> visits, int skipTaskAtIndex, Shift employeeWorkShift) {
-        updateFirstNodeList(visits, skipTaskAtIndex);
+    private Double calcObjectiveRemoveVisit(List<Visit> visits, int skipVisitAtIndex, Shift employeeWorkShift) {
+        updateFirstNodeList(visits, skipVisitAtIndex);
         ExtendInfoOneElement nodeExtendInfoOneElement = new ExtendInfoOneElement(firstNodeList);
         Label bestLabel = algorithm.
                 runAlgorithm(new WeightedObjective(), nodeExtendInfoOneElement, employeeWorkShift);
@@ -215,8 +216,8 @@ public class RouteEvaluator {
     /**
      * Used to calculate objective of routes when removing multiple visits
      */
-    private Double calcObjectiveRemoveTask(List<Visit> visits, List<Integer> skipTasksAtIndices, Shift employeeWorkShift) {
-        updateFirstNodeList(visits, skipTasksAtIndices);
+    private Double calcObjectiveRemoveVisit(List<Visit> visits, List<Integer> skipVisitsAtIndices, Shift employeeWorkShift) {
+        updateFirstNodeList(visits, skipVisitsAtIndices);
         ExtendInfoOneElement nodeExtendInfoOneElement = new ExtendInfoOneElement(firstNodeList);
         Label bestLabel = algorithm.
                 runAlgorithm(new WeightedObjective(), nodeExtendInfoOneElement, employeeWorkShift);
@@ -232,15 +233,15 @@ public class RouteEvaluator {
      * For routes with no synced visits, the new task to be inserted cannot be synced either.
      *
      * @param visits                The route to be evaluated, the order of the list is the order of the route.
-     * @param insertTasks          The list of visits to be inserted into the route.
-     * @param syncedTasksStartTime Map of ALL synced visits in the route and their start times. Should not contain visits
+     * @param insertVisits          The list of visits to be inserted into the route.
+     * @param syncedVisitsStartTime Map of ALL synced visits in the route and their start times. Should not contain visits
      *                             that are not in the route, this will reduce performance
      * @param employeeWorkShift    Employee the route applies to.
      * @return A routeEvaluator result for the evaluated route.
      */
-    public RouteEvaluatorResult evaluateRouteByTheOrderOfTasksInsertTasks(List<Visit> visits, List<Visit> insertTasks,
+    public RouteEvaluatorResult evaluateRouteByTheOrderOfVisitsInsertVisits(List<Visit> visits, List<Visit> insertVisits,
                                                                              Shift employeeWorkShift) {
-        return calcRouteEvaluatorResult(new WeightedObjective(), visits, insertTasks, employeeWorkShift);
+        return calcRouteEvaluatorResult(new WeightedObjective(), visits, insertVisits, employeeWorkShift);
     }
 
 
@@ -252,15 +253,15 @@ public class RouteEvaluator {
      * For routes with no synced visits, the new task to be inserted cannot be synced either.
      *
      * @param visits                The route to be evaluated, the order of the list is the order of the route.
-     * @param insertTasks          The list of visits to be inserted into the route.
-     * @param syncedTasksStartTime Map of ALL synced visits in the route and their start times. Should not contain visits
+     * @param insertVisits          The list of visits to be inserted into the route.
+     * @param syncedVisitsStartTime Map of ALL synced visits in the route and their start times. Should not contain visits
      *                             that are not in the route, this will reduce performance
      * @param employeeWorkShift    Employee the route applies to.
      * @return The objective value for the evaluated route or null if infeasible.
      */
-    public Double evaluateRouteByTheOrderOfTasksInsertTasksObjective(List<Visit> visits, List<Visit> insertTasks,
+    public Double evaluateRouteByTheOrderOfVisitsInsertVisitsObjective(List<Visit> visits, List<Visit> insertVisits,
                                                                      Shift employeeWorkShift) {
-        return calcRouteEvaluatorObjective(new WeightedObjective(), visits, insertTasks, employeeWorkShift);
+        return calcRouteEvaluatorObjective(new WeightedObjective(), visits, insertVisits, employeeWorkShift);
     }
 
     /**
@@ -305,9 +306,9 @@ public class RouteEvaluator {
     /**
      * Used to calculate routes when inserting one new task
      */
-    private RouteEvaluatorResult calcRouteEvaluatorResult(IRouteEvaluatorObjective objective, List<Visit> visits, Visit insertTask, Shift employeeWorkShift) {
+    private RouteEvaluatorResult calcRouteEvaluatorResult(IRouteEvaluatorObjective objective, List<Visit> visits, Visit insertVisit, Shift employeeWorkShift) {
         updateFirstNodeList(visits);
-        updateSecondNodeList(insertTask);
+        updateSecondNodeList(insertVisit);
         ExtendInfoTwoElements nodeExtendInfoTwoElements = new ExtendInfoTwoElements(firstNodeList, secondNodeList);
         return algorithm.solveRouteEvaluatorResult(objective, nodeExtendInfoTwoElements, employeeWorkShift);
     }
@@ -315,10 +316,10 @@ public class RouteEvaluator {
     /**
      * Used to calculate routes when inserting multiple new visits.
      */
-    private RouteEvaluatorResult calcRouteEvaluatorResult(IRouteEvaluatorObjective objective, List<Visit> visits, List<Visit> insertTasks,
+    private RouteEvaluatorResult calcRouteEvaluatorResult(IRouteEvaluatorObjective objective, List<Visit> visits, List<Visit> insertVisits,
                                                             Shift employeeWorkShift) {
         updateFirstNodeList(visits);
-        updateSecondNodeList(insertTasks);
+        updateSecondNodeList(insertVisits);
         ExtendInfoTwoElements nodeExtendInfoTwoElements = new ExtendInfoTwoElements(firstNodeList, secondNodeList);
         return algorithm.solveRouteEvaluatorResult(objective, nodeExtendInfoTwoElements, employeeWorkShift);
     }
@@ -326,10 +327,10 @@ public class RouteEvaluator {
     /**
      * Used to calculate routes when inserting multiple new visits.
      */
-    private Double calcRouteEvaluatorObjective(IRouteEvaluatorObjective objective, List<Visit> visits, List<Visit> insertTasks,
+    private Double calcRouteEvaluatorObjective(IRouteEvaluatorObjective objective, List<Visit> visits, List<Visit> insertVisits,
                                                Shift employeeWorkShift) {
         updateFirstNodeList(visits);
-        updateSecondNodeList(insertTasks);
+        updateSecondNodeList(insertVisits);
         ExtendInfoTwoElements nodeExtendInfoTwoElements = new ExtendInfoTwoElements(firstNodeList, secondNodeList);
         return algorithm.solveRouteEvaluatorObjective(objective, nodeExtendInfoTwoElements, employeeWorkShift);
     }
