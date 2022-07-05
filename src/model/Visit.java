@@ -18,6 +18,7 @@ public class Visit {
     private int endTime;
     private int transportType;
     private int transportedBy;
+    private int travelTime;
 
     public Visit(int id, Task task, boolean isVirtual) {
         this.id = id;
@@ -48,6 +49,10 @@ public class Visit {
     public int getEndTime(){ return this.endTime;}
 
     public int getVisitDuration(){ if (this.isTransportTask){ return TransportMode.TRANSPORTTIME; } else { return this.getTask().getDuration(); } }
+    
+    public int getTravelTime() {
+        return travelTime;
+    }
 
     public Location getLocation(){ return this.task.getLocation();}
 
@@ -55,4 +60,8 @@ public class Visit {
     public void setStartTime(int start_time){ this.startTime = start_time;}
     
     public void setEndTime(int end_time){ this.endTime = end_time;}
+
+    public void setTravleTime(int travelTime){
+        this.travelTime = travelTime;
+    }
 }

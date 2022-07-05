@@ -18,7 +18,7 @@ public class TravelTimeMatrix {
         return this.travelTimes;
     }
 
-    public double getTravelTime(Location from, Location to) {
+    public int getTravelTime(Location from, Location to) {
         return travelTimes.get(from).get(to);
     }
 

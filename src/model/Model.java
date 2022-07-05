@@ -24,9 +24,12 @@ public class Model {
     private Collection<Task> tasks;
     private int returnTime;
     private Map<Integer, Location> locations = new HashMap<Integer,Location>();
+    
+
     private Map<Short, Shift> idsShifts; // denne trenger vi egentlig ikke her fordi sykepleierne er homogene
     private Map<Integer, TravelTimeMatrix> travelTimeMatrix;
     private Collection<Visit> visits;
+
     private List<Shift> shifts;
     private List<Shift> carpoolAbleShifts;
     private int numTasks;
@@ -42,6 +45,10 @@ public class Model {
     public List<Shift> getShifts() { return this.shifts; }
 
     public List<Shift> getCarpoolAbleShifts(){ return this.carpoolAbleShifts;}
+
+    public Location getOriginLocation() {
+        return locations.get(0);
+    }
 
     public Map<Short, Shift> getIdsShifts(){ return this.idsShifts;}
 
@@ -60,6 +67,7 @@ public class Model {
             this.data = data;
             int numWorkers =  Integer.parseInt(Long.toString((Long) data.get("nbr_nurses")));
             for(int i = 0; i < numWorkers; i ++) {
+                // NB! Need to get carpoolable from dataset
                 shifts.add(new Shift(i, true));
             }
             for(int i = 0; i < this.shifts.size(); i++){
