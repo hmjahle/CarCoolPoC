@@ -49,6 +49,8 @@ public class Visit {
 
     public int getVisitDuration(){ if (this.isTransportTask){ return TransportMode.TRANSPORTTIME; } else { return this.getTask().getDuration(); } }
 
+    public Location getLocation(){ return this.task.getLocation();}
+
     // Setters
     public void setStartTime(int start_time){ this.startTime = start_time;}
     

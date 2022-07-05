@@ -67,7 +67,7 @@ public class Node {
         return Integer.toString(nodeId);
     }
 
-    public  Visit getTask() {
+    public Visit getTask() {
         return visit;
     }
 
