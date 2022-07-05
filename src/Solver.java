@@ -1,6 +1,13 @@
+import java.util.Map;
+
 import algorithm.LargeNeighborhoodSearch;
-import algorithm.Problem;
 import model.Model;
+import model.Task;
+import routeEvaluator.solver.RouteEvaluator;
+import solution.Problem;
+import routeEvaluator.evaluation.constraint.StrictTimeWindowConstraint;
+import routeEvaluator.evaluation.constraint.TimeWindowLateArrivalConstraint;
+
 
 public class Solver {
 
@@ -27,7 +34,7 @@ public class Solver {
     public static Problem initializeLNS(Model model, LargeNeighborhoodSearch lns) {
         lns.setUnallocatedTasksAreHierarchical(true);
         Problem problem = new Problem(model);
-        problem.addVisitsToUnallocatedTasks(model.getVisits());
+        problem.addVisitsToUnallocatedVisits(model.getVisits());
 
         lns.initializeStandardOperators();
 
@@ -39,6 +46,13 @@ public class Solver {
         return problem;
     }
 
+    public static void initializeRelaxedIntraRouteConstraints(Model model, Problem problem) {
+        problem.addRelaxedIntraConstraint(OvertimeIntraRouteConstraint.class.getSimpleName(), new OvertimeIntraRouteConstraint(model), new OvertimeObjectiveFunction());
+        problem.addRelaxedIntraConstraint(StrictTimeWindowConstraint.class.getSimpleName(), new StrictTimeWindowConstraint(), new StrictTimeWindowObjectiveFunction(STRICT_TIME_WINDOW_RELAXATION_PENALTY_DEFAULT));
+        TimeWindowLateArrivalConstraint timeWindowLateArrivalConstraint = buildTimeWindowLateArrivalConstraint(model);
+        if (timeWindowLateArrivalConstraint != null)
+            problem.addRelaxedIntraConstraint(TimeWindowLateArrivalConstraint.class.getSimpleName(), timeWindowLateArrivalConstraint, new TimeWindowLowHighObjectiveFunction(0, 6800, 5));
+    }
 
     /**
      * Initialize and add the standard intra route objectives.
@@ -49,7 +63,7 @@ public class Solver {
         OvertimeObjectiveFunction overtimeObjectiveFunction = new OvertimeObjectiveFunction();
 
         // Iterate through the routeevaluators (number of shifts in the model) stored in the objective in the problem. problem.objective.routeevaluators
-        for (Map.Entry<Short, RouteEvaluator<Task>> shiftIdRouteEvaluator : problem.getRouteEvaluators().entrySet()) {
+        for (Map.Entry<Integer, RouteEvaluator> shiftIdRouteEvaluator : problem.getRouteEvaluators().entrySet()) {
             shiftIdRouteEvaluator.getValue().addObjectiveIntraShift(TravelTimeObjectiveFunction.class.getSimpleName(), model.getConfiguration().getTravelTimeWeight(), travelTimeObjectiveFunction);
             shiftIdRouteEvaluator.getValue().addObjectiveIntraShift(TimeWindowObjectiveFunction.class.getSimpleName(), model.getConfiguration().getTimeWindowWeight(), timeWindowObjectiveFunction);
             if (model.getConfiguration().getOvertimeWeight() > 0)
