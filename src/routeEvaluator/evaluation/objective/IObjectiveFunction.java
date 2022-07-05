@@ -3,9 +3,9 @@ package routeEvaluator.evaluation.objective;
 import java.util.Collection;
 import java.util.List;
 
-import algorithm.Solution;
 import model.Shift;
 import model.Visit;
+import solution.Solution;
 
 public interface IObjectiveFunction extends IObjectiveFunctionRoute {
 

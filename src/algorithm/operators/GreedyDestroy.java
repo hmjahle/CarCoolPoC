@@ -1,10 +1,10 @@
 package algorithm.operators;
 
+import java.util.Random;
+
 import algorithm.NeighborhoodMoveInfo;
 import model.Model;
-import algorithm.Problem;
-
-import java.util.Random;
+import solution.Problem;
 
 /**
  * The Greedy destroy operator removes a task from a random shift in the solution that reduce the objective value the most.

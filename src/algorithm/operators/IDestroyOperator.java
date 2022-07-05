@@ -1,7 +1,7 @@
 package algorithm.operators;
 
 import algorithm.NeighborhoodMoveInfo;
-import algorithm.Problem;
+import solution.Problem;
 
 public interface IDestroyOperator {
 

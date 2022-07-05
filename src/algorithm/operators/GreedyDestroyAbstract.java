@@ -4,12 +4,12 @@ import java.util.List;
 import java.util.Random;
 
 import algorithm.NeighborhoodMoveInfo;
-import algorithm.Problem;
-import algorithm.Solution;
 import model.Model;
 import model.Shift;
 import model.Task;
-import routeEvaluator.evaluation.objective.Objective;
+import solution.Objective;
+import solution.Problem;
+import solution.Solution;
 
 public abstract class GreedyDestroyAbstract extends DestroyOperatorAbstract {
 

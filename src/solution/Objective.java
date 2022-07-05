@@ -1,11 +1,12 @@
-package routeEvaluator.evaluation.objective;
+package solution;
 
 import java.util.*;
 
-import algorithm.Solution;
 import model.Model;
 import model.Shift;
 import model.Visit;
+import routeEvaluator.evaluation.objective.IObjectiveFunction;
+import routeEvaluator.evaluation.objective.WeightObjectivePair;
 import routeEvaluator.results.RouteEvaluatorResult;
 import routeEvaluator.solver.RouteEvaluator;
 
