@@ -115,8 +115,8 @@ public class Label implements Comparable<Label> {
         if (compResources == 2)
             return 2;
 
-        int compCurrentTime = Long.compare(this.currentTime, other.currentTime);
-        int compCanLeaveLocationAtTime = Long.compare(this.canLeaveLocationAtTime, other.canLeaveLocationAtTime);
+        int compCurrentTime = Integer.compare(this.currentTime, other.currentTime);
+        int compCanLeaveLocationAtTime = Integer.compare(this.canLeaveLocationAtTime, other.canLeaveLocationAtTime);
         int compObjective = this.objective.dominates(other.objective);
 
         if (compCurrentTime == 0 && compObjective == 0 && compResources == 0 && compCanLeaveLocationAtTime == 0)

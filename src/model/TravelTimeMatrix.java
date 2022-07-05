@@ -6,19 +6,19 @@ import java.util.Collection;
 
 public class TravelTimeMatrix {
     
-    private Map<Location, Map<Location, Double>> travelTimes;
+    private Map<Location, Map<Location, Integer>> travelTimes;
 
-    public TravelTimeMatrix(Map<Location, Map<Location, Double>> travelTimes){this.travelTimes = travelTimes; }
+    public TravelTimeMatrix(Map<Location, Map<Location, Integer>> travelTimes){this.travelTimes = travelTimes; }
     
     public boolean connected(Location from, Location to){
         return this.travelTimes.containsKey(from) && travelTimes.get(from).containsKey(to);
     }
 
-    public Map<Location, Map<Location, Double>> getTravelTimes() {
+    public Map<Location, Map<Location, Integer>> getTravelTimes() {
         return this.travelTimes;
     }
 
-    public double getTravelTime(Location from, Location to) {
+    public int getTravelTime(Location from, Location to) {
         return travelTimes.get(from).get(to);
     }
 

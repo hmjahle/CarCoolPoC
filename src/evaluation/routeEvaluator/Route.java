@@ -2,7 +2,7 @@ package evaluation.routeEvaluator;
 
 import model.Task;
 import model.Visit;
-import utils.Constants;
+import util.Constants;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -52,7 +52,7 @@ public class Route {
     public List<Task> extractEmployeTasks() {
         List<Task> employeTasks = new ArrayList<Task>();
         for (int i=0; i<visitSolution.size()-1; i++){
-            if (visitSolution.get(i+1).getTransportType() == Constants.WALK){
+            if (visitSolution.get(i+1).getTransportType() == Constants.TransportMode.WALK){
                 employeTasks.add(visitSolution.get(i).getTask());
             }
         }

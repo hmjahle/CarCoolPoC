@@ -2,7 +2,7 @@ package evaluation.constraint;
 
 import evaluation.routeEvaluator.RouteEvaluationInfoAbstract;
 import model.Shift;
-import model.Task;
+import model.Visit;
 
 /**
  * Class that contain the necessary info to evaluate the constraints.
@@ -12,8 +12,8 @@ public class ConstraintInfo extends RouteEvaluationInfoAbstract {
     int startOfServiceNextTask;
     int shiftStartTime;
 
-    public ConstraintInfo(Shift employeeWorkShift, int earliestOfficeReturn, Task task, int startOfServiceNextTask, int syncedTaskLatestStartTime, int shiftStartTime) {
-        super(task, employeeWorkShift, syncedTaskLatestStartTime);
+    public ConstraintInfo(Shift employeeWorkShift, int earliestOfficeReturn, Visit visit, int startOfServiceNextTask, int shiftStartTime) {
+        super(visit, employeeWorkShift);
         this.earliestOfficeReturn = earliestOfficeReturn;
         this.startOfServiceNextTask = startOfServiceNextTask;
         //this.syncedTaskStartTime = syncedTaskLatestStartTime;
