@@ -1,5 +1,7 @@
 package evaluation.objective;
 
+import evaluation.info.ObjectiveInfo;
+
 /**
  * Interface for objectives that is solely evaluated within the route.
  */
