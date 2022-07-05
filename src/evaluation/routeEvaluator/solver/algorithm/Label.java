@@ -1,4 +1,4 @@
-package evaluation.routeEvaluator;
+package evaluation.routeEvaluator.solver.algorithm;
 
 import evaluation.routeEvaluator.solver.algorithm.Node;
 

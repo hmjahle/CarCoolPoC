@@ -1,4 +1,4 @@
-package evaluation.routeEvaluator;
+package evaluation.routeEvaluator.solver.algorithm;
 
 /**
  * This class implement IResource, and has two elements. This should be used by INodeExtendSets with to elements.

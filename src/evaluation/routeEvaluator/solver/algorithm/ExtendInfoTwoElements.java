@@ -1,9 +1,6 @@
-package evaluation.routeEvaluator;
+package evaluation.routeEvaluator.solver.algorithm;
 
 import java.util.Enumeration;
-
-import evaluation.routeEvaluator.solver.algorithm.Node;
-import evaluation.routeEvaluator.solver.algorithm.NodeList;
 
 /**
  * This class implement the IExtendInfo, it has two elements.

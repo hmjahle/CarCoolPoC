@@ -1,6 +1,6 @@
 package evaluation.objective;
 
-import evaluation.routeEvaluator.IRouteEvaluatorObjective;
+import evaluation.routeEvaluator.solver.algorithm.IRouteEvaluatorObjective;
 
 /**
  * A weighted objective calculates the objectives value by adding the sum of weights multiplied by the values of the objectives.

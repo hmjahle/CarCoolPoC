@@ -1,4 +1,4 @@
-package evaluation.routeEvaluator;
+package evaluation.routeEvaluator.solver.algorithm;
 
 import java.util.ArrayList;
 import java.util.Enumeration;
@@ -9,8 +9,8 @@ import java.util.Queue;
 import evaluation.constraint.ConstraintsIntraRouteHandler;
 import evaluation.info.ConstraintInfo;
 import evaluation.objective.ObjectiveFunctionsIntraRouteHandler;
-import evaluation.routeEvaluator.solver.algorithm.Node;
-import evaluation.routeEvaluator.solver.algorithm.SearchGraph;
+import evaluation.routeEvaluator.results.Route;
+import evaluation.routeEvaluator.results.RouteEvaluatorResult;
 import model.Shift;
 // import com.visma.of.rp.routeevaluator.results.Route;
 // import com.visma.of.rp.routeevaluator.results.RouteEvaluatorResult;

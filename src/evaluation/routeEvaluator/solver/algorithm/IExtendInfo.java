@@ -1,4 +1,4 @@
-package evaluation.routeEvaluator;
+package evaluation.routeEvaluator.solver.algorithm;
 
 import java.util.Enumeration;
 

@@ -1,8 +1,10 @@
-package evaluation.routeEvaluator;
+package evaluation.routeEvaluator.results;
 
 import model.Visit;
 
 import java.util.List;
+
+import evaluation.routeEvaluator.solver.algorithm.IRouteEvaluatorObjective;
 
 public class RouteEvaluatorResult {
 

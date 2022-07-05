@@ -1,6 +1,5 @@
-package evaluation.routeEvaluator;
+package evaluation.routeEvaluator.solver.algorithm;
 
-import evaluation.routeEvaluator.solver.algorithm.Node;
 /**
  * This class holds info about the node that should be extended to (toNode) and
  * which nodeSet it belongs to (extendNodeSetNo) a value of "0" indicates that it does not belong to a set.

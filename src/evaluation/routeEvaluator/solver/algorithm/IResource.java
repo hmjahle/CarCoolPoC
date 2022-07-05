@@ -1,4 +1,4 @@
-package evaluation.routeEvaluator;
+package evaluation.routeEvaluator.solver.algorithm;
 
 /**
  * The ResourceInterface is used when extending labels. It must be able to dominated another resource of the same

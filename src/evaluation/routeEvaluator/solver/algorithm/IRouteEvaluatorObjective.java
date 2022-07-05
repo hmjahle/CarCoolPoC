@@ -1,4 +1,4 @@
-package evaluation.routeEvaluator;
+package evaluation.routeEvaluator.solver.algorithm;
 
 /**
  * The objective interface is used to calculate the objective value and check whether one objective dominates the other.

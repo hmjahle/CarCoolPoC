@@ -1,16 +1,14 @@
 package evaluation.objective;
 
-import model.Shift;
-import model.Task;
-import model.Visit;
-import evaluation.objective.IObjectiveFunctionIntraRoute;
-import evaluation.info.ObjectiveInfo;
-import evaluation.routeEvaluator.IRouteEvaluatorObjective;
-
 //import com.visma.of.rp.routeevaluator.solver.algorithm.IRouteEvaluatorObjective;
 
 import java.util.HashMap;
 import java.util.Map;
+
+import evaluation.info.ObjectiveInfo;
+import evaluation.routeEvaluator.solver.algorithm.IRouteEvaluatorObjective;
+import model.Shift;
+import model.Visit;
 
 public class ObjectiveFunctionsIntraRouteHandler {
 

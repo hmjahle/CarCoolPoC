@@ -1,4 +1,4 @@
-package evaluation.routeEvaluator;
+package evaluation.routeEvaluator.results;
 
 import model.Task;
 import model.Visit;
