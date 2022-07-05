@@ -2,6 +2,7 @@ package algorithm;
 
 import algorithm.operators.IDestroyOperator;
 import algorithm.operators.IRepairOperator;
+import solution.Problem;
 
 import java.util.*;
 
