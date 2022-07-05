@@ -1,6 +1,8 @@
 package algorithm;
 
+import solution.Objective;
 import solution.Problem;
+import solution.Solution;
 
 //import algorithm.Problem;
 //import com.visma.of.common.solution.ExtraRouteConstraints;
@@ -36,6 +38,13 @@ public class NeighborhoodMoveInfo {
 
     public Problem getProblem() {
         return problem;
+    }
+    public Solution getSolution() {
+        return problem.getSolution();
+    }
+
+    public Objective getObjective() {
+        return problem.getObjective();
     }
 
 
