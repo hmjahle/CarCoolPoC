@@ -1,4 +1,4 @@
-package algorithm;
+package solution;
 
 import model.Model;
 import model.Shift;

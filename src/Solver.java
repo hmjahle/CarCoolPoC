@@ -1,8 +1,6 @@
 import algorithm.LargeNeighborhoodSearch;
 import algorithm.Problem;
 import model.Model;
-import algorithm.Problem;
-import algorithm.LargeNeighborhoodSearch;
 
 public class Solver {
 
@@ -29,17 +27,13 @@ public class Solver {
     public static Problem initializeLNS(Model model, LargeNeighborhoodSearch lns) {
         lns.setUnallocatedTasksAreHierarchical(true);
         Problem problem = new Problem(model);
-        problem.addTasksToUnallocatedTasks(model.getTasks());
+        problem.addVisitsToUnallocatedTasks(model.getVisits());
 
         lns.initializeStandardOperators();
 
         initializeStandardIntraRouteObjectives(model, problem);
 
-        initializeExtraRouteConstraints(model, problem);
-        initializeExtraRouteObjectives(model, problem);
-
         initializeRelaxedIntraRouteConstraints(model, problem);
-        initializeRelaxedExtraRouteConstraints(model, problem);
 
         problem.calculateAndSetObjectiveValuesForSolution(model);
         return problem;

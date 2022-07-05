@@ -1,5 +1,5 @@
 package algorithm;
-import algorithm.Problem;
+import solution.Problem;
 
 public class SolverState {
     private final Problem current;

@@ -1,12 +1,13 @@
 package algorithm;
-import model.Model;
-import algorithm.Problem;
-import algorithm.operators.GreedyRepair;
-import algorithm.operators.GreedyDestroy;
-import algorithm.heuristics.SimulatedAnnealing;
-import model.Task;
-
 import java.util.IntSummaryStatistics;
+
+import algorithm.heuristics.SimulatedAnnealing;
+import algorithm.operators.GreedyDestroy;
+import algorithm.operators.GreedyRepair;
+import model.Model;
+import model.Task;
+import solution.Problem;
+import solution.Solution;
 
 
 public class LargeNeighborhoodSearch {

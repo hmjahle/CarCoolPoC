@@ -3,13 +3,13 @@ package algorithm.repair;
 import java.util.*;
 
 import algorithm.NeighborhoodMoveInfo;
-import algorithm.Problem;
-import algorithm.Solution;
 //import com.visma.of.common.FeasibilityChecker;
 import model.Model;
 import model.Shift;
 import model.Task;
 import routeEvaluator.results.RouteEvaluatorResult;
+import solution.Problem;
+import solution.Solution;
 
 
 public class GreedyRepairAlgorithm implements IRepairAlgorithm {
