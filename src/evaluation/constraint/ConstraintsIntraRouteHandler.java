@@ -3,6 +3,7 @@ package evaluation.constraint;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import evaluation.info.ConstraintInfo;
 
 
 public class ConstraintsIntraRouteHandler {
