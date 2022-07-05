@@ -1,17 +1,21 @@
 package evaluation.routeEvaluator;
 
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.List;
+import java.util.PriorityQueue;
+import java.util.Queue;
+
 import evaluation.constraint.ConstraintsIntraRouteHandler;
 import evaluation.info.ConstraintInfo;
 import evaluation.objective.ObjectiveFunctionsIntraRouteHandler;
+import evaluation.routeEvaluator.solver.algorithm.Node;
+import evaluation.routeEvaluator.solver.algorithm.SearchGraph;
 import model.Shift;
 // import com.visma.of.rp.routeevaluator.results.Route;
 // import com.visma.of.rp.routeevaluator.results.RouteEvaluatorResult;
 import model.Visit;
-import search.Node;
-import search.SearchGraph;
 import util.Constants;
-
-import java.util.*;
 
 /**
  * The labelling algorithm is a resource constrained shortest path algorithm.

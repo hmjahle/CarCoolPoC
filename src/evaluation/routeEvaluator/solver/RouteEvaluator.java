@@ -1,18 +1,26 @@
-package evaluation.routeEvaluator;
+package evaluation.routeEvaluator.solver;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
 import evaluation.constraint.ConstraintsIntraRouteHandler;
 import evaluation.constraint.IConstraintIntraRoute;
 import evaluation.objective.IObjectiveFunctionIntraRoute;
 import evaluation.objective.ObjectiveFunctionsIntraRouteHandler;
 import evaluation.objective.WeightedObjective;
+import evaluation.routeEvaluator.ExtendInfoOneElement;
+import evaluation.routeEvaluator.ExtendInfoTwoElements;
+import evaluation.routeEvaluator.IRouteEvaluatorObjective;
+import evaluation.routeEvaluator.Label;
+import evaluation.routeEvaluator.LabellingAlgorithm;
+import evaluation.routeEvaluator.RouteEvaluatorResult;
+import evaluation.routeEvaluator.solver.algorithm.NodeList;
+import evaluation.routeEvaluator.solver.algorithm.SearchGraph;
 import model.Location;
 import model.Shift;
 import model.TravelTimeMatrix;
 import model.Visit;
-import search.NodeList;
-import search.SearchGraph;
-
-import java.util.*;
 
 /**
  * The route evaluator calculates the fitness of a route.

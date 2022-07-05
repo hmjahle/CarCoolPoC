@@ -3,7 +3,7 @@ package evaluation.objective;
 import java.util.*;
 
 import algorithm.Solution;
-import evaluation.routeEvaluator.RouteEvaluator;
+import evaluation.routeEvaluator.solver.RouteEvaluator;
 import model.Model;
 import model.Shift;
 import model.Task;

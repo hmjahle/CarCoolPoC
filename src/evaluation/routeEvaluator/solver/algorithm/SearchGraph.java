@@ -1,4 +1,4 @@
-package search;
+package evaluation.routeEvaluator.solver.algorithm;
 
 // OBS: was  ITask,  ILocation, ITimetravelmatrix
 import model.Location;

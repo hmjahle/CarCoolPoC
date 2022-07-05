@@ -1,4 +1,4 @@
-package search;
+package evaluation.routeEvaluator.solver.algorithm;
 
 // OBS: all task used to be ITask
 import model.Visit;

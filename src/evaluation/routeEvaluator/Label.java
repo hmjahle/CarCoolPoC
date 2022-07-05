@@ -1,6 +1,6 @@
 package evaluation.routeEvaluator;
 
-import search.Node;
+import evaluation.routeEvaluator.solver.algorithm.Node;
 
 public class Label implements Comparable<Label> {
     private final Label previous;

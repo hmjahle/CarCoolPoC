@@ -3,7 +3,7 @@ package evaluation.routeEvaluator;
 import java.util.Arrays;
 import java.util.List;
 
-import search.Node;
+import evaluation.routeEvaluator.solver.algorithm.Node;
 
 /**
  * The label lists class is used within the labelling algorithm to handle labels on the node.
