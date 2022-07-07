@@ -44,6 +44,8 @@ public class Model {
 
     public List<Shift> getShifts() { return this.shifts; }
 
+    public Collection<Task> getTasks(){ return this.tasks;}
+
     public List<Shift> getCarpoolAbleShifts(){ return this.carpoolAbleShifts;}
 
     public Location getOriginLocation() {

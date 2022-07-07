@@ -1,5 +1,5 @@
 import algorithm.LargeNeighborhoodSearch;
-import algorithm.Problem;
+import solution.Problem;
 import model.Model;
 
 public class Solver {
