@@ -1,5 +1,9 @@
 package algorithm;
 
+import solution.Objective;
+import solution.Problem;
+import solution.Solution;
+
 //import algorithm.Problem;
 //import com.visma.of.common.solution.ExtraRouteConstraints;
 //import com.visma.of.common.solution.Objective;
@@ -35,6 +39,13 @@ public class NeighborhoodMoveInfo {
     public Problem getProblem() {
         return problem;
     }
+    public Solution getSolution() {
+        return problem.getSolution();
+    }
+
+    public Objective getObjective() {
+        return problem.getObjective();
+    }
 
 
     public double getDeltaObjectiveValue() {
@@ -52,17 +63,5 @@ public class NeighborhoodMoveInfo {
     public boolean possible() {
         return deltaObjectiveValue != null;
     }
-
-/*     public Solution getSolution() {
-        return problem.getSolution();
-    }
-
-    public Objective getObjective() {
-        return problem.getObjective();
-    }
-
-    public ExtraRouteConstraints getConstraints() {
-        return problem.getConstraints();
-    } */
 
 }

@@ -1,5 +1,7 @@
 package algorithm;
 
+import solution.Problem;
+
 public interface INeighborhoodMove {
 
     /**

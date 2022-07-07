@@ -48,6 +48,9 @@ public class Model {
 
     public List<Shift> getCarpoolAbleShifts(){ return this.carpoolAbleShifts;}
 
+    // Needs to be sat if we want to allow overtime
+    public Map<Shift, Integer> getMaximumOvertime() { return null;}
+
     public Location getOriginLocation() {
         return locations.get(0);
     }
