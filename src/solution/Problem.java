@@ -42,10 +42,10 @@ public class Problem {
 
         if (index < route.size() - 1) {
             // Visit has a successor
-            Task successor = route.get(index + 1).getTask();
+            Visit successor = route.get(index + 1);
             if (successor.getTransportType() == TransportMode.WALK) {
                 // Successor walks, i.e., completes the task of the visit that is to be inserted
-                solution.allocateTask(successor);
+                solution.allocateTask(successor.getTask());
             }
         }
 
