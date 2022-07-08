@@ -7,6 +7,7 @@ import algorithm.NeighborhoodMoveInfo;
 import model.Model;
 import model.Shift;
 import model.Task;
+import model.Visit;
 import routeEvaluator.results.RouteEvaluatorResult;
 import solution.Problem;
 import solution.Solution;
@@ -27,7 +28,7 @@ public class GreedyRepairAlgorithm implements IRepairAlgorithm {
     /**
      * WARNING: Modifies unallocatedTasks by removing allocated task from it.
      */
-    public NeighborhoodMoveInfo repair(NeighborhoodMoveInfo neighborhoodMoveInfo, List<Shift> shifts, Set<Task> unallocatedTasks) {
+    public NeighborhoodMoveInfo repair(NeighborhoodMoveInfo neighborhoodMoveInfo, List<Shift> shifts, Set<Visit> unallocatedTasks) {
         if (unallocatedTasks.isEmpty()) {
             return null;
         }
@@ -41,29 +42,29 @@ public class GreedyRepairAlgorithm implements IRepairAlgorithm {
         return neighborhoodMoveInfo;
     }
 
-    protected Double findBestGreedyInsert(Problem problem, List<Shift> shifts, Set<Task> unallocatedTasks) {
+    protected Double findBestGreedyInsert(Problem problem, List<Shift> shifts, Set<Visit> unallocatedVisits) {
         var solution = problem.getSolution();
         var objective = problem.getObjective();
         double bestDeltaObjectiveValue = Double.MAX_VALUE;
         double bestIntraObjectiveValue = 0.0;
         double bestExtraObjectiveValue = 0.0;
         Shift bestShift = null;
-        Task bestTask = null;
+        Visit bestVisit = null;
         RouteEvaluatorResult bestRoute = null;
 
         double deltaIntraObjectiveValue;
         double deltaExtraObjectiveValue;
         double deltaObjectiveValue;
 
-        List<Task> tasks = new ArrayList<>(unallocatedTasks);
-        Collections.shuffle(tasks);
+        List<Visit> visits = new ArrayList<>(unallocatedVisits);
+        Collections.shuffle(visits);
 
         for (Shift shift : shifts) {
-            for (Task insertTask : tasks) {
-                RouteEvaluatorResult result = findRoute(problem, insertTask, solution, shift);
+            for (Visit insertVisit : visits) {
+                RouteEvaluatorResult result = findRoute(problem, insertVisit, solution, shift);
                 if (result == null) continue;
 
-                deltaIntraObjectiveValue1 = result.getObjectiveValue() - objective.getShiftIntraRouteObjectiveValue(shift);
+                /* deltaIntraObjectiveValue1 = result.getObjectiveValue() - objective.getShiftIntraRouteObjectiveValue(shift);
                 deltaIntraObjectiveValue2 = result.getObjectiveValue() - objective.getShiftIntraRouteObjectiveValue(shift);
                 deltaIntraObjectiveValue3 = result.getObjectiveValue() - objective.getShiftIntraRouteObjectiveValue(shift);
                 totalDelta = deltaIntraObjectiveValue1 + deltaIntraObjectiveValue2 + deltaIntraObjectiveValue3;
@@ -76,32 +77,32 @@ public class GreedyRepairAlgorithm implements IRepairAlgorithm {
                     bestIntraObjectiveValue = deltaIntraObjectiveValue;
                     bestExtraObjectiveValue = deltaExtraObjectiveValue;
                     bestShift = shift;
-                    bestTask = insertTask;
+                    bestVisit = insertVisit;
                     bestRoute = result;
-                }
+                }*/
             }
         }
         if (bestRoute == null) return null;
 
-        Double deltaObjective = updateSolution(problem, bestIntraObjectiveValue, bestExtraObjectiveValue, bestShift, bestTask, bestRoute);
-        unallocatedTasks.remove(bestTask); // remove unallocated if not already removed
+        Double deltaObjective = updateSolution(problem, bestIntraObjectiveValue, bestExtraObjectiveValue, bestShift, bestVisit, bestRoute);
+        unallocatedVisits.remove(bestVisit); // remove unallocated if not already removed
 
         return deltaObjective;
     }
 
-    protected Double updateSolution(Problem problem, double bestIntraObjective, double bestExtraObjective, Shift bestShift, Task bestTask, RouteEvaluatorResult bestRoute) {
-        Integer index = bestRoute.getRoute().findIndexInRoute(bestTask);
-        problem.assignTaskToShiftByIndex(bestShift, bestTask, index, bestIntraObjective, bestExtraObjective);
+    protected Double updateSolution(Problem problem, double bestIntraObjective, double bestExtraObjective, Shift bestShift, Visit bestVisit, RouteEvaluatorResult bestRoute) {
+        Integer index = bestRoute.getRoute().findIndexInRouteVisit(bestVisit);
+        problem.assignVisitToShiftByIndex(bestShift, bestVisit, index, bestIntraObjective);
         return bestIntraObjective + bestExtraObjective;
     }
 
-    protected RouteEvaluatorResult getEvaluatorResult(Task task, Problem problem, Shift shift) {
+    protected RouteEvaluatorResult getEvaluatorResult(Visit visit, Problem problem, Shift shift) {
         var solution = problem.getSolution();
-        return problem.getRouteEvaluators().get(shift.getId()).evaluateRouteByTheOrderOfTasksInsertTask(
-                solution.getRoute(shift), task, solution.getSyncedTaskStartTimes(), shift);
+        return problem.getRouteEvaluators().get(shift.getId()).evaluateRouteByTheOrderOfVisitsInsertVisit(
+                solution.getRoute(shift), visit, shift);
     }
 
-    private RouteEvaluatorResult findRoute(Problem problem, Task task, Solution solution, Shift shift) {
+    private RouteEvaluatorResult findRoute(Problem problem, Visit visit, Solution solution, Shift shift) {
 
         // Must return true, and if true you must insert task p and d as well to one or two drivers
         // Feasibilty must return feasible (boolean), (possible p1 d1) (possible p2 d2)
@@ -127,7 +128,7 @@ public class GreedyRepairAlgorithm implements IRepairAlgorithm {
             return null;
         } */
         // Add the extra tasks as well
-        return getEvaluatorResult(task, problem, shift);
+        return getEvaluatorResult(visit, problem, shift);
     }
 }
 

@@ -14,7 +14,9 @@ public class Solution {
     private Shift[] visitAssignedToShift;
     private Set<Task> unallocatedTasks;
     private Set<Task> allocatedTasks;
+
     private Set<Visit> unallocatedVisits;
+
 
     private int numTasks;
 
@@ -148,6 +150,17 @@ public class Solution {
     @Override
     public String toString() {
         return "This is a solution";
+    }
+
+    public Set<Task> getAllocatedTasks() {
+        return allocatedTasks;
+    }
+    public Set<Task> getUnallocatedTasks() {
+        return unallocatedTasks;
+    }
+
+    public Set<Visit> getUnallocatedVisits() {
+        return unallocatedVisits;
     }
 
     public static void main(String[] args) {

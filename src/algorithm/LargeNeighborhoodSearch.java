@@ -8,6 +8,7 @@ import model.Model;
 import model.Task;
 import solution.Problem;
 import solution.Solution;
+import util.Constants;
 
 
 public class LargeNeighborhoodSearch {
@@ -51,7 +52,7 @@ public class LargeNeighborhoodSearch {
 
 
     private void initializeSimulatedAnnealingCriteriaRuntime(Model model) {
-        initializeSimulatedAnnealingCriteriaRuntime(model.getConfiguration().getSolverRuntime(), PROPORTION_OF_RUNTIME_USED_FOR_DEEP_DIVE);
+        initializeSimulatedAnnealingCriteriaRuntime(Constants.SOLVER_RUNTIME, PROPORTION_OF_RUNTIME_USED_FOR_DEEP_DIVE);
     }
 
     private void initializeSimulatedAnnealingCriteriaRuntime(double runtime, double runtimeDeepDive) {

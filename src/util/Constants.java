@@ -20,4 +20,6 @@ public class Constants {
     public static final double OVERTIME_WEIGHT = 0.3;
 
     public static final int MAX_WALK_TIME = 10;
+    public static final int SOLVER_RUNTIME = 5*60;
+
 }

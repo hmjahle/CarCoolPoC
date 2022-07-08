@@ -7,6 +7,7 @@ import algorithm.NeighborhoodMoveInfo;
 import model.Model;
 import model.Shift;
 import model.Task;
+import model.Visit;
 import solution.Objective;
 import solution.Problem;
 import solution.Solution;
@@ -89,7 +90,7 @@ public abstract class GreedyDestroyAbstract extends DestroyOperatorAbstract {
                 // Handle all cases, do we need to remove more than one Visit???
                 // Keep things consitent. Remove from walker and driver if necessary.
                 // OBS!!! This needs to be changed, because if we remove a walking task, we might need to remove p1, d1 and p2,d2
-                Double deltaIntraObjective = objective.deltaIntraObjectiveRemovingTaskAtIndex(shift, route, i, solution.getSyncedTaskStartTimes()); // Use route evaluator to see the new objective if task i is removed
+                Double deltaIntraObjective = objective.deltaIntraObjectiveRemovingVisitAtIndex(shift, route, i); // Use route evaluator to see the new objective if task i is removed
                 if (skipTask(problem, shift, route, i, deltaIntraObjective)) continue; //The continue statement breaks one iteration
                 // We only have intraObjectives for now
                 //double deltaExtraObjective = objective.deltaExtraRouteObjectiveValueRemove(shift, route.get(i));
@@ -115,12 +116,11 @@ public abstract class GreedyDestroyAbstract extends DestroyOperatorAbstract {
         return update(neighborhoodMoveInfo, bestIntraObjective, bestExtraObjective, removeShift, removeIndex);
     }
 
-    private boolean skipTask(Problem problem, Shift shift, List<Task> route, int i, Double deltaIntraObjective) {
-        if (deltaIntraObjective == null || route.get(i).isPrioritized()) // DeltaIntraObjective is Null is the solution is infeasable.
-            return true;
+    private boolean skipTask(Problem problem, Shift shift, List<Visit> route, int i, Double deltaIntraObjective) {
+        // DeltaIntraObjective is Null is the solution is infeasable.
         // Calls this to check for the extrarouteconstraints, but we only have intra route
         //return !problem.getConstraints().isFeasibleRemoveTask(shift, route.get(i));
-        return false;
+        return deltaIntraObjective == null ? true : false;
     }
 
     private int updateRandomShifts(int totalShifts, int randInt, int shiftIndex) {
@@ -143,7 +143,7 @@ public abstract class GreedyDestroyAbstract extends DestroyOperatorAbstract {
     private NeighborhoodMoveInfo update(NeighborhoodMoveInfo neighborhoodMoveInfo, double bestIntraObjective,
                                         double bestExtraObjective, Shift removeShift, int removeIndex) {
         if (removeShift != null) {
-            neighborhoodMoveInfo.getProblem().unAssignTaskByRouteIndex(removeShift, removeIndex, bestIntraObjective, bestExtraObjective); // updates the objective when the task (remove index) is removed from the shift
+            neighborhoodMoveInfo.getProblem().unAssignVisitByRouteIndex(removeShift, removeIndex, bestIntraObjective); // updates the objective when the task (remove index) is removed from the shift
             double deltaObjectiveValue = bestIntraObjective + bestExtraObjective + neighborhoodMoveInfo.getDeltaObjectiveValue();
             neighborhoodMoveInfo.setDeltaObjectiveValue(deltaObjectiveValue);
             return neighborhoodMoveInfo;
