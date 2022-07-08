@@ -84,8 +84,10 @@ public abstract class GreedyDestroyAbstract extends DestroyOperatorAbstract {
             int shiftIndex = shiftIndices[randInt];
             Shift shift = model.getShifts().get(shiftIndex);
             totalShifts = updateRandomShifts(totalShifts, randInt, shiftIndex); // Move rand shift to back of (toatal number of shifts-1) shift index list, and move last shift to this index. Returns total shifts--
-            List<Task> route = solution.getRoute(shift);
+            List<Visit> route = solution.getRoute(shiftIndex);
             for (int i = 0; i < route.size(); i++) {
+                // Handle all cases, do we need to remove more than one Visit???
+                // Keep things consitent. Remove from walker and driver if necessary.
                 // OBS!!! This needs to be changed, because if we remove a walking task, we might need to remove p1, d1 and p2,d2
                 Double deltaIntraObjective = objective.deltaIntraObjectiveRemovingTaskAtIndex(shift, route, i, solution.getSyncedTaskStartTimes()); // Use route evaluator to see the new objective if task i is removed
                 if (skipTask(problem, shift, route, i, deltaIntraObjective)) continue; //The continue statement breaks one iteration

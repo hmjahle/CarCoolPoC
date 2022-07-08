@@ -134,7 +134,7 @@ public class LabellingAlgorithm {
         int newLocation = findNewLocation(thisLabel, nextNode); // nextNode.getLocationId();
         Integer travelTime = getTravelTime(thisLabel, nextNode, newLocation);
         // OBS OBS check if travel is possible
-        if (isFeasibleTravleTime(nextNode, travelTime))
+        if (!isFeasibleTravleTime(nextNode, travelTime))
             return null;
         /* if (travelTime == null)
             return null; */
@@ -153,7 +153,8 @@ public class LabellingAlgorithm {
      * @return If the path is allowed to walk or not
      */
     private boolean isFeasibleTravleTime(Node nextNode, int travelTime) {
-        return nextNode.getVisit().getTransportType() == Constants.TransportMode.WALK && travelTime > Constants.MAX_WALK_TIME;
+        // return nextNode.getVisit().getTransportType() == Constants.TransportMode.WALK && travelTime > Constants.MAX_WALK_TIME;
+        return true;
     }
 
     private void extendLabelToAllPossibleVisits(Label label) {

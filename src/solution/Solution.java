@@ -9,7 +9,7 @@ import java.util.*;
 
 public class Solution {
 
-    private List<List<Visit>> shiftRoutes;
+    protected List<List<Visit>> shiftRoutes;
     private Shift[] taskAssignedToShift;
     private Shift[] visitAssignedToShift;
     private Set<Task> unallocatedTasks;
@@ -32,6 +32,24 @@ public class Solution {
 
     }
 
+    public Solution(Solution other) {
+        this.shiftRoutes = new ArrayList<>(other.shiftRoutes.size());
+        for (List<Visit> route : other.shiftRoutes)
+            this.shiftRoutes.add(new ArrayList<>(route));
+        this.taskAssignedToShift = Arrays.copyOf(other.taskAssignedToShift, other.taskAssignedToShift.length);
+        this.unallocatedTasks = new HashSet<>(other.unallocatedTasks);
+    }
+
+    protected void update(Solution other) {
+        for (int i = 0; i < other.shiftRoutes.size(); i++) {
+            this.shiftRoutes.set(i, new ArrayList<>(other.shiftRoutes.get(i)));
+        }
+        System.arraycopy(other.taskAssignedToShift, 0, this.taskAssignedToShift,
+                0, other.taskAssignedToShift.length);
+        this.unallocatedTasks.clear();
+        this.unallocatedTasks.addAll(other.unallocatedTasks);
+    }
+    
     /**
      * Add a visit that is not currently in the solution to a shift and update the affected tata structures
      * @param visit Visit to be inserted
@@ -53,8 +71,29 @@ public class Solution {
     protected Visit unAssignVisitFromShift(Shift shift, int index) {
         Visit visit = removeFromRoute(shift, index);
         setVisitId(visit, null);
+        visit.resetVisitWhenRemovedFromShift();
         unallocatedVisits.add(visit);
         return visit;
+    }
+
+    protected Visit unAssignVisitFromShift(int shiftId, int index) {
+        Visit visit = removeFromRoute(shiftId, index);
+        setVisitId(visit, null);
+        visit.resetVisitWhenRemovedFromShift();
+        unallocatedVisits.add(visit);
+        return visit;
+    }
+
+    public List<Visit> unAssignVisitsConnectedToTask(int shiftId, Visit visit){
+        List<Visit> removedVisits = new ArrayList<>();
+        int i = 0;
+        for(Visit v : getRoute(shiftId)){
+            if(v.getTask() == visit.getTask()){
+                removedVisits.add(unAssignVisitFromShift(shiftId, i));
+            }
+            i++;
+        }
+        return removedVisits;
     }
 
     /**
@@ -94,8 +133,12 @@ public class Solution {
         return getRoute(shift).remove(index);
     }
 
+    protected Visit removeFromRoute(int shiftID, int index) {
+        return getRoute(shiftID).remove(index);
+    }
+
     public List<Visit> getRoute(Shift shift) {
-        return getRoute(shift.getShiftId());
+        return getRoute(shift.getId());
     }
 
     public List<Visit> getRoute(int shiftid) {

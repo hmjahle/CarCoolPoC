@@ -85,13 +85,14 @@ public class Route {
      * @param task Task to find the position for.
      * @return Integer position, null if the task is not in the route.
      */
-    public Integer findIndexInRouteTask(Task task) {
+    public List<Integer> findIndicesInRouteTask(Task task) {
         int i = 0;
+        List<Integer> indices = new ArrayList<>();
         for (Visit visit : visitSolution)
             if (visit.getTask() == task)
-                return i;
+                indices.add(i);
             else i++;
-        return null;
+        return indices.size() == 0 ? null: indices;
     }
 
     /**

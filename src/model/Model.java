@@ -72,8 +72,9 @@ public class Model {
             this.data = data;
             int numWorkers =  Integer.parseInt(Long.toString((Long) data.get("nbr_nurses")));
             for(int i = 0; i < numWorkers; i ++) {
+                Boolean motorised = i != 5 && i != 3 ? true : false;
                 // NB! Need to get carpoolable from dataset
-                shifts.add(new Shift(i, true));
+                shifts.add(new Shift(i, true, motorised));
             }
             for(int i = 0; i < this.shifts.size(); i++){
                 Shift shift = shifts.get(i);
