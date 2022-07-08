@@ -98,6 +98,18 @@ public class Solution {
         return removedVisits;
     }
 
+    public List<Integer> getTransportVisitIndices(int shiftId, Visit visit){
+        List<Integer> transportVisitIndices = new ArrayList<>();
+        int i = 0;
+        for(Visit v : getRoute(shiftId)){
+            if(!v.completesTask() && v.getTask() == visit.getTask()){
+                transportVisitIndices.add(i);
+            }
+            i++;
+        }
+        return transportVisitIndices;
+    }
+
     /**
      * Add a task that is not currently in the solution, and
      * @param task The task to be inserted into the solution

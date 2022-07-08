@@ -2,12 +2,14 @@ package model;
 
 import solution.Solution;
 import util.Constants.TransportMode;
+import util.Constants.VisitType;
+
 
 public class Visit {
 
     private int id;
     private Task task;
-    private boolean isVirtual;
+    private int visitType;
     private boolean isTransportTask;
     /**
      *  Transport type = 0 if driving was used to this task, and 1 if walking was used to this task
@@ -22,10 +24,10 @@ public class Visit {
 
     private int travelTime;
 
-    public Visit(int id, Task task, boolean isVirtual) {
+    public Visit(int id, Task task, int visitType) {
         this.id = id;
         this.task = task;
-        this.isVirtual = isVirtual;
+        this.visitType = visitType;
     }
     public void resetVisitWhenRemovedFromShift() {
         this.transportType = null;
@@ -38,11 +40,9 @@ public class Visit {
 
     public int getId() { return this.id; }
 
-    public boolean isVirtual() { return this.isVirtual; }
+    public int getVisitType() { return this.visitType; }
 
-    public boolean isTransportTask() {return this.isTransportTask; }
-
-    public boolean completesTask() {return !this.isVirtual && !this.isTransportTask;}
+    public boolean completesTask() {return this.visitType == VisitType.COMPLETE_TASK;}
 
     public int getTransportType() { return this.transportType; }
 

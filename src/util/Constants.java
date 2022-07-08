@@ -11,8 +11,13 @@ public class Constants {
 
     public static class Penalty {
         public static final int STRICT_TIME_WINDOW_RELAXATION_PENALTY_DEFAULT = 10;
-        
+    }
 
+    public static class VisitType {
+        public static final int COMPLETE_TASK = 0;
+        public static final int JOIN_MOTORIZED = 1;
+        public static final int DROP_OF = 2;
+        public static final int PICK_UP = 3;
     }
 
     public static final double TRAVEL_TIME_WEIGTH = 0.5;

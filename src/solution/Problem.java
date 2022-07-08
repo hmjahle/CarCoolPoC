@@ -85,7 +85,7 @@ public class Problem {
             // The visit includes completing the task
             solution.unAllocateTask(removedVisit.getTask());
         }
-        if (removedVisit.isVirtual() && !shift.isMotorized() && route.size() > index){
+        if (removedVisit.getVisitType()  == Constants.VisitType.JOIN_MOTORIZED && !shift.isMotorized() && route.size() > index){
             // You remove a walkers pickeup point. It should no longer drive to the next task
             route.get(index+1).setCoCarPoolerShiftID(null);
             route.get(index+1).setTransportType(Constants.TransportMode.WALK);
@@ -127,14 +127,14 @@ public class Problem {
                 unAllocatedTask = true;
             }
             if (removedVisit.getTransportType() == TransportMode.WALK) {
-                if (unAllocatedTask && successor.isVirtual()){
+                if (unAllocatedTask && successor.getVisitType() == Constants.VisitType.JOIN_MOTORIZED){
                     // For a walker, if you remove non virtual acctual task, always remove the virtual one
                     // Case 1
                     // If you romve a visit where a task is done, then the next task is a pickup visit.
                     // You have to remove the pickup visit as well
                     unAssignVisitByRouteIndex(shift, successorIndex, intraObjectiveDeltaValue);
                 }
-                else if (removedVisit.isVirtual() && successor.getTransportType() == TransportMode.DRIVE){
+                else if (removedVisit.getVisitType()  == Constants.VisitType.JOIN_MOTORIZED && successor.getTransportType() == TransportMode.DRIVE){
                     // Case 2 PP Remove a Non-motorised Worker Visit where transportation to and/or from the Visit is Carpooling
                     // The removed visit is a pick up point for a walker.
                     // Now the walker has to walk to the next task.
@@ -143,7 +143,7 @@ public class Problem {
                 }
             }
             else if (!shift.isMotorized() && removedVisit.getTransportType() == TransportMode.DRIVE) {
-                if (removedVisit.isVirtual() && successor.getTransportType() == TransportMode.DRIVE){
+                if (removedVisit.getVisitType() == Constants.VisitType.JOIN_MOTORIZED && successor.getTransportType() == TransportMode.DRIVE){
                     // DO WE NEED TO UPDATE OBJECTIVE FUNCTION????
                     int coDriverShiftID = removedVisit.getCoCarPoolerShiftID();
                     if (predecessor.getCoCarPoolerShiftID() == successor.getCoCarPoolerShiftID() &&  successor.getCoCarPoolerShiftID() == coDriverShiftID) {
@@ -152,7 +152,7 @@ public class Problem {
                     // ELSE WHAT CASE IS IT????? NEW DRIVER THAT HAS TO DRIVE??
                 }
                 // The walkers visit completed a task during a co driving route where it has be driven from predesessor -> removed visit -> successor, now the co drive route should be predesessor -> successor
-                else if (unAllocatedTask && successor.isVirtual()) {
+                else if (unAllocatedTask && successor.getVisitType()  == Constants.VisitType.JOIN_MOTORIZED) {
                     // The successor is also co driven too. This should be sat from before, but make sure it is now.
                     successor.setTransportType(TransportMode.DRIVE);
                     successor.setCoCarPoolerShiftID(removedVisit.getCoCarPoolerShiftID());
@@ -212,6 +212,10 @@ public class Problem {
 
     public void calculateAndSetObjectiveValuesForSolution(Model model) {
     }
+
+	public void unAssignVisitsByRouteIndices(Shift removeShift, List<Integer> value, double bestIntraObjective) {
+        // TODO
+	}
 
 
 

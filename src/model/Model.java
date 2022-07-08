@@ -6,6 +6,8 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
+import util.Constants;
+
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
@@ -93,10 +95,10 @@ public class Model {
                     tasks.add(task);
 
                     // Creating corresponding visits
-                    Visit visit1 = new Visit((Integer.parseInt((String) key) - 1), task, false);
-                    Visit visit1Virtual= new Visit((Integer.parseInt((String) key) - 1 + 2 * patients.size()), task, true);
-                    Visit visit2 = new Visit((Integer.parseInt((String) key) - 1 + patients.size()), task, false);
-                    Visit visit2Virtual = new Visit((Integer.parseInt((String) key) - 1 + 3 * patients.size()), task, true);
+                    Visit visit1 = new Visit((Integer.parseInt((String) key) - 1), task, Constants.VisitType.COMPLETE_TASK);
+                    Visit visit1Virtual= new Visit((Integer.parseInt((String) key) - 1 + 2 * patients.size()), task, Constants.VisitType.JOIN_MOTORIZED);
+                    Visit visit2 = new Visit((Integer.parseInt((String) key) - 1 + patients.size()), task, Constants.VisitType.DROP_OF);
+                    Visit visit2Virtual = new Visit((Integer.parseInt((String) key) - 1 + 3 * patients.size()), task, Constants.VisitType.PICK_UP);
 
                     this.visits.add(visit1);
                     this.visits.add(visit1Virtual);
