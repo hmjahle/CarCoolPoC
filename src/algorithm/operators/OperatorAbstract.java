@@ -23,21 +23,7 @@ public abstract class OperatorAbstract {
 
 
     public boolean canBeMerged(Model model, Shift shift, List<Task> currentTasks, List<Task> mergeTasks) {
-        for (Task task : mergeTasks) {
-            if (!model.getCompatibleShifts().get(task).contains(shift))
-                return false;
-        }
-        for (Task currentTask : currentTasks) {
-            Set<Task> incompatibleTasks = model
-                    .getIncompatibleTasks()
-                    .get(currentTask);
-            if (incompatibleTasks == null || incompatibleTasks.isEmpty())
-                continue;
-            for (Task mergeTask : mergeTasks)
-                if (incompatibleTasks.contains(mergeTask)) {
-                    return false;
-                }
-        }
+        // Assumes all tasks are compatible
         return true;
     }
 
@@ -48,25 +34,12 @@ public abstract class OperatorAbstract {
     }
 
     private static boolean isCompatibleWithTask(Model model, List<Task> route, Shift shift) {
-        for (Task task : route) {
-            if (!model.getCompatibleShifts()
-                    .get(task)
-                    .contains(shift))
-                return false;
-        }
+        // Assume all tasks and shifts are compatible
         return true;
     }
 
     private static boolean containsIncompatibleTasks(Model model, List<Task> route) {
-        for (int i = 0; i < route.size() - 1; i++) {
-            Set<Task> incompatibleTasks = model
-                    .getIncompatibleTasks()
-                    .get(route.get(i));
-            for (int j = i + 1; j < route.size(); j++) {
-                if (incompatibleTasks != null && incompatibleTasks.contains(route.get(j)))
-                    return true;
-            }
-        }
+        // Assume no tasks are incompatible
         return false;
     }
 
