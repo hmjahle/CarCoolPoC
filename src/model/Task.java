@@ -55,7 +55,7 @@ public class Task {
 
     public boolean isStrict(){ return this.isStrict; }
 
-    public boolean isTimeDependent(){ return this.isTimeDependent; }
+    public boolean isSynced(){ return this.isTimeDependent; }
 
     public boolean requirePhysicalAppearance(){ return this.requirePhysicalAppearance; }
 
