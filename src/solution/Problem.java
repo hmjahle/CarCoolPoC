@@ -11,6 +11,7 @@ import util.Constants;
 import util.Constants.TransportMode;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class Problem {
 
@@ -139,8 +140,9 @@ public class Problem {
     }
 
 	public void unAssignVisitsByRouteIndices(Shift removeShift, List<Integer> indices, double bestIntraObjective) {
-        for(int i = 0; i < indices.size(); i++){
-            unAssignVisitByRouteIndex(removeShift, indices.get(i) - i, 0.0);
+        List<Integer> indicesSorted = indices.stream().sorted().collect(Collectors.toList());  
+        for(int i = 0; i < indicesSorted.size(); i++){
+            unAssignVisitByRouteIndex(removeShift, indicesSorted.get(i) - i, 0.0);
         }
         // Only update intra route objective once, when removing multiple shifts. 
         objective.updateIntraRouteObjective(removeShift, bestIntraObjective);
