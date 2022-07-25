@@ -139,8 +139,8 @@ public class Problem {
     }
 
 	public void unAssignVisitsByRouteIndices(Shift removeShift, List<Integer> indices, double bestIntraObjective) {
-        for(int index: indices){
-            unAssignVisitByRouteIndex(removeShift, index, 0.0);
+        for(int i = 0; i < indices.size(); i++){
+            unAssignVisitByRouteIndex(removeShift, indices.get(i) - i, 0.0);
         }
         // Only update intra route objective once, when removing multiple shifts. 
         objective.updateIntraRouteObjective(removeShift, bestIntraObjective);
