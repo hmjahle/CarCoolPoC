@@ -5,13 +5,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-import java.util.stream.Collector;
-import java.util.stream.Collectors;
 
 import algorithm.NeighborhoodMoveInfo;
 import model.Model;
 import model.Shift;
-import model.Task;
 import model.Visit;
 import solution.Objective;
 import solution.Problem;
@@ -102,7 +99,6 @@ public abstract class GreedyDestroyAbstract extends DestroyOperatorAbstract {
                     deltaIntraObjective += intraObj;
                 }
                 if(intraObj == null) continue;// intraObj is null if solution is infeasible
-                if (skipTask(problem, shift, route, i, deltaIntraObjective)) continue;
                 double deltaObjective = deltaIntraObjective; // We only use intra objectives, and ignore extra objectives
                 if (noise(random) * deltaObjective < bestValue) {
                     bestValue = deltaObjective;
@@ -212,13 +208,6 @@ public abstract class GreedyDestroyAbstract extends DestroyOperatorAbstract {
         return removeVisits;
     }
 
-
-    private boolean skipTask(Problem problem, Shift shift, List<Visit> route, int i, Double deltaIntraObjective) {
-        // DeltaIntraObjective is Null is the solution is infeasable.
-        // Calls this to check for the extrarouteconstraints, but we only have intra route
-        //return !problem.getConstraints().isFeasibleRemoveTask(shift, route.get(i));
-        return deltaIntraObjective == null ? true : false;
-    }
 
     private int updateRandomShifts(int totalShifts, int randInt, int shiftIndex) {
         shiftIndices[randInt] = shiftIndices[totalShifts - 1];
