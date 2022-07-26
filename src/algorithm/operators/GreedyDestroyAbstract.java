@@ -165,10 +165,10 @@ public abstract class GreedyDestroyAbstract extends DestroyOperatorAbstract {
         Integer successorIndex = route.size()>currentVisitIndex ? currentVisitIndex+1 : null;
         Integer predecessorIndex = 0 < currentVisitIndex ? currentVisitIndex-1 : null;
         
-        if (route.get(successorIndex).getVisitType() == Constants.VisitType.JOIN_MOTORIZED){
+        if (successorIndex != null && route.get(successorIndex).getVisitType() == Constants.VisitType.JOIN_MOTORIZED){
             // The empolye is non-motorized and does carpooling to the next visit
             removeVisits.get(shift.getId()).add(successorIndex); // Case 1 in PP
-            if (route.get(predecessorIndex).getVisitType() == Constants.VisitType.JOIN_MOTORIZED){
+            if (predecessorIndex != null && route.get(predecessorIndex).getVisitType() == Constants.VisitType.JOIN_MOTORIZED){
                 // The emloyee also did carpooling to current visit
                 int coDriverShiftID = route.get(predecessorIndex).getCoCarPoolerShiftID();
                 if (coDriverShiftID == route.get(successorIndex).getCoCarPoolerShiftID()){
@@ -179,7 +179,7 @@ public abstract class GreedyDestroyAbstract extends DestroyOperatorAbstract {
                 }
             }
         }
-        else if (route.get(predecessorIndex).getVisitType() == Constants.VisitType.JOIN_MOTORIZED){
+        else if (predecessorIndex != null && route.get(predecessorIndex).getVisitType() == Constants.VisitType.JOIN_MOTORIZED){
             // Non-motorized employee carpooled to current visit.
             // Case 2 walker in PP
             removeVisits.get(shift.getId()).add(predecessorIndex);
