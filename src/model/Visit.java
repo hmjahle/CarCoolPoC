@@ -1,6 +1,5 @@
 package model;
 
-import solution.Solution;
 import util.Constants.TransportMode;
 import util.Constants.VisitType;
 
@@ -79,9 +78,9 @@ public class Visit {
 
 
     // Setters
-    public void setStartTime(int start_time){ this.startTime = start_time;}
+    public void setStartTime(int startTime){ this.startTime = startTime;}
     
-    public void setEndTime(int end_time){ this.endTime = end_time;}
+    public void setEndTime(int endTime){ this.endTime = endTime;}
 
     public void setTravleTime(int travelTime){
         this.travelTime = travelTime;
