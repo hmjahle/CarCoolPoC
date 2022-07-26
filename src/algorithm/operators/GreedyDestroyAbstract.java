@@ -78,7 +78,6 @@ public abstract class GreedyDestroyAbstract extends DestroyOperatorAbstract {
         Solution solution = problem.getSolution();
         Objective objective = problem.getObjective();
         double bestValue = Double.MAX_VALUE;
-        double bestIntraObjective = 0.0;
         Map<Integer, List<Integer>> removeVisits = new HashMap<>();
         int totalShifts = resetRandomShiftFinder();
         while (totalShifts != 0) {
@@ -99,10 +98,8 @@ public abstract class GreedyDestroyAbstract extends DestroyOperatorAbstract {
                     deltaIntraObjective += intraObj;
                 }
                 if(intraObj == null) continue;// intraObj is null if solution is infeasible
-                double deltaObjective = deltaIntraObjective; // We only use intra objectives, and ignore extra objectives
-                if (noise(random) * deltaObjective < bestValue) {
-                    bestValue = deltaObjective;
-                    bestIntraObjective = deltaIntraObjective;
+                if (noise(random) * deltaIntraObjective < bestValue) {
+                    bestValue = deltaIntraObjective;
                     removeVisits = removeVisitsTemp;
                 }
             }
@@ -112,7 +109,7 @@ public abstract class GreedyDestroyAbstract extends DestroyOperatorAbstract {
         if (removeVisits.size()>0 && (neighborhoodMoveInfo == null || !neighborhoodMoveInfo.possible())) 
             // !neighborhoodMoveInfo.possible() == true if deltaObjectiveValue = null
             neighborhoodMoveInfo = new NeighborhoodMoveInfo(problem);
-        return update(neighborhoodMoveInfo, bestIntraObjective, removeVisits);
+        return update(neighborhoodMoveInfo, bestValue, removeVisits);
     }
 
     /**
@@ -159,32 +156,15 @@ public abstract class GreedyDestroyAbstract extends DestroyOperatorAbstract {
      * @return Map of shift and which visits to remove from the corresponding shift. 
      */
     private Map<Integer, List<Integer>> findVisitsToRemove(Solution solution, Shift shift, Integer currentVisitIndex){
+        return shift.isMotorized() ? findVisitsToRemoveMotorizedShift(solution, shift, currentVisitIndex) : findVisitsToRemoveNonMotorizedShift(solution, shift, currentVisitIndex);
+    }
+
+    private Map<Integer, List<Integer>> findVisitsToRemoveMotorizedShift(Solution solution, Shift shift, Integer currentVisitIndex){
         Map<Integer, List<Integer>> removeVisits = new HashMap<>();
         removeVisits.put(shift.getId(), new ArrayList<>(currentVisitIndex));
         List<Visit> route = solution.getRoute(shift);
-        Integer successorIndex = route.size()>currentVisitIndex ? currentVisitIndex+1 : null;
         Integer predecessorIndex = 0 < currentVisitIndex ? currentVisitIndex-1 : null;
-        
-        if (successorIndex != null && route.get(successorIndex).getVisitType() == Constants.VisitType.JOIN_MOTORIZED){
-            // The empolye is non-motorized and does carpooling to the next visit
-            removeVisits.get(shift.getId()).add(successorIndex); // Case 1 in PP
-            if (predecessorIndex != null && route.get(predecessorIndex).getVisitType() == Constants.VisitType.JOIN_MOTORIZED){
-                // The emloyee also did carpooling to current visit
-                int coDriverShiftID = route.get(predecessorIndex).getCoCarPoolerShiftID();
-                if (coDriverShiftID == route.get(successorIndex).getCoCarPoolerShiftID()){
-                    // Carpooling was with the same driver from previos -> current -> successor node. 
-                    // Case 4 walker in PP
-                    List<Integer> transportVisitIndices = solution.getTransportVisitIndices(coDriverShiftID, route.get(currentVisitIndex));
-                    removeVisits.put(coDriverShiftID, transportVisitIndices);
-                }
-            }
-        }
-        else if (predecessorIndex != null && route.get(predecessorIndex).getVisitType() == Constants.VisitType.JOIN_MOTORIZED){
-            // Non-motorized employee carpooled to current visit.
-            // Case 2 walker in PP
-            removeVisits.get(shift.getId()).add(predecessorIndex);
-        }
-        else if (route.get(currentVisitIndex).getVisitType() == Constants.VisitType.DROP_OF){
+        if (route.get(currentVisitIndex).getVisitType() == Constants.VisitType.DROP_OF){
             // The current visit is a drop off visit in a motorized shift
             // Case 1 driver in PP
 
@@ -205,6 +185,36 @@ public abstract class GreedyDestroyAbstract extends DestroyOperatorAbstract {
             List<Integer> transportVisitIndices = solution.getTransportVisitIndices(passengerShiftID, route.get(currentVisitIndex));
             // Remove the pickuppoint for that arc
             removeVisits.put(passengerShiftID, transportVisitIndices);
+        }
+        // Else the visit is a complete task visit, and only that one should be removed
+        return removeVisits;
+    }
+
+    private Map<Integer, List<Integer>> findVisitsToRemoveNonMotorizedShift(Solution solution, Shift shift, Integer currentVisitIndex){
+        Map<Integer, List<Integer>> removeVisits = new HashMap<>();
+        removeVisits.put(shift.getId(), new ArrayList<>(currentVisitIndex));
+        List<Visit> route = solution.getRoute(shift);
+        Integer successorIndex = route.size()>currentVisitIndex ? currentVisitIndex+1 : null;
+        Integer predecessorIndex = 0 < currentVisitIndex ? currentVisitIndex-1 : null;
+
+        if (successorIndex != null && route.get(successorIndex).getVisitType() == Constants.VisitType.JOIN_MOTORIZED){
+            // The empolye is non-motorized and does carpooling to the next visit
+            removeVisits.get(shift.getId()).add(successorIndex); // Case 1 in PP
+            if (predecessorIndex != null && route.get(predecessorIndex).getVisitType() == Constants.VisitType.JOIN_MOTORIZED){
+                // The emloyee also did carpooling to current visit
+                int coDriverShiftID = route.get(predecessorIndex).getCoCarPoolerShiftID();
+                if (coDriverShiftID == route.get(successorIndex).getCoCarPoolerShiftID()){
+                    // Carpooling was with the same driver from previos -> current -> successor node. 
+                    // Case 4 walker in PP
+                    List<Integer> transportVisitIndices = solution.getTransportVisitIndices(coDriverShiftID, route.get(currentVisitIndex));
+                    removeVisits.put(coDriverShiftID, transportVisitIndices);
+                }
+            }
+        }
+        else if (predecessorIndex != null && route.get(predecessorIndex).getVisitType() == Constants.VisitType.JOIN_MOTORIZED){
+            // Non-motorized employee carpooled to current visit.
+            // Case 2 walker in PP
+            removeVisits.get(shift.getId()).add(predecessorIndex);
         }
         return removeVisits;
     }
