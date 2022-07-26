@@ -4,6 +4,7 @@ import model.Model;
 import model.Shift;
 import model.Task;
 import model.Visit;
+import model.TimeDependentVisitPair;
 
 import java.util.*;
 
@@ -14,7 +15,7 @@ public class Solution {
     private Shift[] visitAssignedToShift;
     private Set<Task> unallocatedTasks;
     private Set<Task> allocatedTasks;
-
+    private Map<Visit, Integer> timeDependentVisitStartTime;
     private Set<Visit> unallocatedVisits;
 
 
@@ -31,7 +32,11 @@ public class Solution {
             shiftRoutes.add(new ArrayList<>());
 
         }
-
+        timeDependentVisitStartTime = new HashMap<>();
+        for (TimeDependentVisitPair timeDependentVisitPair : model.getTimeDependentVisitPairs()) {
+            timeDependentVisitStartTime.put(timeDependentVisitPair.getMasterVisit(), timeDependentVisitPair.getMasterVisit().getStartTime());
+            timeDependentVisitStartTime.put(timeDependentVisitPair.getDependentVisit(), Math.max(timeDependentVisitPair.getDependentVisit().getStartTime(), timeDependentVisitPair.getMasterVisit().getStartTime() + timeDependentVisitPair.getIntervalStart()));
+        }
     }
 
     public Solution(Solution other) {
@@ -40,6 +45,7 @@ public class Solution {
             this.shiftRoutes.add(new ArrayList<>(route));
         this.taskAssignedToShift = Arrays.copyOf(other.taskAssignedToShift, other.taskAssignedToShift.length);
         this.unallocatedTasks = new HashSet<>(other.unallocatedTasks);
+        this.timeDependentVisitStartTime = new HashMap<>(other.timeDependentVisitStartTime);
     }
 
     protected void update(Solution other) {
@@ -143,6 +149,14 @@ public class Solution {
         getRoute(shift).add(index, visit);
     }
 
+    protected void setSyncedVisitStartTime(Visit visit, int startTime) {
+        this.timeDependentVisitStartTime.put(visit, startTime);
+    }
+
+    public int getSyncedTaskStartTime(Visit visit) {
+        return this.timeDependentVisitStartTime.get(visit);
+    }
+
     protected Visit removeFromRoute(Shift shift, int index) {
         return getRoute(shift).remove(index);
     }
@@ -157,6 +171,10 @@ public class Solution {
 
     public List<Visit> getRoute(int shiftid) {
         return shiftRoutes.get(shiftid);
+    }
+
+    public Map<Visit, Integer> getSyncedVisitStartTimes() {
+        return timeDependentVisitStartTime;
     }
 
     @Override

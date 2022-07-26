@@ -90,7 +90,7 @@ public abstract class GreedyDestroyAbstract extends DestroyOperatorAbstract {
             List<Visit> route = solution.getRoute(shiftIndex);
             for (int i = 0; i < route.size(); i++) {
                 // Handle all cases, do we need to remove more than one Visit???
-                Double deltaIntraObjective = 0.0;
+                Double deltaIntraObjective = objective.deltaIntraObjectiveRemovingVisitAtIndex(shift, route, i, solution.getSyncedVisitStartTimes());
                 Double intraObj = null;
                 Map<Integer, List<Integer>> removeVisitsTemp = findVisitsToRemove(solution, shift, i);
                 for (Map.Entry<Integer, List<Integer>> entry: removeVisitsTemp.entrySet()){

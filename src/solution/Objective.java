@@ -146,7 +146,7 @@ public class Objective {
      * @param syncedVisitsStartTime Start time for synced visits.
      * @return Change in objective value or null if the change is infeasible.
      */
-    public Double deltaIntraObjectiveRemovingVisitAtIndex(Shift shift, List<Visit> route, int index) {
+    public Double deltaIntraObjectiveRemovingVisitAtIndex(Shift shift, List<Visit> route, int index, Map<Visit, Integer> syncedTasksStartTime) {
         RouteEvaluator routeEvaluator = routeEvaluators.get(shift.getId());
         Double newObj = routeEvaluator.evaluateRouteByTheOrderOfVisitsRemoveVisitObjective(route, index, shift);
         if (newObj == null)
