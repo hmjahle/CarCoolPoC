@@ -11,6 +11,7 @@ import util.Constants;
 import util.Constants.TransportMode;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class Problem {
 
@@ -86,88 +87,13 @@ public class Problem {
             solution.unAllocateTask(removedVisit.getTask());
         }
         if (removedVisit.getVisitType()  == Constants.VisitType.JOIN_MOTORIZED && !shift.isMotorized() && route.size() > index){
-            // You remove a walkers pickeup point. It should no longer drive to the next task
+            // You remove a walkers pick-up point. It should no longer drive to the next task
             route.get(index+1).setCoCarPoolerShiftID(null);
             route.get(index+1).setTransportType(Constants.TransportMode.WALK);
-
         }
         objective.removeVisit(shift, removedVisit);
         objective.updateIntraRouteObjective(shift, intraObjectiveDeltaValue);
-    }
-
-        /**
-     * Un assigns a visit from a shift on a given index and un assigns a task if the successor of this visit cannot
-     * take over the task
-     * @param shift The shift to remove the visit from
-     * @param index The index on the shift-route to remove the visit
-     * @param intraObjectiveDeltaValue
-     */
-    public void unAssignVisitByRouteIndex2(Shift shift, int index, double intraObjectiveDeltaValue) {
-        List<Visit> route = solution.getRoute(shift);
-        Visit removedVisit = solution.unAssignVisitFromShift(shift, index);
-
-        if (0 < index && index <= route.size()) {
-            // You have removed so index is now the next task
-            int successorIndex = index;
-            int predecessorIndex = index-1;
-            Visit successor = route.get(successorIndex);
-            Visit predecessor = route.get(predecessorIndex);
-/*             if (removedVisit.getTransportType() == TransportMode.WALK
-                    && successor.getTransportType() != TransportMode.WALK) {
-                // Case 2 Remove a Non-motorised Worker Visit where transportation to and/or from the Visit is Carpooling
-
-                // We removed a walking visit and the successor cannot "take over", thus we need to un allocate the
-                // task of the predecessor
-                solution.unAllocateTask(predecessor.getTask());
-            } */
-            Boolean unAllocatedTask = false; 
-            if (removedVisit.completesTask()){
-                // The visit includes completing the task
-                solution.unAllocateTask(removedVisit.getTask());
-                unAllocatedTask = true;
-            }
-            if (removedVisit.getTransportType() == TransportMode.WALK) {
-                if (unAllocatedTask && successor.getVisitType() == Constants.VisitType.JOIN_MOTORIZED){
-                    // For a walker, if you remove non virtual acctual task, always remove the virtual one
-                    // Case 1
-                    // If you romve a visit where a task is done, then the next task is a pickup visit.
-                    // You have to remove the pickup visit as well
-                    unAssignVisitByRouteIndex(shift, successorIndex, intraObjectiveDeltaValue);
-                }
-                else if (removedVisit.getVisitType()  == Constants.VisitType.JOIN_MOTORIZED && successor.getTransportType() == TransportMode.DRIVE){
-                    // Case 2 PP Remove a Non-motorised Worker Visit where transportation to and/or from the Visit is Carpooling
-                    // The removed visit is a pick up point for a walker.
-                    // Now the walker has to walk to the next task.
-                    successor.setTransportType(TransportMode.WALK);
-                    successor.setCoCarPoolerShiftID(null);
-                }
-            }
-            else if (!shift.isMotorized() && removedVisit.getTransportType() == TransportMode.DRIVE) {
-                if (removedVisit.getVisitType() == Constants.VisitType.JOIN_MOTORIZED && successor.getTransportType() == TransportMode.DRIVE){
-                    // DO WE NEED TO UPDATE OBJECTIVE FUNCTION????
-                    int coDriverShiftID = removedVisit.getCoCarPoolerShiftID();
-                    if (predecessor.getCoCarPoolerShiftID() == successor.getCoCarPoolerShiftID() &&  successor.getCoCarPoolerShiftID() == coDriverShiftID) {
-                        List<Visit> removedVisits = solution.unAssignVisitsConnectedToTask(coDriverShiftID, removedVisit);
-                    }
-                    // ELSE WHAT CASE IS IT????? NEW DRIVER THAT HAS TO DRIVE??
-                }
-                // The walkers visit completed a task during a co driving route where it has be driven from predesessor -> removed visit -> successor, now the co drive route should be predesessor -> successor
-                else if (unAllocatedTask && successor.getVisitType()  == Constants.VisitType.JOIN_MOTORIZED) {
-                    // The successor is also co driven too. This should be sat from before, but make sure it is now.
-                    successor.setTransportType(TransportMode.DRIVE);
-                    successor.setCoCarPoolerShiftID(removedVisit.getCoCarPoolerShiftID());
-                    unAssignVisitByRouteIndex(shift, successorIndex, intraObjectiveDeltaValue);
-                }
-                else if (unAllocatedTask && successor.getTransportType() == TransportMode.WALK){unAssignVisitByRouteIndex(shift, predecessorIndex, intraObjectiveDeltaValue);}
-
-            }
-        }
-     
-
-        // ToDo: update objective function
-
-        // ToDo: update constraints
-    }   
+    }  
     
     /**
      * Assigns a visit to a shift at a given index and updates the necessary data structures. Also checks whether
@@ -213,8 +139,13 @@ public class Problem {
     public void calculateAndSetObjectiveValuesForSolution(Model model) {
     }
 
-	public void unAssignVisitsByRouteIndices(Shift removeShift, List<Integer> value, double bestIntraObjective) {
-        // TODO
+	public void unAssignVisitsByRouteIndices(Shift removeShift, List<Integer> indices, double bestIntraObjective) {
+        List<Integer> indicesSorted = indices.stream().sorted(Comparator.reverseOrder()).collect(Collectors.toList());  
+        for(int index : indicesSorted){
+            unAssignVisitByRouteIndex(removeShift, index, 0.0);
+        }
+        // Only update intra route objective once, when removing multiple shifts. 
+        objective.updateIntraRouteObjective(removeShift, bestIntraObjective);
 	}
 
 

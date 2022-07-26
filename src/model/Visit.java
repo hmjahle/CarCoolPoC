@@ -1,6 +1,5 @@
 package model;
 
-import solution.Solution;
 import util.Constants.TransportMode;
 import util.Constants.VisitType;
 
@@ -28,6 +27,17 @@ public class Visit {
         this.id = id;
         this.task = task;
         this.visitType = visitType;
+    }
+
+    public Visit(Visit visit) {
+        this.id = visit.id;
+        this.task = visit.task;
+        this.visitType = visit.visitType;
+        this.transportType = visit.transportType;
+        this.coCarPoolerShiftID = visit.coCarPoolerShiftID;
+        this.startTime = visit.startTime;
+        this.endTime = visit.endTime;
+        this.travelTime = visit.travelTime;
     }
     public void resetVisitWhenRemovedFromShift() {
         this.transportType = null;
@@ -68,9 +78,9 @@ public class Visit {
 
 
     // Setters
-    public void setStartTime(int start_time){ this.startTime = start_time;}
+    public void setStartTime(int startTime){ this.startTime = startTime;}
     
-    public void setEndTime(int end_time){ this.endTime = end_time;}
+    public void setEndTime(int endTime){ this.endTime = endTime;}
 
     public void setTravleTime(int travelTime){
         this.travelTime = travelTime;
