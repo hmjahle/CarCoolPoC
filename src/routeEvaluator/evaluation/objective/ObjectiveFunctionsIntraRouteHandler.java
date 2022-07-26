@@ -107,11 +107,11 @@ public class ObjectiveFunctionsIntraRouteHandler {
     }
 
     public IRouteEvaluatorObjective calculateObjectiveValue(IRouteEvaluatorObjective currentObjective, int travelTime, Visit visit, int startOfServiceNextTask,
-                                                            int visitEnd, Shift employeeWorkShift) {
+                                                            int visitEnd, int syncedVisitLatestStartTime, Shift employeeWorkShift) {
 
         IRouteEvaluatorObjective newObjective = currentObjective.initializeNewObjective();
         ObjectiveInfo objectiveInfo = new ObjectiveInfo(travelTime, visit, visitEnd, startOfServiceNextTask,
-                employeeWorkShift);
+                syncedVisitLatestStartTime, employeeWorkShift);
 
         for (Map.Entry<String, WeightObjectivePair<IObjectiveFunctionIntraRoute>> objectivePair : activeObjectiveFunctions.entrySet()) {
             newObjective.incrementObjective(objectivePair.getKey(), objectivePair.getValue().getWeight(),

@@ -11,12 +11,13 @@ public class ConstraintInfo extends RouteEvaluationInfoAbstract {
     int earliestOfficeReturn;
     int startOfServiceNextTask;
     int shiftStartTime;
+    int syncedVisitLatestStartTime;
 
-    public ConstraintInfo(Shift employeeWorkShift, int earliestOfficeReturn, Visit visit, int startOfServiceNextTask, int shiftStartTime) {
+    public ConstraintInfo(Shift employeeWorkShift, int earliestOfficeReturn, Visit visit, int startOfServiceNextTask, int syncedVisitLatestStartTime, int shiftStartTime) {
         super(visit, employeeWorkShift);
         this.earliestOfficeReturn = earliestOfficeReturn;
         this.startOfServiceNextTask = startOfServiceNextTask;
-        //this.syncedTaskStartTime = syncedTaskLatestStartTime;
+        this.syncedVisitLatestStartTime = syncedVisitLatestStartTime;
         this.shiftStartTime = shiftStartTime;
     }
 

@@ -148,7 +148,7 @@ public class Objective {
      */
     public Double deltaIntraObjectiveRemovingVisitAtIndex(Shift shift, List<Visit> route, int index, Map<Visit, Integer> syncedTasksStartTime) {
         RouteEvaluator routeEvaluator = routeEvaluators.get(shift.getId());
-        Double newObj = routeEvaluator.evaluateRouteByTheOrderOfVisitsRemoveVisitObjective(route, index, shift);
+        Double newObj = routeEvaluator.evaluateRouteByTheOrderOfVisitsRemoveVisitObjective(route, index, syncedTasksStartTime, shift);
         if (newObj == null)
             return null;
         return newObj - shiftIntraRouteValues[shift.getId()];
@@ -161,17 +161,17 @@ public class Objective {
      * @param syncedVisitsStartTime Start time for synced visits.
      * @return Delta objective or null if infeasible
      */
-    public Double deltaIntraObjectiveNewRoute(Shift shift, List<Visit> route, List<Integer> removeIndicesInRoute) {
+    public Double deltaIntraObjectiveNewRoute(Shift shift, List<Visit> route, List<Integer> removeIndicesInRoute, Map<Visit, Integer> syncedTasksStartTime) {
         RouteEvaluator routeEvaluator = routeEvaluators.get(shift.getId());
-        Double newObj = routeEvaluator.evaluateRouteByTheOrderOfVisitsRemoveVisitObjective(route, removeIndicesInRoute, shift);
+        Double newObj = routeEvaluator.evaluateRouteByTheOrderOfVisitsRemoveVisitObjective(route, removeIndicesInRoute, syncedTasksStartTime, shift);
         if (newObj == null)
             return null;
         return newObj - shiftIntraRouteValues[shift.getId()];
     }
 
-    public RouteEvaluatorResult routeEvaluatorResult(Shift shift, List<Visit> route) {
+    public RouteEvaluatorResult routeEvaluatorResult(Shift shift, Map<Visit, Integer> syncedTasksStartTime, List<Visit> route) {
         RouteEvaluator routeEvaluator = routeEvaluators.get(shift.getId());
-        return routeEvaluator.evaluateRouteByTheOrderOfVisits(route, shift);
+        return routeEvaluator.evaluateRouteByTheOrderOfVisits(route, syncedTasksStartTime, shift);
     }
 
     /**
@@ -246,7 +246,7 @@ public class Objective {
 
         for (Shift shift : model.getShifts()) {
             RouteEvaluator routeEvaluator = routeEvaluators.get(shift.getId());
-            Double intraObjective = routeEvaluator.evaluateRouteObjective(solution.getRoute(shift), shift);
+            Double intraObjective = routeEvaluator.evaluateRouteObjective(solution.getRoute(shift), solution.getSyncedVisitStartTimes(), shift);
             if (intraObjective == null)
                 return false;
             // double extraObjective = calcExtraRouteObjectiveValue(shift, solution.getRoute(shift));

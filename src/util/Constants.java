@@ -27,4 +27,8 @@ public class Constants {
     public static final int MAX_WALK_TIME = 10;
     public static final int SOLVER_RUNTIME = 5*60;
 
+    public static final int SYNCED_TASK_CONSTRAINT_ALLOWED_SLACK_DEFAULT = 60;
+    public static final int STRICT_TIME_WINDOW_RELAXATION_PENALTY_DEFAULT = 10;
+
+
 }

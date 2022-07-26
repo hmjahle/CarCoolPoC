@@ -21,6 +21,7 @@ public class Visit {
     private int endTime;
     private Integer transportType;
     private Integer coCarPoolerShiftID; // Shift id to the person you are carpooling with
+    private boolean isSynced = false;
 
     private int travelTime;
 
@@ -60,6 +61,8 @@ public class Visit {
         return travelTime;
     }
 
+    public boolean isSynced(){ return this.isSynced;}
+
     public Location getLocation(){ return this.task.getLocation();}
 
     public Integer getCoCarPoolerShiftID(){ 
@@ -82,5 +85,9 @@ public class Visit {
 
     public void setCoCarPoolerShiftID(Integer coCarPoolerShiftID) {
         this.coCarPoolerShiftID = coCarPoolerShiftID;
+    }
+
+    public void setIsSynced(boolean isSynced){
+        this.isSynced = isSynced;
     }
 }

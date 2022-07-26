@@ -8,7 +8,7 @@ public class ObjectiveInfo extends RouteEvaluationInfoAbstract {
     private final int visitEnd;
     private final int startOfServiceNextTask;
 
-    public ObjectiveInfo(int travelTime,  Visit visit, int visitEnd, int startOfServiceNextTask, Shift employeeWorkShift) {
+    public ObjectiveInfo(int travelTime,  Visit visit, int visitEnd, int startOfServiceNextTask, int syncedVisitStartTime, Shift employeeWorkShift) {
         super(visit, employeeWorkShift);
         this.travelTime = travelTime;
         this.visitEnd = visitEnd;

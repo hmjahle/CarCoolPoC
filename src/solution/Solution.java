@@ -116,6 +116,10 @@ public class Solution {
         return transportVisitIndices;
     }
 
+    public Shift shiftForVisit(Visit visit) { return shiftForVisit(visit.getId());}
+
+    public Shift shiftForVisit(int visitId) { return visitAssignedToShift[visitId];}
+
     /**
      * Add a task that is not currently in the solution, and
      * @param task The task to be inserted into the solution
@@ -137,8 +141,12 @@ public class Solution {
         allocatedTasks.remove(task);
     }
 
-    protected boolean isAllocated(Task task) {
+    public boolean isAllocated(Task task) {
         return this.allocatedTasks.contains(task);
+    }
+
+    public boolean isVisitAllocated(Visit visit){
+        return !(this.unallocatedVisits.contains(visit));
     }
 
     private void setVisitId(Visit visit, Shift shift) {
