@@ -29,6 +29,17 @@ public class Visit {
         this.task = task;
         this.visitType = visitType;
     }
+
+    public Visit(Visit visit) {
+        this.id = visit.id;
+        this.task = visit.task;
+        this.visitType = visit.visitType;
+        this.transportType = visit.transportType;
+        this.coCarPoolerShiftID = visit.coCarPoolerShiftID;
+        this.startTime = visit.startTime;
+        this.endTime = visit.endTime;
+        this.travelTime = visit.travelTime;
+    }
     public void resetVisitWhenRemovedFromShift() {
         this.transportType = null;
         this.coCarPoolerShiftID = null;

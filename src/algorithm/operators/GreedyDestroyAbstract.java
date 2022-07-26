@@ -140,7 +140,8 @@ public abstract class GreedyDestroyAbstract extends DestroyOperatorAbstract {
      * @return copy of the route with visit transportmodes updated according to the removed visits
      */
     private List<Visit> temporarlyUpdateNonMotorizedRemovedVisits(Solution solution, Shift entryShift, List<Integer> removalPositions){
-        List<Visit> routeCopy = List.copyOf(solution.getRoute(entryShift));
+        List<Visit> routeCopy = new ArrayList<>();
+        solution.getRoute(entryShift).stream().forEach(v -> routeCopy.add(new Visit(v)));
         for (int index : removalPositions){
             if(routeCopy.get(index).getVisitType() == Constants.VisitType.JOIN_MOTORIZED && routeCopy.size() > index){
                 routeCopy.get(index+1).setTransportType(Constants.TransportMode.WALK);
