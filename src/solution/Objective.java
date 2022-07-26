@@ -131,8 +131,8 @@ public class Objective {
 
     protected void removeVisits(Shift shift, List<Visit> currentRoute, List<Integer> removeVisits) {
         addRemoveVisits.clear();
-        for (int taskIndex : removeVisits)
-            addRemoveVisits.add(currentRoute.get(taskIndex));
+        for (int visitIndex : removeVisits)
+            addRemoveVisits.add(currentRoute.get(visitIndex));
         removeVisits(shift, addRemoveVisits);
     }
 
@@ -146,9 +146,9 @@ public class Objective {
      * @param syncedVisitsStartTime Start time for synced visits.
      * @return Change in objective value or null if the change is infeasible.
      */
-    public Double deltaIntraObjectiveRemovingVisitAtIndex(Shift shift, List<Visit> route, int index, Map<Visit, Integer> syncedTasksStartTime) {
+    public Double deltaIntraObjectiveRemovingVisitAtIndex(Shift shift, List<Visit> route, int index, Map<Visit, Integer> syncedVisitsStartTime) {
         RouteEvaluator routeEvaluator = routeEvaluators.get(shift.getId());
-        Double newObj = routeEvaluator.evaluateRouteByTheOrderOfVisitsRemoveVisitObjective(route, index, syncedTasksStartTime, shift);
+        Double newObj = routeEvaluator.evaluateRouteByTheOrderOfVisitsRemoveVisitObjective(route, index, syncedVisitsStartTime, shift);
         if (newObj == null)
             return null;
         return newObj - shiftIntraRouteValues[shift.getId()];
@@ -161,17 +161,17 @@ public class Objective {
      * @param syncedVisitsStartTime Start time for synced visits.
      * @return Delta objective or null if infeasible
      */
-    public Double deltaIntraObjectiveNewRoute(Shift shift, List<Visit> route, List<Integer> removeIndicesInRoute, Map<Visit, Integer> syncedTasksStartTime) {
+    public Double deltaIntraObjectiveNewRoute(Shift shift, List<Visit> route, List<Integer> removeIndicesInRoute, Map<Visit, Integer> syncedVisitsStartTime) {
         RouteEvaluator routeEvaluator = routeEvaluators.get(shift.getId());
-        Double newObj = routeEvaluator.evaluateRouteByTheOrderOfVisitsRemoveVisitObjective(route, removeIndicesInRoute, syncedTasksStartTime, shift);
+        Double newObj = routeEvaluator.evaluateRouteByTheOrderOfVisitsRemoveVisitObjective(route, removeIndicesInRoute, syncedVisitsStartTime, shift);
         if (newObj == null)
             return null;
         return newObj - shiftIntraRouteValues[shift.getId()];
     }
 
-    public RouteEvaluatorResult routeEvaluatorResult(Shift shift, Map<Visit, Integer> syncedTasksStartTime, List<Visit> route) {
+    public RouteEvaluatorResult routeEvaluatorResult(Shift shift, Map<Visit, Integer> syncedVisitsStartTime, List<Visit> route) {
         RouteEvaluator routeEvaluator = routeEvaluators.get(shift.getId());
-        return routeEvaluator.evaluateRouteByTheOrderOfVisits(route, syncedTasksStartTime, shift);
+        return routeEvaluator.evaluateRouteByTheOrderOfVisits(route, syncedVisitsStartTime, shift);
     }
 
     /**
