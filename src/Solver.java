@@ -7,9 +7,11 @@ import routeEvaluator.solver.RouteEvaluator;
 import solution.Problem;
 import routeEvaluator.evaluation.constraint.OvertimeIntraRouteConstraint;
 import routeEvaluator.evaluation.constraint.StrictTimeWindowConstraint;
+import routeEvaluator.evaluation.constraint.SyncedTasksConstraint;
 import routeEvaluator.evaluation.constraint.TimeWindowLateArrivalConstraint;
 import routeEvaluator.evaluation.objective.OvertimeObjectiveFunction;
 import routeEvaluator.evaluation.objective.StrictTimeWindowObjectiveFunction;
+import routeEvaluator.evaluation.objective.SyncedVisitStartTimeObjective;
 import routeEvaluator.evaluation.objective.TimeWindowLowHighObjectiveFunction;
 import routeEvaluator.evaluation.objective.TravelTimeObjectiveFunction;
 import util.Constants.Penalty;
@@ -59,6 +61,8 @@ public class Solver {
     public static void initializeRelaxedIntraRouteConstraints(Model model, Problem problem) {
         problem.addRelaxedIntraConstraint(OvertimeIntraRouteConstraint.class.getSimpleName(), new OvertimeIntraRouteConstraint(model), new OvertimeObjectiveFunction());
         problem.addRelaxedIntraConstraint(StrictTimeWindowConstraint.class.getSimpleName(), new StrictTimeWindowConstraint(), new StrictTimeWindowObjectiveFunction(Penalty.STRICT_TIME_WINDOW_RELAXATION_PENALTY_DEFAULT));
+        problem.addRelaxedIntraConstraint(SyncedTasksConstraint.class.getSimpleName(), new SyncedTasksConstraint(Constants.SYNCED_TASK_CONSTRAINT_ALLOWED_SLACK_DEFAULT), new SyncedVisitStartTimeObjective(Constants.SYNCED_TASK_CONSTRAINT_ALLOWED_SLACK_DEFAULT, 15.0));
+    
     }
 
     /**

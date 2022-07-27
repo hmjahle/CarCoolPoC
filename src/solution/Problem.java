@@ -163,7 +163,15 @@ public class Problem {
         objective.updateIntraRouteObjective(removeShift, bestIntraObjective);
 	}
 
-
+/**
+     * Any objective affected will not be updated.
+     *
+     * @param visit
+     * @param startTime
+     */
+    public void setTimeDependentTaskStartTime(Visit visit, int startTime) {
+        solution.setSyncedVisitStartTime(visit, startTime);
+    }
 
 
 }

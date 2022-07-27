@@ -28,16 +28,15 @@ public class LargeNeighborhoodSearch {
     private NeighborhoodSelector neighborhoodSelector;
     private SimulatedAnnealing simulatedAnnealing;
     private boolean unallocatedTasksAreHierarchical = UNALLOCATED_TASKS_ARE_HIERARCHICAL_OBJECTIVE;
-    private SyncedTaskFeasibilityRecovery syncedTaskFeasibilityRecovery;
 
 
 
     public LargeNeighborhoodSearch(Model model){
-       intialize(model);
+        initialize(model);
     }
 
 
-    private void intialize(Model model){
+    private void initialize(Model model){
         this.model = model;
         this.neighborhoodSelector = new NeighborhoodSelector();
         this.minimumMillisecondsBetweenConvergenceIsChecked = MINIMUM_MILLISECONDS_BETWEEN_CONVERGENCE_IS_CHECKED_DEFAULT;
