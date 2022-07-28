@@ -424,4 +424,31 @@ public class RouteEvaluator {
     public boolean removeObjectiveIntraShift(String name) {
         return objectiveFunctions.removeObjective(name);
     }
+
+    /**
+     * Calculates start time for a visit in a route
+     * @param route
+     * @param currentVisit
+     * @param syncedVisitsStartTime
+     * @return the earliest possible start time of the visit in the route. Null if visit is not in the route. 
+     */
+    public Integer getVisitStartTime(List<Visit> route, Visit currentVisit, Map<Visit, Integer> syncedVisitsStartTimes){
+        int startTime = 0;
+        int previousVisitEndTime = 0;
+        for(Visit visit : route){
+            if (syncedVisitsStartTimes.containsKey(visit)){
+                // If the synced visit is Synced With Interval Diff then it can start after the synced visit start, but never before.
+                // The visit can never start before the visit start interval. 
+                // NB!! is visit.getTravelTime updated?
+                startTime = Math.max(Math.max(previousVisitEndTime + visit.getTravelTime(), visit.getStartTime()), syncedVisitsStartTimes.get(visit));
+            } else {
+                startTime = Math.max(previousVisitEndTime + visit.getTravelTime(), visit.getStartTime());
+            }
+            previousVisitEndTime = startTime + visit.getVisitDuration();
+            if (visit == currentVisit){
+                return startTime;
+            }
+        }
+        return null;
+    }
 }
