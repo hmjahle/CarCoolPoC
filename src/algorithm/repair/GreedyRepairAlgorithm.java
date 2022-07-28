@@ -101,9 +101,23 @@ public class GreedyRepairAlgorithm implements IRepairAlgorithm {
         return problem.getRouteEvaluators().get(shift.getId()).evaluateRouteByTheOrderOfVisitsInsertVisit(
                 solution.getRoute(shift), visit, solution.getSyncedVisitStartTimes(), shift);
     }
+    
+    /**
+     * Insert a list of vistis into a shift and calculate the objective value result. The visit order
+     * from the list will be upheld in the resulting route
+     * @param visits Visits to be inserted into the shift
+     * @param problem The current problem
+     * @param shift The shift to insert the visits into
+     * @return A route evaluator result. Possibly null if insert is infeasible
+     */
+    protected RouteEvaluatorResult getEvaluatorResultWithMultipleVisits(List<Visit> visits, Problem problem, Shift shift) {
+        var solution = problem.getSolution();
+        return problem.getRouteEvaluators().get(shift.getId()).evaluateRouteByTheOrderOfVisitsInsertVisits(
+                solution.getRoute(shift), visits, solution.getSyncedVisitStartTimes(), shift);
+    }
 
     private RouteEvaluatorResult findRoute(Problem problem, Visit visit, Solution solution, Shift shift) {
-
+        
         // Must return true, and if true you must insert task p and d as well to one or two drivers
         // Feasibilty must return feasible (boolean), (possible p1 d1) (possible p2 d2)
         // must check if task can be inserted
@@ -130,7 +144,35 @@ public class GreedyRepairAlgorithm implements IRepairAlgorithm {
         // Add the extra tasks as well
         return getEvaluatorResult(visit, problem, shift);
     }
+
+    /**
+     * This method tries to insert the pick-up and drop-of pair into all motorized shifts, run the route evaluator, and
+     * return the best shift
+     * @param problem The current problem
+     * @param motorizedShifts The possible motorized shifts that can take this transport request
+     * @param pickUp 
+     * @param dropOf
+     * @return Return a route evaluator result with the best shift. Null if no shift is found
+     */
+    private RouteEvaluatorResult getBestMotorizedShift(Problem problem, List<Shift> motorizedShifts, Visit pickUp, Visit dropOf) {
+        RouteEvaluatorResult bestResult = null;
+        List<Visit> transportRequest = new ArrayList<>(Arrays.asList(pickUp, dropOf));
+        for (Shift mShift : motorizedShifts) {
+            RouteEvaluatorResult result = getEvaluatorResultWithMultipleVisits(transportRequest, problem, mShift);
+
+            if (result == null) continue;
+            if (bestResult == null) {
+                bestResult = result;
+                continue;
+            }
+            if (bestResult.getObjectiveValue() < result.getObjectiveValue()) {
+                bestResult = result;
+            } 
+        } 
+        return bestResult;
+    }
 }
+
 
 /*private RouteEvaluatorResult findRoute(Problem problem, Task task, Solution solution, Shift shift) {
  *      Boolean feasible, VisitPair (P1, D1), VisitPair (P2, D2) = insertVisitInShift(Visit, Shift);
