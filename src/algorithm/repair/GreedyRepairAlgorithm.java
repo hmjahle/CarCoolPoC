@@ -9,6 +9,7 @@ import model.Shift;
 import model.Task;
 import model.Visit;
 import routeEvaluator.results.RouteEvaluatorResult;
+import routeEvaluator.results;
 import solution.Problem;
 import solution.Solution;
 
@@ -63,7 +64,7 @@ public class GreedyRepairAlgorithm implements IRepairAlgorithm {
             for (Visit insertVisit : visits) {
                 RouteEvaluatorResult result = findRoute(problem, insertVisit, solution, shift);
                 if (result == null) continue;
-
+                
                 /* deltaIntraObjectiveValue1 = result.getObjectiveValue() - objective.getShiftIntraRouteObjectiveValue(shift);
                 deltaIntraObjectiveValue2 = result.getObjectiveValue() - objective.getShiftIntraRouteObjectiveValue(shift);
                 deltaIntraObjectiveValue3 = result.getObjectiveValue() - objective.getShiftIntraRouteObjectiveValue(shift);
@@ -116,33 +117,36 @@ public class GreedyRepairAlgorithm implements IRepairAlgorithm {
                 solution.getRoute(shift), visits, solution.getSyncedVisitStartTimes(), shift);
     }
 
-    private RouteEvaluatorResult findRoute(Problem problem, Visit visit, Solution solution, Shift shift) {
-        
-        // Must return true, and if true you must insert task p and d as well to one or two drivers
-        // Feasibilty must return feasible (boolean), (possible p1 d1) (possible p2 d2)
-        // must check if task can be inserted
-        // If yes, but you must insert p1, d1 and p2, d2 in 1/2 drives:
-            // Iterate over all drivers shift
-                // feasibility check for p1, d1 for driver after T_i1,j1 
-                    // if feasible: Get objective
-                    // check if it is better
-                //feasibilty check p2,d2 for driver after Ti2,j2
-                    // if feasible: Get objective
-                    // check if it is better
-                //feasibilty check for both insert p1, d1 and p2,d2 for driver after Ti2,j2
-            // choose which shift??? 
-                // algorithm 3 in paper
-            // run route evaluter for all three (possibly two) shifts.
-            
+    private List<RouteEvaluatorResult> findRoute(Problem problem, Visit visit, Solution solution, Shift shift) {
+        // We have no extra route constraint so we can just delegate 
+        if (shift.isMotorized()) {
+            return findRouteForMotorized(problem, visit, solution, shift);
+        }
+        return findRouteForNonMotorized(problem, visit, solution, shift); 
+    }
 
-        // else do as before
+    private List<RouteEvaluatorResult> findRouteForMotorized(Problem problem, Visit visit, Solution solution, Shift shift) {
+        // ToDo: implement
+    }
 
-        // Feasibility checker is only for syncronized taskes, so we dont need to use it
-        /* if (feasibilityChecker.canNotBeInsertedInRoute(model, problem.getConstraints(), solution, shift, task)) {
-            return null;
-        } */
-        // Add the extra tasks as well
-        return getEvaluatorResult(visit, problem, shift);
+    /**
+     * This method:
+     *  1.  Insert the visit into the shift and runs the route evaluator
+     *  2.  Discover which case we have, based on the visits location in the route
+     *  3.  Handles potential inserts in other shifts (e.g., Pick-up and drop-off inserts in motorized shifts) 
+     * @param problem The current problem
+     * @param visit The visit we wish to insert
+     * @param solution The current solution
+     * @param shift The non-motorized shift we wish to insert the visit into
+     * @return A list of route evaluator results with affected routes. Empty list if none is feasible
+     */
+    private List<RouteEvaluatorResult> findRouteForNonMotorized(Problem problem, Visit visit, Solution solution, Shift shift) {
+        List<RouteEvaluatorResult> affectedRoutes = new ArrayList<>();
+
+        RouteEvaluatorResult result = getEvaluatorResult(visit, problem, shift);
+
+        int case = getInsertCaseForNonMotorizedShift(result.getRoute() visit);
+
     }
 
     /**
@@ -171,6 +175,10 @@ public class GreedyRepairAlgorithm implements IRepairAlgorithm {
         } 
         return bestResult;
     }
+}
+
+private int getInsertCaseForNonMotorizedShift(Route route, Visit visit) {
+
 }
 
 

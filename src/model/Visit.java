@@ -16,6 +16,7 @@ public class Visit {
      */
 
     // 0 = drive, 1 = walk
+    private Integer timeDependentOffsetInterval; //NB!!! når vi setter offset må det være lovlig innenfor time intervallet for tasken
     private Integer startTime;
     private Integer endTime;
     private Integer transportType;
@@ -45,6 +46,8 @@ public class Visit {
         this.startTime = visit.startTime;
         this.endTime = visit.endTime;
         this.travelTime = visit.travelTime;
+        this.timeDependentOffsetInterval = visit.timeDependentOffsetInterval;
+
     }
     public void resetVisitWhenRemovedFromShift() {
         this.transportType = null;
@@ -84,6 +87,9 @@ public class Visit {
     public Integer getCoCarPoolerShiftID(){ 
         return this.coCarPoolerShiftID; 
     }
+    public Integer getTimeDependentOffsetInterval(){
+        return this.timeDependentOffsetInterval;
+    }
 
 
     // Setters
@@ -105,5 +111,9 @@ public class Visit {
 
     public void setIsSynced(boolean isSynced){
         this.isSynced = isSynced;
+    }
+    
+    public void setTimeDependentOffsetInterval(int timeDependentOffsetInterval){
+        this.timeDependentOffsetInterval = timeDependentOffsetInterval;
     }
 }

@@ -1,6 +1,6 @@
 package routeEvaluator.solver;
 
-import java.util.Arrays;
+import java.util.*;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -453,5 +453,26 @@ public class RouteEvaluator {
             }
         }
         return null;
+    }
+
+    private Integer getEarliestStartTime(List<Visit> route, Visit currentVisit, Map<Visit, Integer> syncedVisitsStartTimes, Shift employeeShift){
+        return getVisitStartTime(route, currentVisit, syncedVisitsStartTimes, employeeShift);
+    }
+
+    private Integer getLatestStartTime(List<Visit> route, Visit currentVisit, Map<Visit, Integer> syncedVisitsStartTimes, Shift employeeShift){
+        int index = route.indexOf(currentVisit);
+        if (route.size() > index){
+            Visit successor = route.get(index+1);
+            return Math.min((successor.getEndTime()-successor.getVisitDuration() - successor.getTravelTime()), currentVisit.getEndTime() - currentVisit.getVisitDuration());
+        } else {
+            return currentVisit.getTaskEndTime() - currentVisit.getVisitDuration();
+        }
+    }
+
+    public List<Integer> calculateTimeWindowStartTime(List<Visit> route, Visit currentVisit, Map<Visit, Integer> syncedVisitsStartTimes, Shift employeeShift) {
+        List<Integer> timeWindowStartTime = new ArrayList<>();
+        timeWindowStartTime.add(getEarliestStartTime(route, currentVisit, syncedVisitsStartTimes, employeeShift));
+        timeWindowStartTime.add(getLatestStartTime(route, currentVisit, syncedVisitsStartTimes, employeeShift));
+        return timeWindowStartTime;
     }
 }

@@ -16,6 +16,8 @@ public class Solution {
     private Set<Task> unallocatedTasks;
     private Set<Task> allocatedTasks;
     private Map<Visit, Integer> timeDependentVisitStartTime;
+    private Collection<TimeDependentVisitPair> carpoolTimeDependentVisitPairs = new HashSet<>();
+    private Map<Visit, Integer> carpoolTimeDependentVisitStartTime;
     private Set<Visit> unallocatedVisits;
 
 
@@ -157,12 +159,53 @@ public class Solution {
         getRoute(shift).add(index, visit);
     }
 
+    // Method to add new carpoolTimeDependentVisitPair, because this list is initially empty. Input: Visits
+    protected void addCarpoolTimeDependentVisitPair(Visit master, Visit dependent, int intervalStart, int intervalEnd){
+        TimeDependentVisitPair carpoolPair = new TimeDependentVisitPair(master, dependent, intervalStart, intervalEnd);
+        this.carpoolTimeDependentVisitPairs.add(carpoolPair);
+        this.carpoolTimeDependentVisitStartTime.put(master, master.getStartTime());
+        this.carpoolTimeDependentVisitStartTime.put(dependent, Math.max(dependent.getStartTime(), master.getStartTime() + intervalStart));
+    }
+
+    // Method to add new carpoolTimeDependentVisitPair, because this list is initially empty. Input: TimeDependentVisitPair
+    protected void addCarpoolTimeDependentVisitPair(TimeDependentVisitPair pair){
+        this.carpoolTimeDependentVisitPairs.add(pair);
+        this.carpoolTimeDependentVisitStartTime.put(pair.getMasterVisit(), pair.getMasterVisit().getStartTime());
+        this.carpoolTimeDependentVisitStartTime.put(pair.getDependentVisit(), Math.max(pair.getDependentVisit().getStartTime(), pair.getMasterVisit().getStartTime() + pair.getIntervalStart()));
+    }
+
+    // Method to remove carpoolTimeDependentVisitPair, and ensuring it gets deleted from both lists
+    protected void removeCarpoolTimeDependentVisitPair(Visit visit) {
+        for (TimeDependentVisitPair pair: this.carpoolTimeDependentVisitPairs){
+            if (pair.getMasterVisit().equals(visit)){
+                this.carpoolTimeDependentVisitStartTime.remove(pair.getDependentVisit());
+                this.carpoolTimeDependentVisitStartTime.remove(visit);
+                this.carpoolTimeDependentVisitPairs.remove(pair);
+            }
+            else if (pair.getDependentVisit().equals(visit)){
+                this.carpoolTimeDependentVisitStartTime.remove(pair.getMasterVisit());
+                this.carpoolTimeDependentVisitStartTime.remove(visit);
+                this.carpoolTimeDependentVisitPairs.remove(pair);
+            }
+        }
+    }
+
     protected void setSyncedVisitStartTime(Visit visit, int startTime) {
         this.timeDependentVisitStartTime.put(visit, startTime);
     }
 
+    // Carpool-sync-starttime-setter
+    protected void setCarpoolSyncedVisitStartTime(Visit visit, int startTime) {
+        this.carpoolTimeDependentVisitStartTime.put(visit, startTime);
+    }
+
     public int getSyncedTaskStartTime(Visit visit) {
         return this.timeDependentVisitStartTime.get(visit);
+    }
+
+    // Carpool-sync-starttime-getter
+    public int getCarpoolSyncedTaskStartTime(Visit visit) {
+        return this.carpoolTimeDependentVisitStartTime.get(visit);
     }
 
     protected Visit removeFromRoute(Shift shift, int index) {
@@ -199,6 +242,10 @@ public class Solution {
 
     public Set<Visit> getUnallocatedVisits() {
         return unallocatedVisits;
+    }
+
+    public void addVisitsToUnallocatedVisits(Collection<Visit> visits) {
+        unallocatedVisits.addAll(visits);
     }
 
     public static void main(String[] args) {
