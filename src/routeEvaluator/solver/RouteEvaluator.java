@@ -432,10 +432,13 @@ public class RouteEvaluator {
      * @param syncedVisitsStartTime
      * @return the earliest possible start time of the visit in the route. Null if visit is not in the route. 
      */
-    public Integer getVisitStartTime(List<Visit> route, Visit currentVisit, Map<Visit, Integer> syncedVisitsStartTimes){
-        int startTime = 0;
-        int previousVisitEndTime = 0;
+    public Integer getVisitStartTime(List<Visit> route, Visit currentVisit, Map<Visit, Integer> syncedVisitsStartTimes, Shift employeeShift) throws NullPointerException{
+        int startTime = employeeShift.getStartTime();
+        int previousVisitEndTime = employeeShift.getStartTime();
         for(Visit visit : route){
+            if (visit.getStartTime() == null){
+                throw new NullPointerException("Start time of visit is not initaized");
+            }
             if (syncedVisitsStartTimes.containsKey(visit)){
                 // If the synced visit is Synced With Interval Diff then it can start after the synced visit start, but never before.
                 // The visit can never start before the visit start interval. 

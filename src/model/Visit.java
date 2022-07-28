@@ -16,8 +16,8 @@ public class Visit {
      */
 
     // 0 = drive, 1 = walk
-    private int startTime;
-    private int endTime;
+    private Integer startTime;
+    private Integer endTime;
     private Integer transportType;
     private Integer coCarPoolerShiftID; // Shift id to the person you are carpooling with
     private boolean isSynced = false;
@@ -28,6 +28,12 @@ public class Visit {
         this.id = id;
         this.task = task;
         this.visitType = visitType;
+        if (this.id == this.task.getId()) {
+            // We can only initialize time interval if this
+            // is a task completing visit
+            this.startTime = this.task.getStartTime();
+            this.endTime = this.task.getEndTime();
+        }
     }
 
     public Visit(Visit visit) {
@@ -61,9 +67,9 @@ public class Visit {
 
     public int getTaskEndTime(){ return this.task.getEndTime(); }
 
-    public int getStartTime(){ return this.startTime;}
+    public Integer getStartTime(){ return this.startTime;}
 
-    public int getEndTime(){ return this.endTime;}
+    public Integer getEndTime(){ return this.endTime;}
 
     public int getVisitDuration(){ if (this.isTransportTask){ return TransportMode.TRANSPORTTIME; } else { return this.getTask().getDuration(); } }
     
