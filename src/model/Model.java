@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.lang.Short;
 import java.util.Iterator;
 import java.util.List;
@@ -31,7 +32,7 @@ public class Model {
     private Map<Short, Shift> idsShifts; // denne trenger vi egentlig ikke her fordi sykepleierne er homogene
     private Map<Integer, TravelTimeMatrix> travelTimeMatrix;
     private Collection<Visit> visits;
-
+    private Collection<TimeDependentVisitPair> timeDependentVisitPairs = new HashSet<>();;
     private List<Shift> shifts;
     private List<Shift> carpoolAbleShifts;
     private int numTasks;
@@ -61,7 +62,13 @@ public class Model {
 
     public Map<Integer, TravelTimeMatrix> getTravelTimeMatrix(){ return this.travelTimeMatrix; }
 
+    public Collection<TimeDependentVisitPair> getTimeDependentVisitPairs() { return this.timeDependentVisitPairs;}
+
     public Collection<Visit> getVisits(){ return this.visits;}
+
+    public void setTimeDependentVisitPairs(Collection<TimeDependentVisitPair> timeDependentTaskPairs) {
+        this.timeDependentVisitPairs = timeDependentTaskPairs;
+    }
 
     public void loadData() {
 

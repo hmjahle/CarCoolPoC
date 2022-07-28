@@ -31,13 +31,12 @@ public class LargeNeighborhoodSearch {
 
 
 
-
     public LargeNeighborhoodSearch(Model model){
-       intialize(model);
+        initialize(model);
     }
 
 
-    private void intialize(Model mode){
+    private void initialize(Model model){
         this.model = model;
         this.neighborhoodSelector = new NeighborhoodSelector();
         this.minimumMillisecondsBetweenConvergenceIsChecked = MINIMUM_MILLISECONDS_BETWEEN_CONVERGENCE_IS_CHECKED_DEFAULT;

@@ -1,5 +1,6 @@
 package routeEvaluator.solver;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -19,6 +20,7 @@ import routeEvaluator.solver.algorithm.ExtendInfoTwoElements;
 import routeEvaluator.solver.algorithm.IRouteEvaluatorObjective;
 import routeEvaluator.solver.algorithm.Label;
 import routeEvaluator.solver.algorithm.LabellingAlgorithm;
+import routeEvaluator.solver.algorithm.Node;
 import routeEvaluator.solver.algorithm.NodeList;
 import routeEvaluator.solver.algorithm.SearchGraph;
 
@@ -40,6 +42,7 @@ public class RouteEvaluator {
     private final LabellingAlgorithm algorithm;
     private final NodeList firstNodeList;
     private final NodeList secondNodeList;
+    private final int[] syncedNodesStartTime;
 
     // Remove, since origing and destination always has to de depot
     /* public RouteEvaluator(Map<Integer, TravelTimeMatrix>  distanceMatrixMatrix, Collection<Visit> visits) {
@@ -57,6 +60,7 @@ public class RouteEvaluator {
         this.algorithm = new LabellingAlgorithm(graph, objectiveFunctions, constraints);
         this.firstNodeList = new NodeList(graph.getNodes().size());
         this.secondNodeList = new NodeList(graph.getNodes().size());
+        this.syncedNodesStartTime = Arrays.copyOf(other.syncedNodesStartTime, other.syncedNodesStartTime.length);
     }
 
     public RouteEvaluator(Map<Integer, TravelTimeMatrix>  distanceMatrixMatrix, Collection<Visit> visits,
@@ -67,6 +71,7 @@ public class RouteEvaluator {
         this.algorithm = new LabellingAlgorithm(graph, objectiveFunctions, constraints);
         this.firstNodeList = new NodeList(graph.getNodes().size());
         this.secondNodeList = new NodeList(graph.getNodes().size());
+        this.syncedNodesStartTime = new int[graph.getNodes().size()];
     }
 
     /**
@@ -88,12 +93,12 @@ public class RouteEvaluator {
      * @return A double value representing the objective value of the route.
      */
     // Changed to not support synced visits
-    public Double evaluateRouteObjective(List<Visit> visits, Shift employeeWorkShift) {
-        ExtendInfoOneElement nodeExtendInfoOneElement = initializeOneElementEvaluator(visits);
+    public Double evaluateRouteObjective(List<Visit> visits, Map<Visit, Integer> syncedVisitsStartTime, Shift employeeWorkShift) {
+        ExtendInfoOneElement nodeExtendInfoOneElement = initializeOneElementEvaluator(visits, syncedVisitsStartTime);
 
         // Lable is path + cost + time etc
         Label bestLabel = algorithm.
-                runAlgorithm(new WeightedObjective(), nodeExtendInfoOneElement, employeeWorkShift);
+                runAlgorithm(new WeightedObjective(), nodeExtendInfoOneElement, syncedNodesStartTime, employeeWorkShift);
         return bestLabel == null ? null : bestLabel.getObjective().getObjectiveValue();
 
     }
@@ -108,9 +113,10 @@ public class RouteEvaluator {
      * @param employeeWorkShift    Employee the route applies to.
      * @return A bool value representing the feasibility of the route.
      */
-    public boolean evaluateRouteFeasibilityForAllConstraints(List<Visit> visits, Shift employeeWorkShift) {
+    public boolean evaluateRouteFeasibilityForAllConstraints(List<Visit> visits, Map<Visit, Integer> syncedVisitsStartTime, 
+                                                             Shift employeeWorkShift) {
         constraints.activateCheckAllActiveAndInactiveConstraints();
-        boolean feasible = evaluateRouteObjective(visits, employeeWorkShift) != null;
+        boolean feasible = evaluateRouteObjective(visits, syncedVisitsStartTime, employeeWorkShift) != null;
         constraints.deActivateCheckAllActiveAndInactiveConstraints();
         return feasible;
     }
@@ -126,8 +132,9 @@ public class RouteEvaluator {
      * @param employeeWorkShift    Employee the route applies to.
      * @return A double value representing the objective value of the route.
      */
-    public Double evaluateRouteByTheOrderOfVisitsRemoveVisitObjective(List<Visit> visits, List<Integer> skipVisitsAtIndices, Shift employeeWorkShift) {
-        return calcObjectiveRemoveVisit(visits, skipVisitsAtIndices, employeeWorkShift);
+    public Double evaluateRouteByTheOrderOfVisitsRemoveVisitObjective(List<Visit> visits, List<Integer> skipVisitsAtIndices, 
+                                                                      Map<Visit, Integer> syncedVisitsStartTime, Shift employeeWorkShift) {
+        return calcObjectiveRemoveVisit(visits, skipVisitsAtIndices, syncedVisitsStartTime, employeeWorkShift);
     }
 
 
@@ -142,15 +149,16 @@ public class RouteEvaluator {
      * @param employeeWorkShift    Employee the route applies to.
      * @return A double value representing the objective value of the route.
      */
-    public Double evaluateRouteByTheOrderOfVisitsRemoveVisitObjective(List<Visit> visits, int skipVisitAtIndex,Shift employeeWorkShift) {
-        return calcObjectiveRemoveVisit(visits, skipVisitAtIndex, employeeWorkShift);
+    public Double evaluateRouteByTheOrderOfVisitsRemoveVisitObjective(List<Visit> visits, int skipVisitAtIndex, Map<Visit, Integer> syncedVisitsStartTime, Shift employeeWorkShift) {
+        return calcObjectiveRemoveVisit(visits, skipVisitAtIndex, syncedVisitsStartTime, employeeWorkShift);
     }
 
 
     /**
      * Used to initialize the route evaluator when
      */
-    private ExtendInfoOneElement initializeOneElementEvaluator(List<Visit> visits) {
+    private ExtendInfoOneElement initializeOneElementEvaluator(List<Visit> visits, Map<Visit, Integer> syncedVisitsStartTime) {
+        setSyncedNodesStartTimes(syncedVisitsStartTime, visits);
         updateFirstNodeList(visits);
         return new ExtendInfoOneElement(firstNodeList);
     }
@@ -164,8 +172,8 @@ public class RouteEvaluator {
      * @param employeeWorkShift    Employee the route applies to.
      * @return A routeEvaluator result for the evaluated route.
      */
-    public RouteEvaluatorResult evaluateRouteByTheOrderOfVisits(List<Visit> visits, Shift employeeWorkShift) {
-        return calcRouteEvaluatorResult(new WeightedObjective(), visits, employeeWorkShift);
+    public RouteEvaluatorResult evaluateRouteByTheOrderOfVisits(List<Visit> visits, Map<Visit, Integer> syncedVisitsStartTime, Shift employeeWorkShift) {
+        return calcRouteEvaluatorResult(new WeightedObjective(), visits, syncedVisitsStartTime, employeeWorkShift);
     }
 
 
@@ -198,29 +206,31 @@ public class RouteEvaluator {
      * @param employeeWorkShift    Employee the route applies to.
      * @return A routeEvaluator result for the evaluated route.
      */
-    public RouteEvaluatorResult evaluateRouteByTheOrderOfVisitsInsertVisit(List<Visit> visits, Visit insertVisit, Shift employeeWorkShift) {
-        return calcRouteEvaluatorResult(new WeightedObjective(), visits, insertVisit, employeeWorkShift);
+    public RouteEvaluatorResult evaluateRouteByTheOrderOfVisitsInsertVisit(List<Visit> visits, Visit insertVisit, Map<Visit, Integer> syncedVisitsStartTime, Shift employeeWorkShift) {
+        return calcRouteEvaluatorResult(new WeightedObjective(), visits, insertVisit, syncedVisitsStartTime, employeeWorkShift);
     }
 
     /**
      * Used to calculate objective of routes when removing one task
      */
-    private Double calcObjectiveRemoveVisit(List<Visit> visits, int skipVisitAtIndex, Shift employeeWorkShift) {
+    private Double calcObjectiveRemoveVisit(List<Visit> visits, int skipVisitAtIndex, Map<Visit, Integer> syncedVisitsStartTime, Shift employeeWorkShift) {
+        setSyncedNodesStartTimes(syncedVisitsStartTime, visits);
         updateFirstNodeList(visits, skipVisitAtIndex);
         ExtendInfoOneElement nodeExtendInfoOneElement = new ExtendInfoOneElement(firstNodeList);
         Label bestLabel = algorithm.
-                runAlgorithm(new WeightedObjective(), nodeExtendInfoOneElement, employeeWorkShift);
+                runAlgorithm(new WeightedObjective(), nodeExtendInfoOneElement, syncedNodesStartTime, employeeWorkShift);
         return bestLabel == null ? null : bestLabel.getObjective().getObjectiveValue();
     }
 
     /**
-     * Used to calculate objective of routes when removing multiple visits
+     * Used to calculate objective of routes when removing multiple task
      */
-    private Double calcObjectiveRemoveVisit(List<Visit> visits, List<Integer> skipVisitsAtIndices, Shift employeeWorkShift) {
-        updateFirstNodeList(visits, skipVisitsAtIndices);
+    private Double calcObjectiveRemoveVisit(List<Visit> visits, List<Integer> skipVisitAtIndices, Map<Visit, Integer> syncedVisitsStartTime, Shift employeeWorkShift) {
+        setSyncedNodesStartTimes(syncedVisitsStartTime, visits);
+        updateFirstNodeList(visits, skipVisitAtIndices);
         ExtendInfoOneElement nodeExtendInfoOneElement = new ExtendInfoOneElement(firstNodeList);
         Label bestLabel = algorithm.
-                runAlgorithm(new WeightedObjective(), nodeExtendInfoOneElement, employeeWorkShift);
+                runAlgorithm(new WeightedObjective(), nodeExtendInfoOneElement, syncedNodesStartTime, employeeWorkShift);
         return bestLabel == null ? null : bestLabel.getObjective().getObjectiveValue();
     }
 
@@ -240,8 +250,8 @@ public class RouteEvaluator {
      * @return A routeEvaluator result for the evaluated route.
      */
     public RouteEvaluatorResult evaluateRouteByTheOrderOfVisitsInsertVisits(List<Visit> visits, List<Visit> insertVisits,
-                                                                             Shift employeeWorkShift) {
-        return calcRouteEvaluatorResult(new WeightedObjective(), visits, insertVisits, employeeWorkShift);
+                                                                            Map<Visit, Integer> syncedVisitsStartTime, Shift employeeWorkShift) {
+        return calcRouteEvaluatorResult(new WeightedObjective(), visits, insertVisits, syncedVisitsStartTime, employeeWorkShift);
     }
 
 
@@ -260,8 +270,8 @@ public class RouteEvaluator {
      * @return The objective value for the evaluated route or null if infeasible.
      */
     public Double evaluateRouteByTheOrderOfVisitsInsertVisitsObjective(List<Visit> visits, List<Visit> insertVisits,
-                                                                     Shift employeeWorkShift) {
-        return calcRouteEvaluatorObjective(new WeightedObjective(), visits, insertVisits, employeeWorkShift);
+                                                                       Map<Visit, Integer> syncedVisitsStartTime, Shift employeeWorkShift) {
+        return calcRouteEvaluatorObjective(new WeightedObjective(), visits, insertVisits, syncedVisitsStartTime, employeeWorkShift);
     }
 
     /**
@@ -298,41 +308,49 @@ public class RouteEvaluator {
     /**
      * Used to calculate routes without inserting new visits.
      */
-    private RouteEvaluatorResult calcRouteEvaluatorResult(IRouteEvaluatorObjective objective, List<Visit> visits, Shift employeeWorkShift) {
-        ExtendInfoOneElement nodeExtendInfoOneElement = initializeOneElementEvaluator(visits);
-        return algorithm.solveRouteEvaluatorResult(objective, nodeExtendInfoOneElement, employeeWorkShift);
+    private RouteEvaluatorResult calcRouteEvaluatorResult(IRouteEvaluatorObjective objective, List<Visit> visits, 
+                                                          Map<Visit, Integer> syncedVisitsStartTime, Shift employeeWorkShift) {
+        ExtendInfoOneElement nodeExtendInfoOneElement = initializeOneElementEvaluator(visits, syncedVisitsStartTime);
+        return algorithm.solveRouteEvaluatorResult(objective, nodeExtendInfoOneElement, syncedNodesStartTime, employeeWorkShift);
     }
 
     /**
      * Used to calculate routes when inserting one new task
      */
-    private RouteEvaluatorResult calcRouteEvaluatorResult(IRouteEvaluatorObjective objective, List<Visit> visits, Visit insertVisit, Shift employeeWorkShift) {
+    private RouteEvaluatorResult calcRouteEvaluatorResult(IRouteEvaluatorObjective objective, List<Visit> visits, Visit insertVisit, 
+                                                          Map<Visit, Integer> syncedVisitsStartTime, Shift employeeWorkShift) {
+        setSyncedNodesStartTimes(syncedVisitsStartTime, visits);
+        setSyncedNodesStartTime(syncedVisitsStartTime, insertVisit);
         updateFirstNodeList(visits);
         updateSecondNodeList(insertVisit);
         ExtendInfoTwoElements nodeExtendInfoTwoElements = new ExtendInfoTwoElements(firstNodeList, secondNodeList);
-        return algorithm.solveRouteEvaluatorResult(objective, nodeExtendInfoTwoElements, employeeWorkShift);
+        return algorithm.solveRouteEvaluatorResult(objective, nodeExtendInfoTwoElements, syncedNodesStartTime, employeeWorkShift);
     }
 
     /**
      * Used to calculate routes when inserting multiple new visits.
      */
     private RouteEvaluatorResult calcRouteEvaluatorResult(IRouteEvaluatorObjective objective, List<Visit> visits, List<Visit> insertVisits,
-                                                            Shift employeeWorkShift) {
+                                                          Map<Visit, Integer> syncedVisitsStartTime,  Shift employeeWorkShift) {
+        setSyncedNodesStartTimes(syncedVisitsStartTime, visits);
+        setSyncedNodesStartTimes(syncedVisitsStartTime, insertVisits);
         updateFirstNodeList(visits);
         updateSecondNodeList(insertVisits);
         ExtendInfoTwoElements nodeExtendInfoTwoElements = new ExtendInfoTwoElements(firstNodeList, secondNodeList);
-        return algorithm.solveRouteEvaluatorResult(objective, nodeExtendInfoTwoElements, employeeWorkShift);
+        return algorithm.solveRouteEvaluatorResult(objective, nodeExtendInfoTwoElements, syncedNodesStartTime, employeeWorkShift);
     }
 
     /**
      * Used to calculate routes when inserting multiple new visits.
      */
     private Double calcRouteEvaluatorObjective(IRouteEvaluatorObjective objective, List<Visit> visits, List<Visit> insertVisits,
-                                               Shift employeeWorkShift) {
+                                               Map<Visit, Integer> syncedVisitsStartTime,  Shift employeeWorkShift) {
+        setSyncedNodesStartTimes(syncedVisitsStartTime, visits);
+        setSyncedNodesStartTimes(syncedVisitsStartTime, insertVisits);
         updateFirstNodeList(visits);
         updateSecondNodeList(insertVisits);
         ExtendInfoTwoElements nodeExtendInfoTwoElements = new ExtendInfoTwoElements(firstNodeList, secondNodeList);
-        return algorithm.solveRouteEvaluatorObjective(objective, nodeExtendInfoTwoElements, employeeWorkShift);
+        return algorithm.solveRouteEvaluatorObjective(objective, nodeExtendInfoTwoElements, syncedNodesStartTime, employeeWorkShift);
     }
 
 
@@ -356,8 +374,23 @@ public class RouteEvaluator {
         secondNodeList.initializeWithNodes(graph, visits);
     }
 
+    private void setSyncedNodesStartTimes(Map<Visit, Integer> syncedVisitsStartTime, Collection<Visit> visits) {
+        for (Visit visit : visits)
+            setSyncedNodesStartTime(syncedVisitsStartTime, visit);
+    }
+
+    private void setSyncedNodesStartTime(Map<Visit, Integer> syncedVisitsStartTime, Visit visit) {
+        if (visit.isSynced())
+            setStartTime(visit, syncedVisitsStartTime.get(visit));
+    }
+
     public boolean hasObjective(String name) {
         return objectiveFunctions.hasObjective(name);
+    }
+
+    private void setStartTime(Visit visit, int startTime) {
+        Node node = graph.getNode(visit);
+        syncedNodesStartTime[node.getNodeId()] = startTime;
     }
 
     public ObjectiveFunctionsIntraRouteHandler getObjectiveFunctions() {

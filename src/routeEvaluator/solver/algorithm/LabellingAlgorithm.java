@@ -32,6 +32,7 @@ public class LabellingAlgorithm {
     private final LabelLists labelLists;
     private Label bestLabelOnDestination;
     private IExtendInfo nodeExtendInfo;
+    private int[] syncedNodesStartTime;
     private Shift employeeWorkShift;
 
     public LabellingAlgorithm(SearchGraph graph, ObjectiveFunctionsIntraRouteHandler objectiveFunctions, ConstraintsIntraRouteHandler constraints) {
@@ -56,11 +57,12 @@ public class LabellingAlgorithm {
      * @param objective            Starting objective.
      * @return Total fitness value, null if infeasible.
      */
-    public Label runAlgorithm(IRouteEvaluatorObjective objective, IExtendInfo nodeExtendInfo, Shift employeeWorkShift) {
+    public Label runAlgorithm(IRouteEvaluatorObjective objective, IExtendInfo nodeExtendInfo, int[] syncedNodesStartTime, Shift employeeWorkShift) {
         this.labelLists.clear();
         IResource startResource = nodeExtendInfo.createEmptyResource();
         Label startLabel = createStartLabel(objective, employeeWorkShift.getStartTime(), startResource);
         this.nodeExtendInfo = nodeExtendInfo;
+        this.syncedNodesStartTime = syncedNodesStartTime;
         this.employeeWorkShift = employeeWorkShift;
         solveLabellingAlgorithm(startLabel);
         return this.bestLabelOnDestination;
@@ -75,8 +77,8 @@ public class LabellingAlgorithm {
      * @param initialObjective     Starting objective.
      * @return RouteEvaluatorResult or null if route is infeasible.
      */
-    public RouteEvaluatorResult solveRouteEvaluatorResult(IRouteEvaluatorObjective initialObjective, IExtendInfo nodeExtendInfo, Shift employeeWorkShift) {
-        Label bestLabel = runAlgorithm(initialObjective, nodeExtendInfo, employeeWorkShift);
+    public RouteEvaluatorResult solveRouteEvaluatorResult(IRouteEvaluatorObjective initialObjective, IExtendInfo nodeExtendInfo, int[] syncedNodesStartTime, Shift employeeWorkShift) {
+        Label bestLabel = runAlgorithm(initialObjective, nodeExtendInfo, syncedNodesStartTime, employeeWorkShift);
         if (bestLabel == null)
             return null;
         return buildRouteEvaluatorResult(bestLabel);
@@ -91,8 +93,8 @@ public class LabellingAlgorithm {
      * @param initialObjective     Starting objective.
      * @return Objective value or null if route is infeasible.
      */
-    public double solveRouteEvaluatorObjective(IRouteEvaluatorObjective initialObjective, IExtendInfo nodeExtendInfo, Shift employeeWorkShift) {
-        Label bestLabel = runAlgorithm(initialObjective, nodeExtendInfo, employeeWorkShift);
+    public double solveRouteEvaluatorObjective(IRouteEvaluatorObjective initialObjective, IExtendInfo nodeExtendInfo, int[] syncedNodesStartTime, Shift employeeWorkShift) {
+        Label bestLabel = runAlgorithm(initialObjective, nodeExtendInfo, syncedNodesStartTime, employeeWorkShift);
         return bestLabel.getObjective().getObjectiveValue();
     }
 
@@ -138,8 +140,8 @@ public class LabellingAlgorithm {
             return null;
         /* if (travelTime == null)
             return null; */
-        int startOfServiceNextTask = calcStartOfServiceNextTask(thisLabel, nextNode, travelTime);
-        IRouteEvaluatorObjective objective = evaluateFeasibilityAndObjective(thisLabel, nextNode, startOfServiceNextTask, travelTime, newLocation);
+        int startOfServiceNextTask = calcStartOfServiceNextTask(thisLabel, nextNode, travelTime, nextNode.isSynced());
+        IRouteEvaluatorObjective objective = evaluateFeasibilityAndObjective(thisLabel, nextNode, startOfServiceNextTask, travelTime, nextNode.isSynced(), newLocation);
         if (objective == null)
             return null;
         IResource resources = thisLabel.getResources().extend(extendToInfo);
@@ -178,12 +180,11 @@ public class LabellingAlgorithm {
         }
     }
 
-    public IRouteEvaluatorObjective extend(IRouteEvaluatorObjective currentObjective, Node toNode, int travelTime, int startOfServiceNextTask) {
-        // Task task = toNode.getTask();
+    public IRouteEvaluatorObjective extend(IRouteEvaluatorObjective currentObjective, Node toNode, int travelTime, int startOfServiceNextTask, int syncedVisitLatestStartTime) {
         Visit visit = toNode.getVisit();
         int visitEnd = visit != null ? startOfServiceNextTask + visit.getVisitDuration() : 0;
         return objectiveFunctions.calculateObjectiveValue(currentObjective, travelTime, visit,
-                startOfServiceNextTask, visitEnd, employeeWorkShift);
+                startOfServiceNextTask, visitEnd, syncedVisitLatestStartTime, employeeWorkShift);
     }
 
     private Label findNextLabel() {
@@ -207,21 +208,22 @@ public class LabellingAlgorithm {
         return actualTravelTime + thisLabel.getCurrentTime() + thisLabel.getNode().getDurationSeconds();
     }
 
-    private int calcStartOfServiceNextTask(Label thisLabel, Node nextNode, int travelTime) {
+    private int calcStartOfServiceNextTask(Label thisLabel, Node nextNode, int travelTime, boolean nextNodeIsSynced) {
         int arrivalTimeNextTask = calcArrivalTimeNextTask(thisLabel, travelTime);
-        int earliestStartTimeNextTask = findEarliestStartTimeNextTask(nextNode);
+        int earliestStartTimeNextTask = findEarliestStartTimeNextTask(nextNode, nextNodeIsSynced);
         return Math.max(arrivalTimeNextTask, earliestStartTimeNextTask);
     }
 
     private IRouteEvaluatorObjective evaluateFeasibilityAndObjective(Label thisLabel, Node nextNode, int startOfServiceNextTask,
-                                                                     int travelTime, int newLocation) {
+                                                                     int travelTime, boolean nextNodeIsSynced, int newLocation) {
+        int syncedTaskLatestStartTime = nextNodeIsSynced ? syncedNodesStartTime[nextNode.getNodeId()] : -1;
         int earliestOfficeReturn = calcEarliestPossibleReturnToOfficeTime(nextNode, newLocation, startOfServiceNextTask);
         int shiftStartTime = thisLabel.getPrevious() == null ? nextNode.getTaskStartTime() - travelTime : thisLabel.getShiftStartTime();
         ConstraintInfo constraintInfo = new ConstraintInfo(employeeWorkShift, earliestOfficeReturn, nextNode.getVisit(),
-                startOfServiceNextTask, shiftStartTime);
+                startOfServiceNextTask, syncedTaskLatestStartTime, shiftStartTime);
         if (!constraints.isFeasible(constraintInfo))
             return null;
-        return extend(thisLabel.getObjective(), nextNode, travelTime, startOfServiceNextTask);
+        return extend(thisLabel.getObjective(), nextNode, travelTime, startOfServiceNextTask, syncedTaskLatestStartTime);
     }
 
     /**
@@ -259,8 +261,12 @@ public class LabellingAlgorithm {
         return nextNode.getLocationId();
     }
 
-    private int findEarliestStartTimeNextTask(Node nextNode) {
+    private int findEarliestStartTimeNextTask(Node nextNode, boolean nextNodeIsSynced) {
+        if (nextNodeIsSynced) {
+            return syncedNodesStartTime[nextNode.getNodeId()];
+        } else {
             return nextNode.getTaskStartTime();
+        }
     }
 
     private boolean optimalSolutionFound(Label currentLabel) {

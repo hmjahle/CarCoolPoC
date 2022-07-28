@@ -131,6 +131,21 @@ public class Problem {
 
     }
 
+    public void unAssignVisitFromShift(Shift shift, int index) {
+        List<Visit> route = solution.getRoute(shift);
+        Visit removedVisit = solution.unAssignVisitFromShift(shift, index);
+        if (removedVisit.completesTask()){
+            // The visit includes completing the task
+            solution.unAllocateTask(removedVisit.getTask());
+        }
+        if (removedVisit.getVisitType()  == Constants.VisitType.JOIN_MOTORIZED && !shift.isMotorized() && route.size() > index){
+            // You remove a walkers pick-up point. It should no longer drive to the next task
+            route.get(index+1).setCoCarPoolerShiftID(null);
+            route.get(index+1).setTransportType(Constants.TransportMode.WALK);
+        }
+        objective.removeVisit(shift, removedVisit);
+    }
+
 
 
     public void addVisitsToUnallocatedVisits(Collection<Visit> visits) {
@@ -148,7 +163,15 @@ public class Problem {
         objective.updateIntraRouteObjective(removeShift, bestIntraObjective);
 	}
 
-
+/**
+     * Any objective affected will not be updated.
+     *
+     * @param visit
+     * @param startTime
+     */
+    public void setTimeDependentTaskStartTime(Visit visit, int startTime) {
+        solution.setSyncedVisitStartTime(visit, startTime);
+    }
 
 
 }

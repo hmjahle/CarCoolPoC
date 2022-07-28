@@ -123,9 +123,9 @@ public abstract class GreedyDestroyAbstract extends DestroyOperatorAbstract {
         Double intraObj = null;
         if(!entryShift.isMotorized()){
             // Temporary update transportation mode, to calculate correct new objective
-            intraObj = objective.deltaIntraObjectiveNewRoute(entryShift, temporarilyUpdateNonMotorizedRemovedVisits(solution, entryShift, removalPositions), removalPositions);
+            intraObj = objective.deltaIntraObjectiveNewRoute(entryShift, temporarilyUpdateNonMotorizedRemovedVisits(solution, entryShift, removalPositions), removalPositions, solution.getSyncedVisitStartTimes());
         } else {
-            intraObj = objective.deltaIntraObjectiveNewRoute(entryShift, solution.getRoute(entryShift), removalPositions);
+            intraObj = objective.deltaIntraObjectiveNewRoute(entryShift, solution.getRoute(entryShift), removalPositions, solution.getSyncedVisitStartTimes());
         }
         return intraObj;
     } 

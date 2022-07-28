@@ -33,6 +33,9 @@ public class RouteEvaluationInfoAbstract {
         return visit != null && visit.getTask().isStrict();
     }
 
+    public boolean isSynced() {
+        return visit != null && visit.isSynced();
+    }
     // If task is origin or destination
     public boolean isDepot() {
         return visit == null;

@@ -99,7 +99,7 @@ public class GreedyRepairAlgorithm implements IRepairAlgorithm {
     protected RouteEvaluatorResult getEvaluatorResult(Visit visit, Problem problem, Shift shift) {
         var solution = problem.getSolution();
         return problem.getRouteEvaluators().get(shift.getId()).evaluateRouteByTheOrderOfVisitsInsertVisit(
-                solution.getRoute(shift), visit, shift);
+                solution.getRoute(shift), visit, solution.getSyncedVisitStartTimes(), shift);
     }
 
     private RouteEvaluatorResult findRoute(Problem problem, Visit visit, Solution solution, Shift shift) {

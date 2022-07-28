@@ -75,4 +75,8 @@ public class Node {
     public int getTransportMode(){
         return visit == null ? null : visit.getTransportType();
     }
+
+    public boolean isSynced() {
+        return visit != null && visit.isSynced();
+    }
 }
