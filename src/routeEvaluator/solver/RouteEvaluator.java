@@ -83,31 +83,6 @@ public class RouteEvaluator {
     }
 
     /**
-     * Calculates start time for a visit in a route
-     * @param route
-     * @param currentVisit
-     * @param syncedVisitsStartTime
-     * @return the earliest possible start time of the visit in the route. Null if visit is not in the route. 
-     */
-    public Integer getVisitStartTime(List<Visit> route, Visit currentVisit, Map<Visit, Integer> syncedVisitsStartTime){
-        int startTime = 0;
-        for(Visit visit : route){
-            if (syncedVisitsStartTime.containsKey(visit)){
-                // If the synced visit is Synced With Interval Diff then it can start after the synced visit start, but never before.
-                // The visit can never start before the visit start interval. 
-                startTime = Math.max(Math.max(startTime + visit.getTravelTime(), visit.getStartTime()), syncedVisitsStartTime.get(visit));
-            } else {
-                startTime = Math.max(startTime + visit.getTravelTime(), visit.getStartTime());
-            }
-            if (visit == currentVisit){
-                return startTime;
-            }
-        }
-        return null;
-
-    }
-
-    /**
      * Evaluates the route given by the visits input, the order of the visits is the order of the route.
      * Only returns objective value, no route details is returned.
      *
