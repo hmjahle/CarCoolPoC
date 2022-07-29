@@ -63,6 +63,10 @@ public class Visit {
     public int getVisitType() { return this.visitType; }
 
     public boolean completesTask() {return this.visitType == VisitType.COMPLETE_TASK;}
+    public boolean isJoinMotorized() {return this.visitType == VisitType.JOIN_MOTORIZED;}
+    public boolean isDropOff() {return this.visitType == VisitType.DROP_OF;}
+    public boolean isPickUp() {return this.visitType == VisitType.PICK_UP;}
+
 
     public int getTransportType() { return this.transportType; }
 
