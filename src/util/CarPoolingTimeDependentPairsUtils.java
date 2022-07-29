@@ -7,14 +7,13 @@ import java.util.Map;
 
 import model.Shift;
 import model.Visit;
-import routeEvaluator.solver.RouteEvaluator;
 
 public class CarPoolingTimeDependentPairsUtils {
 
     static int START_TIME = 0;
     static int END_TIME=1;
 
-    public Map<Visit, List<Integer>> claculateTimeWindos(List<Visit> route, Visit joinMotorized, Visit dropOff, Visit pickUp, Visit completeTask, Map<Visit, Integer> syncedVisitsStartTimes, Shift employeeShift){
+    public Map<Visit, List<Integer>> calculateTimeWindows(List<Visit> route, Visit joinMotorized, Visit dropOff, Visit pickUp, Visit completeTask, Map<Visit, Integer> syncedVisitsStartTimes, Shift employeeShift){
         // NB!!!! Assume that the route have already contains the task joinMotorized and complete task in its route and that join motorized has a getStartTime
         Map<Visit, List<Integer>> timeWindows = new HashMap<>();
         List<Integer> completeTaskTimeWindowList = calculateTimeWindow(route, completeTask, syncedVisitsStartTimes, employeeShift);
@@ -44,11 +43,11 @@ public class CarPoolingTimeDependentPairsUtils {
      * @return the earliest possible start time of the visit in the route. Null if visit is not in the route. 
      */
     public Integer getVisitStartTime(List<Visit> route, Visit currentVisit, Map<Visit, Integer> syncedVisitsStartTimes, Shift employeeShift) throws NullPointerException{
-        int startTime = employeeShift.getStartTime();
+        int startTime;
         int previousVisitEndTime = employeeShift.getStartTime();
         for(Visit visit : route){
             if (visit.getStartTime() == null){
-                throw new NullPointerException("Start time of visit is not initaized");
+                throw new NullPointerException("Start time of visit is not initialized");
             }
             if (syncedVisitsStartTimes.containsKey(visit)){
                 // If the synced visit is Synced With Interval Diff then it can start after the synced visit start, but never before.
@@ -67,15 +66,15 @@ public class CarPoolingTimeDependentPairsUtils {
     }
 
     private Integer getVisitEndTime(List<Visit> route, Visit currentVisit, Map<Visit, Integer> syncedVisitsStartTimes, Shift employeeShift){
-        int latestStartTime = route.get(-1).getTaskEndTime();
+        int latestStartTime = Math.min(route.get(-1).getTaskEndTime(), employeeShift.getEndTime());
         int previousVisitTravelTime = 0;
         for (int i=route.size(); i-- > 0;){
             Visit visit = route.get(i);
             if (visit.getEndTime() == null){
-                throw new NullPointerException("End time of visit is not initaized");
+                throw new NullPointerException("End time of visit is not initialized");
             }
             if (syncedVisitsStartTimes.containsKey(visit)){
-                latestStartTime = syncedVisitsStartTimes.get(visit)+visit.getSyncedWithIntervalDiff();
+                latestStartTime = syncedVisitsStartTimes.get(visit)+visit.getTimeDependentOffsetInterval();
             } else {
                 latestStartTime = Math.max(Math.min(latestStartTime - previousVisitTravelTime - visit.getVisitDuration(),  visit.getEndTime()-visit.getVisitDuration()), visit.getStartTime());
             }
@@ -84,6 +83,7 @@ public class CarPoolingTimeDependentPairsUtils {
                 return latestStartTime + visit.getVisitDuration();
             }
         }
+        return null;
 
     }
 
