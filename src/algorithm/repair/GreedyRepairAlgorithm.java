@@ -9,7 +9,6 @@ import model.Shift;
 import model.Task;
 import model.Visit;
 import routeEvaluator.results.RouteEvaluatorResult;
-import routeEvaluator.results;
 import solution.Problem;
 import solution.Solution;
 
@@ -47,8 +46,6 @@ public class GreedyRepairAlgorithm implements IRepairAlgorithm {
         var solution = problem.getSolution();
         var objective = problem.getObjective();
         double bestDeltaObjectiveValue = Double.MAX_VALUE;
-        double bestIntraObjectiveValue = 0.0;
-        double bestExtraObjectiveValue = 0.0;
         Shift bestShift = null;
         Visit bestVisit = null;
         RouteEvaluatorResult bestRoute = null;
@@ -61,6 +58,13 @@ public class GreedyRepairAlgorithm implements IRepairAlgorithm {
         Collections.shuffle(visits);
 
         for (Shift shift : shifts) {
+            if (shift.isMotorized()){
+                for (Visit insertVisit : visits){
+                    
+                }
+            } else {
+
+            }
             for (Visit insertVisit : visits) {
                 RouteEvaluatorResult result = findRoute(problem, insertVisit, solution, shift);
                 if (result == null) continue;
