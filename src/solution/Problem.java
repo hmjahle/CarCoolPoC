@@ -148,11 +148,9 @@ public class Problem {
 
 
 
-    public void addVisitsToUnallocatedVisits(Collection<Visit> visits) {
-    }
+    public void addVisitsToUnallocatedVisits(Collection<Visit> visits) { solution.addVisitsToUnallocatedVisits(visits);}
 
-    public void calculateAndSetObjectiveValuesForSolution(Model model) {
-    }
+    public boolean calculateAndSetObjectiveValuesForSolution(Model model) { return objective.calculateAndSetObjectiveValues(model, solution);}
 
 	public void unAssignVisitsByRouteIndices(Shift removeShift, List<Integer> indices, double bestIntraObjective) {
         List<Integer> indicesSorted = indices.stream().sorted(Comparator.reverseOrder()).collect(Collectors.toList());  
