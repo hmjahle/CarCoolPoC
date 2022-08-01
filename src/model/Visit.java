@@ -116,8 +116,14 @@ public class Visit {
     public void setIsSynced(boolean isSynced){
         this.isSynced = isSynced;
     }
+
+    public void removeCarPooling(){
+        setIsSynced(false);
+        setCoCarPoolerShiftID(null);
+        setTimeDependentOffsetInterval(null);
+    }
     
-    public void setTimeDependentOffsetInterval(int timeDependentOffsetInterval){
+    public void setTimeDependentOffsetInterval(Integer timeDependentOffsetInterval){
         this.timeDependentOffsetInterval = timeDependentOffsetInterval;
     }
 }

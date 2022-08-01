@@ -91,6 +91,10 @@ public class Problem {
             route.get(index+1).setCoCarPoolerShiftID(null);
             route.get(index+1).setTransportType(Constants.TransportMode.WALK);
         }
+        if (removedVisit.getCoCarPoolerShiftID() != null) {
+            removedVisit.removeCarPooling();
+            solution.removeCarpoolTimeDependentVisitPair(removedVisit);
+        }
         objective.removeVisit(shift, removedVisit);
         objective.updateIntraRouteObjective(shift, intraObjectiveDeltaValue);
     }  
