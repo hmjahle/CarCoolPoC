@@ -86,14 +86,18 @@ public class Problem {
             // The visit includes completing the task
             solution.unAllocateTask(removedVisit.getTask());
         }
-        if (removedVisit.getVisitType()  == Constants.VisitType.JOIN_MOTORIZED && !shift.isMotorized() && route.size() > index){
-            // You remove a walkers pick-up point. It should no longer drive to the next task
-            route.get(index+1).setCoCarPoolerShiftID(null);
-            route.get(index+1).setTransportType(Constants.TransportMode.WALK);
-        }
         if (removedVisit.getCoCarPoolerShiftID() != null) {
             removedVisit.removeCarPooling();
             solution.removeCarpoolTimeDependentVisitPair(removedVisit);
+            if (removedVisit.getVisitType()  == Constants.VisitType.JOIN_MOTORIZED && !shift.isMotorized() && route.size() > index){
+                Visit successor = route.get(index+1);
+                successor.setTransportType(Constants.TransportMode.WALK);
+                if (successor.completesTask()){
+                    successor.removeCarPooling();
+                    solution.removeCarpoolTimeDependentVisitPair(successor);
+                }
+
+            }
         }
         objective.removeVisit(shift, removedVisit);
         objective.updateIntraRouteObjective(shift, intraObjectiveDeltaValue);
