@@ -199,6 +199,10 @@ public class Solution {
         this.carpoolTimeDependentVisitStartTime.put(visit, startTime);
     }
 
+    //Carpool-Visit-pairs setter
+    protected void setCarpoolTimeDependentVisitPairs(Collection<TimeDependentVisitPair> carpoolDependentVisitPairs){
+        this.carpoolTimeDependentVisitPairs = carpoolDependentVisitPairs;}
+
     public int getSyncedTaskStartTime(Visit visit) {
         return this.timeDependentVisitStartTime.get(visit);
     }
@@ -206,6 +210,11 @@ public class Solution {
     // Carpool-sync-starttime-getter
     public int getCarpoolSyncedTaskStartTime(Visit visit) {
         return this.carpoolTimeDependentVisitStartTime.get(visit);
+    }
+
+    // Carpool-Visit-pairs getter
+    public Collection<TimeDependentVisitPair> getCarpoolTimeDependentVisitPairs(){
+        return this.carpoolTimeDependentVisitPairs;
     }
 
     protected Visit removeFromRoute(Shift shift, int index) {
