@@ -122,6 +122,13 @@ public class Visit {
         setCoCarPoolerShiftID(null);
         setTimeDependentOffsetInterval(null);
     }
+
+    public void setCarpooling(int coCarPoolerShiftID, int syncedStartTime, int timeDependentOffsetInterval){
+        setIsSynced(true);
+        setCoCarPoolerShiftID(coCarPoolerShiftID);
+        setTimeDependentOffsetInterval(timeDependentOffsetInterval);
+        setStartTime(syncedStartTime);
+    }
     
     public void setTimeDependentOffsetInterval(Integer timeDependentOffsetInterval){
         this.timeDependentOffsetInterval = timeDependentOffsetInterval;
