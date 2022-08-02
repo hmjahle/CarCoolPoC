@@ -171,7 +171,7 @@ public abstract class GreedyDestroyAbstract extends DestroyOperatorAbstract {
             // Case 1 driver in PP
             // Remove Pick-up node
             // When current is a drop-off, the previous node always has to be a pick-up.
-            if (predecessorIndex == null || route.get(predecessorIndex).getVisitType() != Constants.VisitType.PICK_UP) {return Collections.emptyMap();}
+            if (predecessorIndex == null || route.get(predecessorIndex).getVisitType() != Constants.VisitType.PICK_UP) {throw new IllegalStateException("The previous node in route should be a pick up");}
             removeVisits.get(shift.getId()).add(predecessorIndex);
 
             // Get the person that is dropped off
@@ -179,7 +179,9 @@ public abstract class GreedyDestroyAbstract extends DestroyOperatorAbstract {
             // Get the pickup point for coDrive arc
             List<Integer> transportVisitIndices = solution.getTransportVisitIndices(passengerShiftID, route.get(predecessorIndex));
             // Remove the pickup point for that arc
-            removeVisits.put(passengerShiftID, transportVisitIndices);
+            if (!transportVisitIndices.isEmpty()){
+                removeVisits.put(passengerShiftID, transportVisitIndices);
+            }
         }
         else if (route.get(currentVisitIndex).getVisitType() == Constants.VisitType.PICK_UP){
             // The current visit is a pick up visit in a motorized shift
@@ -187,21 +189,23 @@ public abstract class GreedyDestroyAbstract extends DestroyOperatorAbstract {
 
             // Remove Drop-off node
             // When current is a pick-up, the successor has to be a drop-off
-            if (successorIndex == null || route.get(successorIndex).getVisitType() != Constants.VisitType.DROP_OF) {return Collections.emptyMap();}
+            if (successorIndex == null || route.get(successorIndex).getVisitType() != Constants.VisitType.DROP_OF) {throw new IllegalStateException("The successor node in the route should be a drop off");}
             removeVisits.get(shift.getId()).add(successorIndex); // When current is a pick-up, the next node always has to be a drop off.
             // Get the person that is dropped off
             int passengerShiftID = route.get(currentVisitIndex).getCoCarPoolerShiftID();
             // Get the pickup point for coDrive arc
             List<Integer> transportVisitIndices = solution.getTransportVisitIndices(passengerShiftID, route.get(currentVisitIndex));
             // Remove the pickup point for that arc
-            removeVisits.put(passengerShiftID, transportVisitIndices);
+            if (!transportVisitIndices.isEmpty()){
+                removeVisits.put(passengerShiftID, transportVisitIndices);
+            }
         }
         else if (route.get(currentVisitIndex).isSynced()) {
             // Removing a complete task during a carpool route.
             // Case 3 driver in PP 
             if (predecessorIndex == null || successorIndex == null || 
                 route.get(predecessorIndex).getVisitType() != Constants.VisitType.DROP_OF || 
-                route.get(successorIndex).getVisitType() != Constants.VisitType.PICK_UP) {return Collections.emptyMap();}
+                route.get(successorIndex).getVisitType() != Constants.VisitType.PICK_UP) {throw new IllegalStateException("Removing a CT during a carpool the predecessor is not a drop off or/and the successor is not a pick up");}
             // Remove drop-off
             removeVisits.get(shift.getId()).add(predecessorIndex);
             // Remove pick-up
@@ -209,8 +213,9 @@ public abstract class GreedyDestroyAbstract extends DestroyOperatorAbstract {
             // Remove join motorized for coDrive arc
             int passengerShiftID = route.get(currentVisitIndex).getCoCarPoolerShiftID();
             List<Integer> transportVisitIndices = solution.getTransportVisitIndices(passengerShiftID, route.get(currentVisitIndex));
-            removeVisits.put(passengerShiftID, transportVisitIndices);
-
+            if (!transportVisitIndices.isEmpty()){
+                removeVisits.put(passengerShiftID, transportVisitIndices);
+            }
         }
         // Else the visit is a complete task visit, and only that one should be removed
         return removeVisits;
