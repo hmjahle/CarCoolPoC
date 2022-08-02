@@ -10,52 +10,77 @@ import model.Visit;
 
 public class CarPoolingTimeDependentPairsUtils {
 
-    static int START_TIME = 0;
-    static int END_TIME=1;
-
-    public Map<Visit, List<Integer>> calculateTimeWindows(List<Visit> route, Visit joinMotorized, Visit dropOff, Visit pickUp, Visit completeTask, Map<Visit, Integer> syncedVisitsStartTimes, Shift employeeShift){
-        // NB!!!! Assume that the route have already contains the task joinMotorized and complete task in its route and that join motorized has a getStartTime
+    public static final int START_TIME = 0;
+    public static final int END_TIME = 1;
+    
+    /**
+     * Assumes:
+     *  - That the route (and therefore the shift) is non motorized
+     *  - That the join motorized visit and the complete task visit is already added to the shift
+     *  - That both of the visits have a time window 
+     * @param route The route for the non motorized shift
+     * @param joinMotorized The join motorized visit
+     * @param dropOff The drop of visit in the transport request
+     * @param pickUp The pick-up visit in the transport request
+     * @param completeTask The complete task visit that is the successor of the join motorized visit in the route
+     * @param syncedVisitsStartTimes start times of already synced visits
+     * @param employeeShift The (non motorized) shift that owns the route
+     * @return A map of time windows for all relevant visits
+     */
+    public Map<Visit, List<Integer>> calculateTimeWindowsForNonMotorized(List<Visit> route, Visit joinMotorized, Visit dropOff, Visit pickUp, Visit completeTask, Map<Visit, Integer> syncedVisitsStartTimes, Shift employeeShift){
         Map<Visit, List<Integer>> timeWindows = new HashMap<>();
+
+        // COMPLETE TASK
         List<Integer> completeTaskTimeWindowList = calculateTimeWindow(route, completeTask, syncedVisitsStartTimes, employeeShift);
-        
-        List<Integer> pickUpTimeWindowList = new ArrayList<>();
-        int pickUpStartTime = getVisitStartTime(route, joinMotorized, syncedVisitsStartTimes, employeeShift);
-        pickUpTimeWindowList.add(pickUpStartTime);
-        pickUpTimeWindowList.add(completeTaskTimeWindowList.get(END_TIME)-completeTask.getTravelTime());
-
-        List<Integer> dropOffTimeWindowList = new ArrayList<>();
-        dropOffTimeWindowList.add(pickUpStartTime+completeTask.getTravelTime());
-        dropOffTimeWindowList.add(completeTaskTimeWindowList.get(END_TIME)-completeTask.getVisitDuration());
-
         timeWindows.put(completeTask, completeTaskTimeWindowList);
-        timeWindows.put(pickUp, pickUpTimeWindowList);
-        timeWindows.put(dropOff, dropOffTimeWindowList);
+        
+        // JOIN MOTORIZED
+        List<Integer> joinMotorizedTimeWindow = new ArrayList<>();
+        int joinMotorizedTimeWindowStart = getTimeWindowStart(route, joinMotorized, syncedVisitsStartTimes, employeeShift);
+        int joinMotorizedTimeWindowEnd = completeTaskTimeWindowList.get(END_TIME)-completeTask.getTravelTime();
+        joinMotorizedTimeWindow.add(joinMotorizedTimeWindowStart);
+        joinMotorizedTimeWindow.add(joinMotorizedTimeWindowEnd);
+        timeWindows.put(joinMotorized, joinMotorizedTimeWindow);
 
+        // PICK UP - Same as join motorized
+        List<Integer> pickUpTimeWindow= new ArrayList<>();
+        pickUpTimeWindow.add(joinMotorizedTimeWindowStart);
+        pickUpTimeWindow.add(joinMotorizedTimeWindowEnd);
+        timeWindows.put(pickUp, pickUpTimeWindow);
+        
+        // DROP OFF 
+        List<Integer> dropOffTimeWindowList = new ArrayList<>();
+        dropOffTimeWindowList.add(joinMotorizedTimeWindowStart + completeTask.getTravelTime());
+        dropOffTimeWindowList.add(completeTaskTimeWindowList.get(END_TIME)-completeTask.getVisitDuration());
+        timeWindows.put(dropOff, dropOffTimeWindowList);
+        
         return timeWindows;
     }
 
 
     /**
-     * Calculates start time for a visit in a route
+     * Calculates the time window start (i.e., the earliest possible start time) for the visit. Calculation is done so that the route is feasible 
+     * with respect to time windows
      * @param route
      * @param currentVisit
      * @param syncedVisitsStartTime
-     * @return the earliest possible start time of the visit in the route. Null if visit is not in the route. 
+     * @return time window start for the visit. Null if visit is not in the route 
+     * @throws NullPointerException if the start time of any visit of the route is not set
      */
-    public Integer getVisitStartTime(List<Visit> route, Visit currentVisit, Map<Visit, Integer> syncedVisitsStartTimes, Shift employeeShift) throws NullPointerException{
+    public Integer getTimeWindowStart(List<Visit> route, Visit currentVisit, Map<Visit, Integer> syncedVisitsStartTimes, Shift employeeShift) throws NullPointerException{
         int startTime;
         int previousVisitEndTime = employeeShift.getStartTime();
         for(Visit visit : route){
-            if (visit.getStartTime() == null){
-                throw new NullPointerException("Start time of visit is not initialized");
+            if (visit.getTimeWindowStart() == null){
+                throw new NullPointerException("Time window start of visit is not initialized");
             }
             if (syncedVisitsStartTimes.containsKey(visit)){
                 // If the synced visit is Synced With Interval Diff then it can start after the synced visit start, but never before.
                 // The visit can never start before the visit start interval. 
                 // NB!! is visit.getTravelTime updated?
-                startTime = Math.max(Math.max(previousVisitEndTime + visit.getTravelTime(), visit.getStartTime()), syncedVisitsStartTimes.get(visit));
+                startTime = Math.max(Math.max(previousVisitEndTime + visit.getTravelTime(), visit.getTimeWindowStart()), syncedVisitsStartTimes.get(visit));
             } else {
-                startTime = Math.max(previousVisitEndTime + visit.getTravelTime(), visit.getStartTime());
+                startTime = Math.max(previousVisitEndTime + visit.getTravelTime(), visit.getTimeWindowStart());
             }
             previousVisitEndTime = startTime + visit.getVisitDuration();
             if (visit == currentVisit){
@@ -65,18 +90,28 @@ public class CarPoolingTimeDependentPairsUtils {
         return null;
     }
 
-    private Integer getVisitEndTime(List<Visit> route, Visit currentVisit, Map<Visit, Integer> syncedVisitsStartTimes, Shift employeeShift){
+    /**
+     * Calculates the time window end (i.e., the latest possible start time) for the visit. Calculation is done so that the route is feasible 
+     * with respect to time windows
+     * @param route
+     * @param currentVisit
+     * @param syncedVisitsStartTimes
+     * @param employeeShift
+     * @return The time window end. 
+     * @throws NullPointerException if the visit is not in the route
+     */
+    private Integer getTimeWindowEnd(List<Visit> route, Visit currentVisit, Map<Visit, Integer> syncedVisitsStartTimes, Shift employeeShift){
         int latestStartTime = Math.min(route.get(-1).getTaskEndTime(), employeeShift.getEndTime());
         int previousVisitTravelTime = 0;
         for (int i=route.size(); i-- > 0;){
             Visit visit = route.get(i);
-            if (visit.getEndTime() == null){
+            if (visit.getTimeWindowEnd() == null){
                 throw new NullPointerException("End time of visit is not initialized");
             }
             if (syncedVisitsStartTimes.containsKey(visit)){
                 latestStartTime = syncedVisitsStartTimes.get(visit)+visit.getTimeDependentOffsetInterval();
             } else {
-                latestStartTime = Math.max(Math.min(latestStartTime - previousVisitTravelTime - visit.getVisitDuration(),  visit.getEndTime()-visit.getVisitDuration()), visit.getStartTime());
+                latestStartTime = Math.max(Math.min(latestStartTime - previousVisitTravelTime - visit.getVisitDuration(),  visit.getTimeWindowEnd()-visit.getVisitDuration()), visit.getTimeWindowStart());
             }
             previousVisitTravelTime = visit.getTravelTime();
             if (visit == currentVisit){
@@ -87,12 +122,19 @@ public class CarPoolingTimeDependentPairsUtils {
 
     }
 
+    /**
+     * Calculate the time window for a visit. A time window is an interval of the earliest possible start time
+     * and the latest possible start time for the given visit in the given route.
+     * @param route The route we use to cacluate the time window 
+     * @param currentVisit The visit we wish to find the time window for
+     * @param syncedVisitsStartTimes Start times of synced visits we have to take into account when calculating the time window
+     * @param employeeShift The shift that owns the route
+     * @return A list of integers on the format [earliestPossibleStartTime, latestPossibleStartTime]
+     */
     public List<Integer> calculateTimeWindow(List<Visit> route, Visit currentVisit, Map<Visit, Integer> syncedVisitsStartTimes, Shift employeeShift) {
         List<Integer> timeWindowStartTime = new ArrayList<>();
-        timeWindowStartTime.add(getVisitStartTime(route, currentVisit, syncedVisitsStartTimes, employeeShift));
-        timeWindowStartTime.add(getVisitEndTime(route, currentVisit, syncedVisitsStartTimes, employeeShift));
+        timeWindowStartTime.add(getTimeWindowStart(route, currentVisit, syncedVisitsStartTimes, employeeShift));
+        timeWindowStartTime.add(getTimeWindowEnd(route, currentVisit, syncedVisitsStartTimes, employeeShift));
         return timeWindowStartTime;
     }
-
-
 }
