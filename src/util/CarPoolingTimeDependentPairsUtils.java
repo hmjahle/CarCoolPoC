@@ -57,6 +57,55 @@ public class CarPoolingTimeDependentPairsUtils {
         return timeWindows;
     }
 
+    /**
+     * Calculates the proper time windows when a completeTask-visit is inserted between an 
+     * existing pick-up and drop-of pair. In a motorized shift  
+     * 
+     * Assumes:
+     *  - Drop-of, Complete Task, and Pick-up is already in the route (in that order)
+     *  - Time windows are set for all these visits 
+     * @param route The route for the motorized shift 
+     * @param joinMotorized The JM-visit that is to be synced with the Pick-up
+     * @param dropOff The drop-of visit that corresponds to the completeTask-visit
+     * @param pickUp The pick-up visit that corresponds to the completeTask-visit
+     * @param completeTask the complete task that we inserted
+     * @param syncedVisitsStartTimes The current syncronized start times
+     * @param employeeShift Shift that own the route 
+     * @return List of time windows for the nodes
+     */
+    public Map<Visit, List<Integer>> calculateTimeWindowsForMotorized(List<Visit> route, Visit joinMotorized, Visit dropOff, Visit pickUp, Visit completeTask, Map<Visit, Integer> syncedVisitsStartTimes, Shift employeeShift) {
+        Map<Visit, List<Integer>> timeWindows = new HashMap<>();
+
+        // PICK UP
+        List<Integer> pickUpTimeWindow = calculateTimeWindow(route, pickUp, syncedVisitsStartTimes, employeeShift);
+        timeWindows.put(pickUp, pickUpTimeWindow); 
+            
+        // JOIN MOTORIZED - Have the same as the pick up visit
+        List<Integer> joinMotorizedTimeWindow = new ArrayList<>();
+        joinMotorizedTimeWindow.add(pickUpTimeWindow.get(START_TIME));
+        joinMotorizedTimeWindow.add(pickUpTimeWindow.get(END_TIME));
+        timeWindows.put(joinMotorized, joinMotorizedTimeWindow);
+
+        // COMPLETE TASK - end time depend on pick up, start time must be calculated
+        List<Integer> completeTaskTimeWindow= new ArrayList<>();
+
+        // ToDo: you have already calculated this when you run the  'calculateTimeWindow' method on the pickUp visit.
+        //  this means that you can speed up the calculations with some dynamic programming
+        int completeTaskTimeWindowStart = getTimeWindowStart(route, completeTask, syncedVisitsStartTimes, employeeShift);
+        int completeTaskTimeWindowEnd = pickUpTimeWindow.get(END_TIME) - completeTask.getVisitDuration();
+        completeTaskTimeWindow.add(completeTaskTimeWindowStart); 
+        completeTaskTimeWindow.add(completeTaskTimeWindowEnd); 
+        timeWindows.put(completeTask, completeTaskTimeWindow);
+            
+        // DROP OFF - Same as the complete task visit
+        List<Integer> dropOffTimeWindow = new ArrayList<>();
+        dropOffTimeWindow.add(completeTaskTimeWindowStart);
+        dropOffTimeWindow.add(completeTaskTimeWindowEnd);
+        timeWindows.put(dropOff, dropOffTimeWindow);
+        
+        return timeWindows;
+    }
+
 
     /**
      * Calculates the time window start (i.e., the earliest possible start time) for the visit. Calculation is done so that the route is feasible 
