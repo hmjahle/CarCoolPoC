@@ -99,7 +99,7 @@ public class GreedyRepairAlgorithm implements IRepairAlgorithm {
         int insertIndex = resultMotorized.getRoute().findIndexInRouteVisit(insertVisit);
         Visit predecessor = resultMotorized.getRoute().getVisitSolution().get(insertIndex-1);
         // Inserted a complete task not during carpooling. Case 2: m in PP
-        if(insertIndex == 0 || !predecessor.isPickUp()){return new InsertVisitResult(resultMotorized, motorizedShift);}
+        if(insertIndex == 0 || !predecessor.isPickUp()){return new InsertVisitResult(resultMotorized, motorizedShift.getId());}
         // Else we inserted a complete task during a carpooling.
         // Find non motorized carpooling shift ID
         Integer coCarPoolerShiftID = predecessor.getCoCarPoolerShiftID();
@@ -132,7 +132,7 @@ public class GreedyRepairAlgorithm implements IRepairAlgorithm {
         // If the coCarPoolerShiftId is not sat, the carpooling is no longer active, but the pick up is still present
         // Case 1.2: m in PP  
         // Will not create time depended pairs or sync them.
-        if (coCarPoolerShiftID == null){return new InsertVisitResult(resultMotorized, motorizedShift);}
+        if (coCarPoolerShiftID == null){return new InsertVisitResult(resultMotorized, motorizedShift.getId());}
 
         // Create time dependent pairs
         List<TimeDependentVisitPair> newTimeDependentVisitPairs = new ArrayList<>();
@@ -151,7 +151,7 @@ public class GreedyRepairAlgorithm implements IRepairAlgorithm {
 
         RouteEvaluatorResult resultNonMotorized = getEvaluatorResultByTheOrderOfVisits(newNonMotorizedRoute.getVisitSolution(), problem, motorizedShift);
 
-        return new InsertVisitResult(resultMotorized, resultNonMotorized, newTimeDependentVisitPairs, carpoolSyncedVisitStartTime, motorizedShift, model.getShift(coCarPoolerShiftID));
+        return new InsertVisitResult(resultMotorized, resultNonMotorized, newTimeDependentVisitPairs, carpoolSyncedVisitStartTime, motorizedShift.getId(), coCarPoolerShiftID);
     }
 
     private void setTimeWindows(Map<Visit, List<Integer>> timeWindows){

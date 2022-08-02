@@ -3,7 +3,6 @@ package routeEvaluator.results;
 import java.util.List;
 import java.util.Map;
 
-import model.Shift;
 import model.TimeDependentVisitPair;
 import model.Visit;
 import solution.Objective;
@@ -12,8 +11,8 @@ public class InsertVisitResult {
 
     private RouteEvaluatorResult routeEvaluatorOne;
     private RouteEvaluatorResult routeEvaluatorTwo;
-    private Shift shiftIdOne;
-    private Shift shiftIdTwo;
+    private int shiftIdOne;
+    private int shiftIdTwo;
     private List<TimeDependentVisitPair> newTimeDependentVisitPairs;
     private Map<Visit, Integer> carpoolSyncedVisitStartTime;
     private boolean multipleRoutesAffected = false;
@@ -21,7 +20,7 @@ public class InsertVisitResult {
     public InsertVisitResult(RouteEvaluatorResult routeEvaluatorOne, RouteEvaluatorResult routeEvaluatorTwo,
             List<TimeDependentVisitPair> newTimeDependentVisitPairs,
             Map<Visit, Integer> carpoolTimeDependentVisitStartTime,
-            Shift shiftIdOne, Shift shiftIdTwo) {
+            int shiftIdOne, int shiftIdTwo) {
         this.routeEvaluatorOne = routeEvaluatorOne;
         this.routeEvaluatorTwo = routeEvaluatorTwo;
         this.newTimeDependentVisitPairs = newTimeDependentVisitPairs;
@@ -31,7 +30,7 @@ public class InsertVisitResult {
         this.shiftIdTwo = shiftIdTwo;
     }
 
-    public InsertVisitResult(RouteEvaluatorResult routeEvaluatorOne, Shift shiftIdOne) {
+    public InsertVisitResult(RouteEvaluatorResult routeEvaluatorOne, int shiftIdOne) {
         this.routeEvaluatorOne = routeEvaluatorOne;
         this.shiftIdOne = shiftIdOne;
     }
