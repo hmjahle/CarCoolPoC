@@ -46,7 +46,7 @@ public class TimeWindowLowHighObjectiveFunction implements IObjectiveFunctionInt
         if (objectiveInfo.isDepot())
             return 0;
         else {
-            long timeWindowBreak = objectiveInfo.getVisitEnd() - objectiveInfo.getVisit().getTaskEndTime();
+            long timeWindowBreak = objectiveInfo.getVisitEnd() - objectiveInfo.getVisit().getTimeWindowEnd();
             if (timeWindowBreak <= highPenaltyCutOff)
                 return (long) (lowPenaltyMultiplier * Math.max(0, timeWindowBreak));
             else {

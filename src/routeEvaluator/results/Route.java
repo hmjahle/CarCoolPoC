@@ -23,6 +23,10 @@ public class Route {
         visitSolution.addAll(visits);
     }
 
+    public void addVisitAtIndex(Visit visit, int insertIndex){
+        visitSolution.add(insertIndex, visit);
+    }
+
     public void setRouteFinishedAtTime(int routeFinishedAtTime) {
         this.routeFinishedAtTime = routeFinishedAtTime;
     }
@@ -49,14 +53,14 @@ public class Route {
      *
      * @return List of visits, can be empty.
      */
-    public List<Task> extractEmployeTasks() {
-        List<Task> employeTasks = new ArrayList<Task>();
+    public List<Task> extractEmployeeTasks() {
+        List<Task> employeeTasks = new ArrayList<>();
         for (int i=0; i<visitSolution.size()-1; i++){
             if (visitSolution.get(i+1).getTransportType() == Constants.TransportMode.WALK){
-                employeTasks.add(visitSolution.get(i).getTask());
+                employeeTasks.add(visitSolution.get(i).getTask());
             }
         }
-        return employeTasks;
+        return employeeTasks;
     }
 
     /**
@@ -93,6 +97,21 @@ public class Route {
                 indices.add(i);
             else i++;
         return indices.size() == 0 ? null: indices;
+    }
+
+    /**
+     * Finds the position of the inputted visit tye connected to the task in the route.
+     *
+     * @param task Task to find the position for.
+     * @return Integer position, null if the task is not in the route.
+     */
+    public Integer findIndexInRouteVisitTypeTask(Task task, int visitType) {
+        int i = 0;
+        for (Visit visit : visitSolution)
+            if (visit.getTask() == task && visit.getVisitType() == visitType)
+                return i;
+            else i++;
+        return null;
     }
 
     /**

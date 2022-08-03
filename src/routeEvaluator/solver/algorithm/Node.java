@@ -38,8 +38,8 @@ public class Node {
         return visit == null ? 0 : visit.getTask().getDuration();
     }
 
-    public int getTaskStartTime() {
-        return visit == null ? 0 : visit.getTaskStartTime();
+    public int getTimeWindowStart() {
+        return visit == null ? 0 : visit.getTimeWindowStart();
     }
     
     @Override

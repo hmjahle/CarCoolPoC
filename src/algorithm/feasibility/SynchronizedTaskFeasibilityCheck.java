@@ -55,6 +55,12 @@ public class SynchronizedTaskFeasibilityCheck {
                 return false;
             }
         }
+        // Checking for carpoolTimeDependentVisitPairs as well
+        for (TimeDependentVisitPair pair: solution.getCarpoolTimeDependentVisitPairs()){
+            if (SynchronizedTaskUtils.isNotSameAllocationState(solution, pair) || SynchronizedTaskUtils.isStartTimeInvalid(solution, pair)) {
+                return false;
+            }
+        }
         return true;
     }
 

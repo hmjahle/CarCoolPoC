@@ -16,8 +16,9 @@ public class Visit {
      */
 
     // 0 = drive, 1 = walk
-    private int startTime;
-    private int endTime;
+    private Integer timeDependentOffsetInterval; //NB!!! når vi setter offset må det være lovlig innenfor time intervallet for tasken
+    private Integer timeWindowEnd;
+    private Integer timeWindowStart;
     private Integer transportType;
     private Integer coCarPoolerShiftID; // Shift id to the person you are carpooling with
     private boolean isSynced = false;
@@ -28,6 +29,12 @@ public class Visit {
         this.id = id;
         this.task = task;
         this.visitType = visitType;
+        if (this.id == this.task.getId()) {
+            // We can only initialize time interval if this
+            // is a task completing visit
+            this.timeWindowStart= this.task.getStartTime();
+            this.timeWindowEnd = this.task.getEndTime();
+        }
     }
 
     public Visit(Visit visit) {
@@ -36,9 +43,11 @@ public class Visit {
         this.visitType = visit.visitType;
         this.transportType = visit.transportType;
         this.coCarPoolerShiftID = visit.coCarPoolerShiftID;
-        this.startTime = visit.startTime;
-        this.endTime = visit.endTime;
+        this.timeWindowStart = visit.timeWindowStart;
+        this.timeWindowEnd= visit.timeWindowEnd;
         this.travelTime = visit.travelTime;
+        this.timeDependentOffsetInterval = visit.timeDependentOffsetInterval;
+
     }
     public void resetVisitWhenRemovedFromShift() {
         this.transportType = null;
@@ -54,6 +63,10 @@ public class Visit {
     public int getVisitType() { return this.visitType; }
 
     public boolean completesTask() {return this.visitType == VisitType.COMPLETE_TASK;}
+    public boolean isJoinMotorized() {return this.visitType == VisitType.JOIN_MOTORIZED;}
+    public boolean isDropOff() {return this.visitType == VisitType.DROP_OF;}
+    public boolean isPickUp() {return this.visitType == VisitType.PICK_UP;}
+
 
     public int getTransportType() { return this.transportType; }
 
@@ -61,9 +74,9 @@ public class Visit {
 
     public int getTaskEndTime(){ return this.task.getEndTime(); }
 
-    public int getStartTime(){ return this.startTime;}
+    public Integer getTimeWindowStart(){ return this.timeWindowStart;}
 
-    public int getEndTime(){ return this.endTime;}
+    public Integer getTimeWindowEnd(){ return this.timeWindowEnd;}
 
     public int getVisitDuration(){ if (this.isTransportTask){ return TransportMode.TRANSPORTTIME; } else { return this.getTask().getDuration(); } }
     
@@ -78,12 +91,15 @@ public class Visit {
     public Integer getCoCarPoolerShiftID(){ 
         return this.coCarPoolerShiftID; 
     }
+    public Integer getTimeDependentOffsetInterval(){
+        return this.timeDependentOffsetInterval;
+    }
 
 
     // Setters
-    public void setStartTime(int startTime){ this.startTime = startTime;}
+    public void setTimeWindowStart(int timeWindowStart){ this.timeWindowStart= timeWindowStart;}
     
-    public void setEndTime(int endTime){ this.endTime = endTime;}
+    public void setTimeWindowEnd(int timeWindowEnd){ this.timeWindowEnd = timeWindowEnd;}
 
     public void setTravleTime(int travelTime){
         this.travelTime = travelTime;
@@ -99,5 +115,22 @@ public class Visit {
 
     public void setIsSynced(boolean isSynced){
         this.isSynced = isSynced;
+    }
+
+    public void removeCarPooling(){
+        setIsSynced(false);
+        setCoCarPoolerShiftID(null);
+        setTimeDependentOffsetInterval(null);
+    }
+
+    public void setCarpooling(int coCarPoolerShiftID, int syncedStartTime, int timeDependentOffsetInterval){
+        setIsSynced(true);
+        setCoCarPoolerShiftID(coCarPoolerShiftID);
+        setTimeDependentOffsetInterval(timeDependentOffsetInterval);
+        setStartTime(syncedStartTime);
+    }
+    
+    public void setTimeDependentOffsetInterval(Integer timeDependentOffsetInterval){
+        this.timeDependentOffsetInterval = timeDependentOffsetInterval;
     }
 }

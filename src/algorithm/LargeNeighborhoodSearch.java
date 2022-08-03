@@ -4,6 +4,7 @@ import java.util.IntSummaryStatistics;
 import algorithm.heuristics.SimulatedAnnealing;
 import algorithm.operators.GreedyDestroy;
 import algorithm.operators.GreedyRepair;
+import algorithm.feasibility.SynchronizedTaskFeasibilityCheck;
 import model.Model;
 import model.Task;
 import solution.Problem;
@@ -28,7 +29,7 @@ public class LargeNeighborhoodSearch {
     private NeighborhoodSelector neighborhoodSelector;
     private SimulatedAnnealing simulatedAnnealing;
     private boolean unallocatedTasksAreHierarchical = UNALLOCATED_TASKS_ARE_HIERARCHICAL_OBJECTIVE;
-
+    private SyncedTaskFeasibilityRecovery syncedTaskFeasibilityRecovery;
 
 
     public LargeNeighborhoodSearch(Model model){
@@ -37,6 +38,7 @@ public class LargeNeighborhoodSearch {
 
 
     private void initialize(Model model){
+        syncedTaskFeasibilityRecovery = new SyncedTaskFeasibilityRecovery(model);
         this.model = model;
         this.neighborhoodSelector = new NeighborhoodSelector();
         this.minimumMillisecondsBetweenConvergenceIsChecked = MINIMUM_MILLISECONDS_BETWEEN_CONVERGENCE_IS_CHECKED_DEFAULT;
@@ -81,22 +83,24 @@ public class LargeNeighborhoodSearch {
 
     public Problem solve(Problem problem) {
         var solverState = new SolverState(problem, INFEASIBILITY_STEPS);
+        SynchronizedTaskFeasibilityCheck feasibilityCheck = new SynchronizedTaskFeasibilityCheck(model, false);
+        
         simulatedAnnealing.startSearch();
         lastConvergenceCheck = simulatedAnnealing.getCurrentRuntime();
         while (simulatedAnnealing.continueSearch()) {
             var neighborhoodMoveInfo = neighborhoodSelector.applyRandomNeighborhood(solverState.getTmpInstance());
 
-            updateSolverState(solverState, neighborhoodMoveInfo);
+            updateSolverState(solverState, feasibilityCheck, neighborhoodMoveInfo);
         }
         return solverState.getBestKnown();
     }
 
 
     // Before also input feasibility checker
-    private void updateSolverState(SolverState solverState, NeighborhoodMoveInfo neighborhoodMoveInfo) {
+    private void updateSolverState(SolverState solverState, SynchronizedTaskFeasibilityCheck feasibilityCheck, NeighborhoodMoveInfo neighborhoodMoveInfo) {
         if (neighborhoodMoveInfo.possible() && acceptNewSolution(solverState, neighborhoodMoveInfo)) {
             neighborhoodSelector.acceptMove(neighborhoodMoveInfo);
-            updateSolutions(solverState, neighborhoodMoveInfo.getProblem());
+            updateSolutions(solverState, feasibilityCheck, neighborhoodMoveInfo.getProblem());
         } else {
             neighborhoodSelector.rejectMove(neighborhoodMoveInfo);
             solverState.getTmpInstance().update(solverState.getCurrent());
@@ -118,8 +122,26 @@ public class LargeNeighborhoodSearch {
      * @param solverState Current solver state holding infeasibility status, checks and working problems
      * @param newProblem  The new problem from the neighborhood move, that is already accepted.
      */
-    private void updateSolutions(SolverState solverState, Problem newProblem) {
-        solverState.getCurrent().update(newProblem);
+    private void updateSolutions(SolverState solverState, SynchronizedTaskFeasibilityCheck feasibilityCheck ,Problem newProblem) {
+
+        boolean isFeasible = feasibilityCheck.isFeasible(solverState, newProblem);
+        // solverState.getCurrent().update(newProblem);
+
+        if (isFeasible || feasibilityCheck.isFeasibleInPhase(solverState)) {
+            solverState.getCurrent().update(newProblem);
+        }
+
+        if (!isFeasible) {
+            solverState.getCandidate().update(newProblem);
+            syncedTaskFeasibilityRecovery.recoverSyncedFeasibility(solverState.getCandidate());
+            isFeasible = solverState.getCandidate().calculateAndSetObjectiveValuesForSolution(model);
+            isFeasible = isFeasible && feasibilityCheck.isFeasible(solverState, solverState.getCandidate());
+
+            if (!isFeasible) return; // Still infeasible
+            solverState.getCurrentFeasible().update(solverState.getCandidate());
+        } else {
+            solverState.getCurrentFeasible().update(solverState.getCurrent());
+        }
 
         if (updateBestKnownSolution(solverState.getCurrentFeasible(), solverState.getBestKnown())) {
             if ((simulatedAnnealing.getCurrentRuntime() - lastConvergenceCheck) > minimumMillisecondsBetweenConvergenceIsChecked) {

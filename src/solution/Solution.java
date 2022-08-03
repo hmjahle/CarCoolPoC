@@ -15,7 +15,8 @@ public class Solution {
     private Shift[] visitAssignedToShift;
     private Set<Task> unallocatedTasks;
     private Set<Task> allocatedTasks;
-    private Map<Visit, Integer> timeDependentVisitStartTime;
+    private Collection<TimeDependentVisitPair> carpoolTimeDependentVisitPairs = new HashSet<>();
+    private Map<Visit, Integer> carpoolTimeDependentVisitStartTime;
     private Set<Visit> unallocatedVisits;
 
 
@@ -32,11 +33,6 @@ public class Solution {
             shiftRoutes.add(new ArrayList<>());
 
         }
-        timeDependentVisitStartTime = new HashMap<>();
-        for (TimeDependentVisitPair timeDependentVisitPair : model.getTimeDependentVisitPairs()) {
-            timeDependentVisitStartTime.put(timeDependentVisitPair.getMasterVisit(), timeDependentVisitPair.getMasterVisit().getStartTime());
-            timeDependentVisitStartTime.put(timeDependentVisitPair.getDependentVisit(), Math.max(timeDependentVisitPair.getDependentVisit().getStartTime(), timeDependentVisitPair.getMasterVisit().getStartTime() + timeDependentVisitPair.getIntervalStart()));
-        }
     }
 
     public Solution(Solution other) {
@@ -45,7 +41,6 @@ public class Solution {
             this.shiftRoutes.add(new ArrayList<>(route));
         this.taskAssignedToShift = Arrays.copyOf(other.taskAssignedToShift, other.taskAssignedToShift.length);
         this.unallocatedTasks = new HashSet<>(other.unallocatedTasks);
-        this.timeDependentVisitStartTime = new HashMap<>(other.timeDependentVisitStartTime);
     }
 
     protected void update(Solution other) {
@@ -157,12 +152,55 @@ public class Solution {
         getRoute(shift).add(index, visit);
     }
 
-    protected void setSyncedVisitStartTime(Visit visit, int startTime) {
-        this.timeDependentVisitStartTime.put(visit, startTime);
+    // Method to add new carpoolTimeDependentVisitPair, because this list is initially empty. Input: Visits
+    protected void addCarpoolTimeDependentVisitPair(Visit master, Visit dependent, int intervalStart, int intervalEnd){
+        TimeDependentVisitPair carpoolPair = new TimeDependentVisitPair(master, dependent, intervalStart, intervalEnd);
+        this.carpoolTimeDependentVisitPairs.add(carpoolPair);
+        // this.carpoolTimeDependentVisitStartTime.put(master, master.getStartTime());
+        // this.carpoolTimeDependentVisitStartTime.put(dependent, Math.max(dependent.getStartTime(), master.getStartTime() + intervalStart));
     }
 
-    public int getSyncedTaskStartTime(Visit visit) {
-        return this.timeDependentVisitStartTime.get(visit);
+    // Method to add new carpoolTimeDependentVisitPair, because this list is initially empty. Input: TimeDependentVisitPair
+    protected void addCarpoolTimeDependentVisitPair(TimeDependentVisitPair pair, int masterStartTime){
+        this.carpoolTimeDependentVisitPairs.add(pair);
+        this.carpoolTimeDependentVisitStartTime.put(pair.getMasterVisit(), masterStartTime); 
+        this.carpoolTimeDependentVisitStartTime.put(pair.getDependentVisit(), masterStartTime); 
+    }
+
+    // Method to remove carpoolTimeDependentVisitPair, and ensuring it gets deleted from both lists
+    protected void removeCarpoolTimeDependentVisitPair(Visit visit) {
+        for (TimeDependentVisitPair pair: this.carpoolTimeDependentVisitPairs){
+            if (pair.getMasterVisit().equals(visit)){
+                this.carpoolTimeDependentVisitStartTime.remove(pair.getDependentVisit());
+                this.carpoolTimeDependentVisitStartTime.remove(visit);
+                this.carpoolTimeDependentVisitPairs.remove(pair);
+            }
+            else if (pair.getDependentVisit().equals(visit)){
+                this.carpoolTimeDependentVisitStartTime.remove(pair.getMasterVisit());
+                this.carpoolTimeDependentVisitStartTime.remove(visit);
+                this.carpoolTimeDependentVisitPairs.remove(pair);
+            }
+        }
+    }
+
+    // Carpool-sync-starttime-setter
+    protected void setCarpoolSyncedVisitStartTime(Visit visit, int startTime) {
+        this.carpoolTimeDependentVisitStartTime.put(visit, startTime);
+    }
+
+    // Carpool-Visit-pairs setter
+    protected void setCarpoolTimeDependentVisitPairs(Collection<TimeDependentVisitPair> carpoolDependentVisitPairs){
+        this.carpoolTimeDependentVisitPairs = carpoolDependentVisitPairs;
+    }
+
+    // Carpool-sync-starttime-getter
+    public int getCarpoolSyncedTaskStartTime(Visit visit) {
+        return this.carpoolTimeDependentVisitStartTime.get(visit);
+    }
+
+    // Carpool-Visit-pairs getter
+    public Collection<TimeDependentVisitPair> getCarpoolTimeDependentVisitPairs(){
+        return this.carpoolTimeDependentVisitPairs;
     }
 
     protected Visit removeFromRoute(Shift shift, int index) {
@@ -177,12 +215,8 @@ public class Solution {
         return getRoute(shift.getId());
     }
 
-    public List<Visit> getRoute(int shiftid) {
-        return shiftRoutes.get(shiftid);
-    }
-
-    public Map<Visit, Integer> getSyncedVisitStartTimes() {
-        return timeDependentVisitStartTime;
+    public List<Visit> getRoute(int shiftId) {
+        return shiftRoutes.get(shiftId);
     }
 
     @Override
@@ -199,6 +233,10 @@ public class Solution {
 
     public Set<Visit> getUnallocatedVisits() {
         return unallocatedVisits;
+    }
+
+    public void addVisitsToUnallocatedVisits(Collection<Visit> visits) {
+        unallocatedVisits.addAll(visits);
     }
 
     public static void main(String[] args) {
