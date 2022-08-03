@@ -18,7 +18,7 @@ properties:
     return_time: integer
     x_coord: integer
     y_coord: integer
-  patients:
+  tasks:
     description: Array of patients that
     type: array
     items:
