@@ -2,3 +2,19 @@
 ./bin
 out/
 .vscode/
+# Ignore Gradle project-specific cache directory
+.gradle
+
+# Ignore Gradle build output directory
+build
+.idea/*
+target/*
+.gradle/*
+build/
+distributions/
+my-libs/
+.DS_STORE
+docs/
+*.log
+src/main/resources/openapi.json
+src/main/resources/openapi.yaml

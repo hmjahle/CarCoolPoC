@@ -1,0 +1,21 @@
+summary: Starts the solver
+tags:
+  - Example
+operationId: startSolver
+parameters:
+  - name: user_id
+    in: header
+    description: ID of the user requesting the optimization job
+    required: true
+    schema:
+      type: string
+responses:
+  default:
+    description: This is used for having a valid open api spec. The response for start solver is specified in solver service
+requestBody:
+  description: Lorum Ipsum
+  required: true
+  content:
+    application/json:
+      schema:
+        $ref: "../schemas/request/Request.yml"

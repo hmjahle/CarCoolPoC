@@ -1,0 +1,315 @@
+buildscript {
+    repositories {
+        maven {
+            url 'https://vismaartifactory.jfrog.io/artifactory/optimization-maven-virtual-repository'
+            credentials {
+                username = "$System.env.JFROG_USERNAME"
+                password = "$System.env.JFROG_ACCESS_KEY"
+            }
+            name = "maven-main-cache"
+        }
+    }
+    dependencies {
+        classpath "org.jfrog.buildinfo:build-info-extractor-gradle:4.29.0"
+        classpath 'com.google.protobuf:protobuf-gradle-plugin:0.8.19'
+    }
+}
+
+plugins {
+    id 'java'
+    id 'application'
+    id "com.jfrog.artifactory" version "4.29.0"
+    id 'maven-publish'
+    id "org.openapi.generator" version "6.0.1"
+    id "org.sonarqube" version "3.4.0.2513"
+    id 'jacoco'
+}
+
+
+group 'com.visma.of'
+mainClassName = 'Main'
+sourceCompatibility = JavaVersion.VERSION_11
+targetCompatibility = JavaVersion.VERSION_11
+
+
+task incrementVersion {
+    doLast {
+        Properties props = new Properties()
+        File propsFile = file('gradle.properties')
+        props.load(propsFile.newDataInputStream())
+        def stable_project_version = props.getProperty('version') as String
+        def (major, minor) = stable_project_version.tokenize('.')
+        minor = String.valueOf(minor.toInteger() + 1)
+        String project_version = major + '.' + minor
+        props.setProperty('version', project_version)
+        props.store(propsFile.newWriter(), null)
+        println(project_version)
+    }
+}
+
+task printVersion {
+    // any code that goes here is part of configuring the task
+    // this code will always get run, even if the task is not executed
+    doLast { // add a task action
+        // any code that goes here is part of executing the task
+        // this code will only get run if and when the task gets executed
+        println project.version
+    }
+}
+
+sourceSets {
+    main.java.srcDirs = ['src/main/java']
+    main.resources.srcDirs = ['src/main/resources']
+    test.java.srcDirs = ['src/test/java']
+    test.resources.srcDirs = ['src/test/resources']
+}
+
+repositories {
+    add buildscript.repositories.getByName("maven-main-cache")
+    mavenCentral()
+}
+
+boolean shouldUseOrTools() {
+    return file("or-tools-ubuntu").exists() && file("or-tools-osx").exists()
+}
+
+// dependency versions
+ext {
+    solver_api_version = "1.65"
+    swagger_annotations_version = "1.6.6"
+    jackson_version = "2.13.3"
+    jackson_databind_version = "2.13.3"
+    validation_version = "2.0.1.Final"
+    javax_annotation_version = "1.3.2"
+    json_simple_version = "1.1.1"
+    google_findbugs_version = "3.0.2"
+}
+
+dependencies {
+    if (shouldUseOrTools()) {
+        implementation(
+                "com.google.protobuf:protobuf-java:3.21.4",
+                files("or-tools-centos/lib/com.google.ortools.jar")
+        )
+    }
+    // #### ADD OTHER DEPENDENCIES INSIDE THE FOLLOWING COMPILE ####
+    implementation(
+            "com.visma.of:solver-api:$solver_api_version",
+            "io.swagger:swagger-annotations:$swagger_annotations_version",
+            "com.fasterxml.jackson.core:jackson-core:$jackson_version",
+            "com.fasterxml.jackson.core:jackson-annotations:$jackson_version",
+            "com.fasterxml.jackson.core:jackson-databind:$jackson_databind_version",
+            "javax.annotation:javax.annotation-api:$javax_annotation_version",
+            "javax.validation:validation-api:$validation_version",
+            "com.googlecode.json-simple:json-simple:$json_simple_version",
+            "com.google.code.findbugs:jsr305:$google_findbugs_version"
+    )
+    testImplementation group: 'junit', name: 'junit', version: '4.13.2'
+}
+
+repositories {
+    maven {
+        url 'https://vismaartifactory.jfrog.io/artifactory/optimization-maven-virtual-repository'
+        credentials {
+            username = "$System.env.JFROG_USERNAME"
+            password = "$System.env.JFROG_ACCESS_KEY"
+        }
+    }
+}
+
+boolean shouldUseLinux() {
+    return System.getenv('OS') == "Linux"
+}
+
+tasks.withType(Test) {
+    if (shouldUseOrTools()) {
+        if (shouldUseLinux()) {
+            systemProperty("java.library.path", "or-tools-ubuntu")
+        } else {
+            systemProperty("java.library.path", "or-tools-osx")
+        }
+    }
+    environment("RUNNING_LOCALLY", "true")
+}
+
+//
+// Code to automatically add specification for schemas to the openapi-spec file
+//
+void writeOpenAPISpecToFile(def directory, def fileName, def extension, def infoList) {
+    file("$directory/$fileName$extension").withWriter { out ->
+        infoList.each {
+            out.println it
+        }
+    }
+}
+
+writeOpenAPISpecToFile("src/main/resources/spec", "schemas", ".yml", fetchSchemaSpecifications())
+
+List<String> fetchSchemaSpecifications() {
+    List<String> schemaSpecification = new ArrayList<>()
+    File schemasRequest = file('src/main/resources/spec/schemas/request')
+    schemasRequest.eachFile {
+        String fileName = "${it.name}".take("${it.name}".lastIndexOf('.'))
+        if ("${it.name}".split("\\.")[1] != "json" && fileName != "") {
+            schemaSpecification.add(fileName + ":")
+            schemaSpecification.add("  \$ref: \"./schemas/request/" + fileName + ".yml\"")
+        }
+    }
+    File schemasResponse = file('src/main/resources/spec/schemas/response')
+    schemasResponse.eachFile {
+        String fileName = "${it.name}".take("${it.name}".lastIndexOf('.'))
+        if (fileName != "") {
+            schemaSpecification.add(fileName + ":")
+            schemaSpecification.add("  \$ref: \"./schemas/response/" + fileName + ".yml\"")
+        }
+    }
+    return schemaSpecification
+}
+//
+
+String getFileNamesToCreateModelsFor() {
+    // This function loops over the files in src/main/resources/spec/schemas
+    // and returns a string with all file names, separated by ",", without extensions
+    String models = ""
+    File dh = file('src/main/resources/spec/schemas')
+    dh.eachFile {
+        models += "${it.name}".take("${it.name}".lastIndexOf('.')) + ","
+    }
+    return models.take(models.lastIndexOf(','))
+}
+
+task bundleOpenAPI(type: Exec) {
+    // This function runs a script to create the final openapi.yaml file
+    // based on the openapi-spec.yml file in 'src/main/resources/spec'
+    commandLine 'sh', 'bundleOpenAPI.sh'
+}
+
+task convertToJson(type: Exec, dependsOn: ['bundleOpenAPI']) {
+    // This function runs a script to convert Request.yml and openapi.yml to json
+    commandLine 'sh', 'convertToJson.sh'
+}
+
+/* java client configuration */
+task buildJavaClient(type: org.openapitools.generator.gradle.plugin.tasks.GenerateTask, dependsOn: ['convertToJson']) {
+    generatorName = "java"
+    inputSpec = "$rootDir/src/main/resources/openapi.yaml".toString()
+    outputDir = "$buildDir/java-client".toString()
+    groupId = "$project.group"
+    id = "$project.name-java-client"
+    version = "$project.version"
+    ignoreFileOverride = "$rootDir/openapi-generator-ignore"
+    modelPackage = "com.visma.of.api.model"
+    validateSpec = true
+    generateModelTests = false
+    generateApiDocumentation = false
+    generateModelDocumentation = false
+    generateApiTests = false
+    configOptions = [
+            java8               : "true",
+            serializationLibrary: "jackson",
+            library             : "resttemplate",
+            useBeanValidation   : "true",
+            enableBuilderSupport: "true"
+    ]
+    globalProperties = [
+            models: getFileNamesToCreateModelsFor()
+    ]
+}
+
+task generateCode(type: Copy, dependsOn: ['buildJavaClient']) {
+
+    def srcPath = "$buildDir/java-client"
+    def targetPath = "$rootDir/docs"
+
+    // copy docs
+    from(srcPath + "/docs")
+    into(targetPath)
+    include('*.md')
+}
+
+
+// attach the generated folder as source for this project
+sourceSets {
+    main {
+        java {
+            srcDir "$buildDir/java-client/src/main/java"
+        }
+    }
+}
+
+
+artifactory {
+    contextUrl = "${artifactory_contextUrl}"
+    publish {
+        repository {
+            repoKey = 'optimization-maven-repository'
+            username = "$System.env.JFROG_USERNAME"
+            password = "$System.env.JFROG_ACCESS_KEY"
+            maven = true
+        }
+        defaults {
+            publications('mavenJava')
+        }
+    }
+    resolve {
+        repository {
+            repoKey = 'optimization-maven-virtual-repository'
+            username = "$System.env.JFROG_USERNAME"
+            password = "$System.env.JFROG_ACCESS_KEY"
+            maven = true
+
+        }
+    }
+}
+
+task sourcesJar(type: Jar, dependsOn: classes) {
+    classifier = 'sources'
+    from sourceSets.main.allSource
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            groupId = "${group}"
+            artifactId = "cps"
+            version = "${version}"
+            from components.java
+            artifact(sourcesJar) {
+                classifier = 'sources'
+            }
+        }
+    }
+}
+
+test {
+    testLogging {
+        showStandardStreams = true
+    }
+}
+
+artifactoryPublish {
+    dependsOn jar
+}
+
+// code will be generated during compilation
+compileJava.dependsOn(generateCode)
+
+sonarqube {
+    properties {
+        property "sonar.sourceEncoding", "UTF-8"
+        property "sonar.projectName", "CarCoolPoC"
+        property "sonar.projectKey", "CarCoolPoC"
+        property "sonar.projectBaseDir", "$rootDir"
+        property "sonar.exclusions", "build/java-client/src/main/java/com/visma/of/api/model/*"
+    }
+}
+tasks['sonarqube'].dependsOn test
+
+jacocoTestReport {
+    reports {
+        xml.enabled true
+    }
+}
+test.finalizedBy jacocoTestReport
+
+

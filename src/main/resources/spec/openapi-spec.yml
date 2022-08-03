@@ -1,0 +1,20 @@
+openapi: 3.0.2
+tags:
+  - name: Example
+    description: Operations with the example API
+info:
+  title: Example API
+  version: '0.1'
+  description: >
+    This is the example API
+paths:
+  /start:
+    post:
+      $ref: "./paths/startSolver.yml"
+  /result/{job_id}:
+    get:
+      $ref: "./paths/getResult.yml"
+
+components:
+  schemas:
+    $ref: "./schemas.yml"

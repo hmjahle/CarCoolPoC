@@ -1,0 +1,10 @@
+Request:
+  $ref: "./schemas/request/Request.yml"
+BinPackingResult:
+  $ref: "./schemas/response/BinPackingResult.yml"
+ItemResult:
+  $ref: "./schemas/response/ItemResult.yml"
+SolverStatus:
+  $ref: "./schemas/response/SolverStatus.yml"
+BinResult:
+  $ref: "./schemas/response/BinResult.yml"

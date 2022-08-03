@@ -1,0 +1,21 @@
+{
+    "type": "object",
+    "title": "Instance for Bin Packing Model",
+    "description": "Data model for the bin packing problem solver",
+    "required": [
+        "weights",
+        "binCapacity"
+    ],
+    "properties": {
+        "weights": {
+            "type": "array",
+            "items": {
+                "type": "number",
+                "format": "double"
+            }
+        },
+        "binCapacity": {
+            "type": "integer"
+        }
+    }
+}
