@@ -1,14 +1,32 @@
 type: object
-title: "Instance for Bin Packing Model"
-description: "Data model for the bin packing problem solver"
+title: "Instance for Car Pool Solver"
+description: "Data model for the carpool solver"
 required:
-  - weights
-  - binCapacity
+  - instance_name
+  - nbr_nurses
+  - capacity_nurse
+  - benchmark
+  - depot
+  - patients
+  - travel_times
 properties:
-  weights:
+  instance_name: string
+  nbr_nurses: integer
+  capacity_nurse: integer
+  benchmark: double
+  depot:
+    return_time: integer
+    x_coord: integer
+    y_coord: integer
+  patients:
+    description: Array of patients that
     type: array
     items:
-      type: number
-      format: double
-  binCapacity:
-    type: integer
+      $ref: "./Task.yml"
+  travel_times:
+    description: Travel time matrix for the driving between patients, given as a matrix consisting of doubles.
+    type: array
+    items:
+      type: array
+      items:
+        format: double

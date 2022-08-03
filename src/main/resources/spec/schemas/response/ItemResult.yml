@@ -1,9 +1,0 @@
-type: object
-required:
-  - itemNumber
-properties:
-  itemNumber:
-    type: integer
-  weight:
-    type: number
-    format: double

@@ -1,0 +1,17 @@
+type: object
+required:
+  - id
+  - care_time
+  - demand
+  - end_time
+  - start_time
+  - x_coord
+  - y_coord
+properties:
+  id: integer
+  care_time: integer
+  demand: integer
+  end_time: integer
+  start_time: integer
+  x_coord: integer
+  y_coord: integer
