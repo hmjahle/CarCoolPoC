@@ -2,6 +2,7 @@ package algorithm;
 
 import algorithm.operators.IDestroyOperator;
 import algorithm.operators.IRepairOperator;
+import solution.Problem;
 
 import java.util.*;
 
@@ -91,6 +92,35 @@ public class NeighborhoodSelector {
         return neighborhoodMoves.get(randomNumber);
     }
 
+    public List<INeighborhoodMove> getNeighborhoodMoves() {
+        return neighborhoodMoves;
+    }
 
+   /*  public Set<IImproveOperator> getImproveOperators() {
+        return improveOperators;
+    } */
+
+    public Set<IDestroyOperator> getDestroyOperators() {
+        return destroyOperators;
+    }
+
+    public Set<IRepairOperator> getRepairOperators() {
+        return repairOperators;
+    }
+
+    public void setRandom(Random random) {
+        this.random = random;
+    }
+
+    public void acceptMove(NeighborhoodMoveInfo neighborhoodMoveInfo) {
+        totalTrials++;
+        success.compute(neighborhoodMoveInfo.getNeighborhoodMove(), (k, v) -> v + 1);
+    }
+
+    public void rejectMove(NeighborhoodMoveInfo neighborhoodMoveInfo) {
+        totalTrials++;
+        failure.compute(neighborhoodMoveInfo.getNeighborhoodMove(), (k, v) -> v + 1);
+
+    }
     
 }

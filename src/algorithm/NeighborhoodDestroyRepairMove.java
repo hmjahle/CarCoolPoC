@@ -2,7 +2,7 @@ package algorithm;
 
 import algorithm.operators.IDestroyOperator;
 import algorithm.operators.IRepairOperator;
-import algorithm.Problem;
+import solution.Problem;
 
 public class NeighborhoodDestroyRepairMove implements INeighborhoodMove {
 

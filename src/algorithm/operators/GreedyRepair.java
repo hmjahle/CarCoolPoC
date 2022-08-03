@@ -1,14 +1,15 @@
 package algorithm.operators;
 
+import java.util.Random;
+import java.util.Set;
+
 import algorithm.NeighborhoodMoveInfo;
 import algorithm.repair.GreedyRepairAlgorithm;
 import algorithm.repair.IRepairAlgorithm;
 import model.Model;
 import model.Task;
+import model.Visit;
 import solution.Solution;
-
-import java.util.Random;
-import java.util.Set;
 
 /**
  * The Greedy insert operator insert the task into the solution in the way that increase the objective value the least.
@@ -44,19 +45,16 @@ public class GreedyRepair extends OperatorAbstract implements IRepairOperator {
     @Override
     public boolean repair(NeighborhoodMoveInfo neighborhoodMoveInfo) {
         Solution solution = neighborhoodMoveInfo.getSolution();
-        Set<Task> unallocatedTasks = getUnallocatedTasks(solution);
-        if (unallocatedTasks.isEmpty()) {
+        Set<Visit> unallocatedVisits = getUnallocatedVisits(solution);
+        if (unallocatedVisits.isEmpty()) {
             return false;
         }
 
-        NeighborhoodMoveInfo moveInfo = repairAlgorithm.repair(neighborhoodMoveInfo, model.getShifts(), unallocatedTasks);
+        NeighborhoodMoveInfo moveInfo = repairAlgorithm.repair(neighborhoodMoveInfo, model.getShifts(), unallocatedVisits);
         return moveInfo != null;
     }
 
-    private Set<Task> getUnallocatedTasks(Solution solution) {
-        if (solution.getUnallocatedTasksPrioritized().isEmpty()) {
-            return solution.getUnallocatedTasks();
-        }
-        return solution.getUnallocatedTasksPrioritized();
+    private Set<Visit> getUnallocatedVisits(Solution solution) {
+        return solution.getUnallocatedVisits();
     }
 }

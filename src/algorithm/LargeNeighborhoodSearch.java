@@ -1,12 +1,15 @@
 package algorithm;
-import model.Model;
-import algorithm.Problem;
-import algorithm.operators.GreedyRepair;
-import algorithm.operators.GreedyDestroy;
-import algorithm.heuristics.SimulatedAnnealing;
-import model.Task;
-
 import java.util.IntSummaryStatistics;
+
+import algorithm.heuristics.SimulatedAnnealing;
+import algorithm.operators.GreedyDestroy;
+import algorithm.operators.GreedyRepair;
+import algorithm.feasibility.SynchronizedTaskFeasibilityCheck;
+import model.Model;
+import model.Task;
+import solution.Problem;
+import solution.Solution;
+import util.Constants;
 
 
 public class LargeNeighborhoodSearch {
@@ -26,26 +29,21 @@ public class LargeNeighborhoodSearch {
     private NeighborhoodSelector neighborhoodSelector;
     private SimulatedAnnealing simulatedAnnealing;
     private boolean unallocatedTasksAreHierarchical = UNALLOCATED_TASKS_ARE_HIERARCHICAL_OBJECTIVE;
-
-
+    private SyncedTaskFeasibilityRecovery syncedTaskFeasibilityRecovery;
 
 
     public LargeNeighborhoodSearch(Model model){
-       intialize(model);
+        initialize(model);
     }
 
 
-    private void intialize(Model mode){
+    private void initialize(Model model){
+        syncedTaskFeasibilityRecovery = new SyncedTaskFeasibilityRecovery(model);
         this.model = model;
         this.neighborhoodSelector = new NeighborhoodSelector();
         this.minimumMillisecondsBetweenConvergenceIsChecked = MINIMUM_MILLISECONDS_BETWEEN_CONVERGENCE_IS_CHECKED_DEFAULT;
         this.simulatedAnnealing = new SimulatedAnnealing(WORSE_SOLUTION_ACCEPTED_AT_PROBABILITY);
         initializeSimulatedAnnealingCriteriaRuntime(model);
-        // Do not need:
-        //No synked tasks syncedTaskFeasibilityRecovery = new SyncedTaskFeasibilityRecovery(model);
-        // Do not need to update frontend 
-        //this.reportNewBestSolutionToListenersFunction = newBestSolutionFound;
-        //this.isSolverStoppedListenerFunction = isSolverStoppedListenerFunction;
     }
 
     public void useIterationsAsStopCriteria(int iterations) {
@@ -55,7 +53,7 @@ public class LargeNeighborhoodSearch {
 
 
     private void initializeSimulatedAnnealingCriteriaRuntime(Model model) {
-        initializeSimulatedAnnealingCriteriaRuntime(model.getConfiguration().getSolverRuntime(), PROPORTION_OF_RUNTIME_USED_FOR_DEEP_DIVE);
+        initializeSimulatedAnnealingCriteriaRuntime(Constants.SOLVER_RUNTIME, PROPORTION_OF_RUNTIME_USED_FOR_DEEP_DIVE);
     }
 
     private void initializeSimulatedAnnealingCriteriaRuntime(double runtime, double runtimeDeepDive) {
@@ -70,15 +68,6 @@ public class LargeNeighborhoodSearch {
     public void initializeStandardOperators() {
         neighborhoodSelector.addNeighborhood(new GreedyDestroy(model));
         neighborhoodSelector.addNeighborhood(new GreedyRepair(model));
-       /*  neighborhoodSelector.addNeighborhood(new RandomDestroy(model));
-        if (hasInternalVisitHistoryObjective(model.getConfiguration())) {
-            neighborhoodSelector.addNeighborhood(new InternalVisitHistoryDestroy(model));
-        }
-        neighborhoodSelector.addNeighborhood(new MultipleGreedyRepair(model));
-        neighborhoodSelector.addNeighborhood(new RelatedDestroy(model));
-        neighborhoodSelector.addNeighborhood(new UnallocatedDestroy(model));
-        neighborhoodSelector.addNeighborhood(new KRegret2Repair(model));
-        neighborhoodSelector.addNeighborhood(new TwoOptOperator(model)); */
     }
 
     public Problem solveWithConstructionHeuristic(Problem problem){
@@ -88,38 +77,30 @@ public class LargeNeighborhoodSearch {
          * Then it is solved with modified configurations.
          * We do not use modified configurations, so we can just call solve. 
         */
-        /* runningWithModifiedConfiguration = true;
-        problem = constructionHeuristic(problem);
-        runningWithModifiedConfiguration = false; */
         return solve(problem);
 
     }
 
     public Problem solve(Problem problem) {
         var solverState = new SolverState(problem, INFEASIBILITY_STEPS);
-        // No synchronized tasks: IFeasibilityCheck feasibilityCheck = new SynchronizedTaskFeasibilityCheck(model, false);
+        SynchronizedTaskFeasibilityCheck feasibilityCheck = new SynchronizedTaskFeasibilityCheck(model, false);
+        
         simulatedAnnealing.startSearch();
         lastConvergenceCheck = simulatedAnnealing.getCurrentRuntime();
         while (simulatedAnnealing.continueSearch()) {
-            /* Necessary for syncronised tasks 
-            if (simulatedAnnealing.percentageDone() > solverState.getNextCheckForMovingBetweenInfeasiblePhase()) {
-                updateInfeasibilityPhase(solverState, feasibilityCheck);
-            } */
             var neighborhoodMoveInfo = neighborhoodSelector.applyRandomNeighborhood(solverState.getTmpInstance());
 
-            updateSolverState(solverState, neighborhoodMoveInfo);
-            // reportBestSolution(solverState, false);
+            updateSolverState(solverState, feasibilityCheck, neighborhoodMoveInfo);
         }
-        // reportBestSolution(solverState, true); // report after solving
         return solverState.getBestKnown();
     }
 
 
     // Before also input feasibility checker
-    private void updateSolverState(SolverState solverState, NeighborhoodMoveInfo neighborhoodMoveInfo) {
+    private void updateSolverState(SolverState solverState, SynchronizedTaskFeasibilityCheck feasibilityCheck, NeighborhoodMoveInfo neighborhoodMoveInfo) {
         if (neighborhoodMoveInfo.possible() && acceptNewSolution(solverState, neighborhoodMoveInfo)) {
             neighborhoodSelector.acceptMove(neighborhoodMoveInfo);
-            updateSolutions(solverState, neighborhoodMoveInfo.getProblem());
+            updateSolutions(solverState, feasibilityCheck, neighborhoodMoveInfo.getProblem());
         } else {
             neighborhoodSelector.rejectMove(neighborhoodMoveInfo);
             solverState.getTmpInstance().update(solverState.getCurrent());
@@ -141,14 +122,16 @@ public class LargeNeighborhoodSearch {
      * @param solverState Current solver state holding infeasibility status, checks and working problems
      * @param newProblem  The new problem from the neighborhood move, that is already accepted.
      */
-    private void updateSolutions(SolverState solverState, Problem newProblem) {
-        // only when synchronized tasks: boolean isFeasible = feasibilityCheck.isFeasible(solverState, newProblem);
+    private void updateSolutions(SolverState solverState, SynchronizedTaskFeasibilityCheck feasibilityCheck ,Problem newProblem) {
 
-        /* if (isFeasible || feasibilityCheck.isFeasibleInPhase(solverState)) {
+        boolean isFeasible = feasibilityCheck.isFeasible(solverState, newProblem);
+        // solverState.getCurrent().update(newProblem);
+
+        if (isFeasible || feasibilityCheck.isFeasibleInPhase(solverState)) {
             solverState.getCurrent().update(newProblem);
-        } */
-        solverState.getCurrent().update(newProblem);
-        /* if (!isFeasible) {
+        }
+
+        if (!isFeasible) {
             solverState.getCandidate().update(newProblem);
             syncedTaskFeasibilityRecovery.recoverSyncedFeasibility(solverState.getCandidate());
             isFeasible = solverState.getCandidate().calculateAndSetObjectiveValuesForSolution(model);
@@ -158,7 +141,7 @@ public class LargeNeighborhoodSearch {
             solverState.getCurrentFeasible().update(solverState.getCandidate());
         } else {
             solverState.getCurrentFeasible().update(solverState.getCurrent());
-        } */
+        }
 
         if (updateBestKnownSolution(solverState.getCurrentFeasible(), solverState.getBestKnown())) {
             if ((simulatedAnnealing.getCurrentRuntime() - lastConvergenceCheck) > minimumMillisecondsBetweenConvergenceIsChecked) {

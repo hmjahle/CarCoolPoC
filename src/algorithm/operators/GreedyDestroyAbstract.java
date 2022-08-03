@@ -1,15 +1,20 @@
 package algorithm.operators;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+
 import algorithm.NeighborhoodMoveInfo;
 import model.Model;
 import model.Shift;
-import model.Task;
+import model.Visit;
 import solution.Objective;
-import algorithm.Problem;
+import solution.Problem;
 import solution.Solution;
-
-import java.util.List;
-import java.util.Random;
+import util.Constants;
 
 public abstract class GreedyDestroyAbstract extends DestroyOperatorAbstract {
 
@@ -74,52 +79,177 @@ public abstract class GreedyDestroyAbstract extends DestroyOperatorAbstract {
         Solution solution = problem.getSolution();
         Objective objective = problem.getObjective();
         double bestValue = Double.MAX_VALUE;
-        double bestIntraObjective = 0.0;
-        double bestExtraObjective = 0.0;
-        Shift removeShift = null;
-        int removeIndex = 0;
-        int totalShifts = resetRandomShiftFinder(); // intially length of shif indices
+        Map<Integer, List<Integer>> removeVisits = new HashMap<>();
+        int totalShifts = resetRandomShiftFinder();
         while (totalShifts != 0) {
             int randInt = random.nextInt(totalShifts);
             int shiftIndex = shiftIndices[randInt];
             Shift shift = model.getShifts().get(shiftIndex);
-            totalShifts = updateRandomShifts(totalShifts, randInt, shiftIndex); // Move rand shift to back of (toatal number of shifts-1) shift index list, and move last shift to this index. Returns total shifts--
-            List<Task> route = solution.getRoute(shift);
+            totalShifts = updateRandomShifts(totalShifts, randInt, shiftIndex);
+            List<Visit> route = solution.getRoute(shiftIndex);
             for (int i = 0; i < route.size(); i++) {
-                // OBS!!! This needs to be changed, because if we remove a walking task, we might need to remove p1, d1 and p2,d2
-                Double deltaIntraObjective = objective.deltaIntraObjectiveRemovingTaskAtIndex(shift, route, i, solution.getSyncedTaskStartTimes()); // Use route evaluator to see the new objective if task i is removed
-                if (skipTask(problem, shift, route, i, deltaIntraObjective)) continue; //The continue statement breaks one iteration
-                // We only have intraObjectives for now
-                //double deltaExtraObjective = objective.deltaExtraRouteObjectiveValueRemove(shift, route.get(i));
-                //double deltaObjective = deltaExtraObjective + deltaIntraObjective;
-                double deltaObjective = deltaIntraObjective;
-                if (noise(random) * deltaObjective < bestValue) {
-                    bestValue = deltaObjective;
-                    bestIntraObjective = deltaIntraObjective;
-                    //bestExtraObjective = deltaExtraObjective;
-                    removeIndex = i;
-                    removeShift = shift;
-                    // Run check for if any other tasks p1,d p2,d2 must be removed as well
+                Double deltaIntraObjective = 0.0; // Will contain change in total objective if visits are removed from all necessary shifts
+                Double intraObj = null;
+                Map<Integer, List<Integer>> removeVisitsTemp = findVisitsToRemove(solution, shift, i);
+                for (Map.Entry<Integer, List<Integer>> entry: removeVisitsTemp.entrySet()){
+                    Shift entryShift = model.getShifts().get(entry.getKey());
+                    List<Integer> removalPositions = entry.getValue();
+                    intraObj = calculateIntraObjective(solution, entryShift, removalPositions, objective);
+                    if(intraObj == null) continue; // intraObj is null if solution is infeasible
+                    deltaIntraObjective += intraObj;
+                }
+                if(intraObj == null) continue;// intraObj is null if solution is infeasible
+                if (noise(random) * deltaIntraObjective < bestValue) {
+                    bestValue = deltaIntraObjective;
+                    removeVisits = removeVisitsTemp;
                 }
             }
             if (bestValue < 0)
                 break;
         }
-        if (removeShift != null && (neighborhoodMoveInfo == null || !neighborhoodMoveInfo.possible())) 
-        // !neighborhoodMoveInfo.possible() == true if deltaObjectiveValue = null, where delta objective value 
-        // represents the change in objective that the changes in neighborhood of the lns has made.
+        if (removeVisits.size()>0 && (neighborhoodMoveInfo == null || !neighborhoodMoveInfo.possible())) 
+            // !neighborhoodMoveInfo.possible() == true if deltaObjectiveValue = null
             neighborhoodMoveInfo = new NeighborhoodMoveInfo(problem);
-        // bestExtraObjective is always 0.0. Could remove variablle, but want to keep it as similar as possible.
-        return update(neighborhoodMoveInfo, bestIntraObjective, bestExtraObjective, removeShift, removeIndex);
+        return update(neighborhoodMoveInfo, bestValue, removeVisits);
     }
 
-    private boolean skipTask(Problem problem, Shift shift, List<Task> route, int i, Double deltaIntraObjective) {
-        if (deltaIntraObjective == null || route.get(i).isPrioritized()) // DeltaIntraObjective is Null is the solution is infeasable.
-            return true;
-        // Calls this to check for the extrarouteconstraints, but we only have intra route
-        //return !problem.getConstraints().isFeasibleRemoveTask(shift, route.get(i));
-        return false;
+    /**
+     * @param solution
+     * @param entryShift
+     * @param removalPositions list of indices for the visits to be removed from the route
+     * @param objective
+     * @return new objective value if visits are removed
+     */
+    private Double calculateIntraObjective(Solution solution, Shift entryShift, List<Integer> removalPositions, Objective objective){
+        Double intraObj = null;
+        if(!entryShift.isMotorized()){
+            // Temporary update transportation mode, to calculate correct new objective
+            intraObj = objective.deltaIntraObjectiveNewRoute(entryShift, temporarilyUpdateNonMotorizedRemovedVisits(solution, entryShift, removalPositions), removalPositions, solution.getSyncedVisitStartTimes());
+        } else {
+            intraObj = objective.deltaIntraObjectiveNewRoute(entryShift, solution.getRoute(entryShift), removalPositions, solution.getSyncedVisitStartTimes());
+        }
+        return intraObj;
+    } 
+
+    /**
+     * @param solution
+     * @param entryShift
+     * @param removalPositions list of indices for the visits to be removed from the route
+     * @return copy of the route with visit transport modes updated according to the removed visits
+     */
+    private List<Visit> temporarilyUpdateNonMotorizedRemovedVisits(Solution solution, Shift entryShift, List<Integer> removalPositions){
+        List<Visit> routeCopy = new ArrayList<>();
+        solution.getRoute(entryShift).stream().forEach(v -> routeCopy.add(new Visit(v)));
+        for (int index : removalPositions){
+            if(routeCopy.get(index).getVisitType() == Constants.VisitType.JOIN_MOTORIZED && routeCopy.size() > index){
+                routeCopy.get(index+1).setTransportType(Constants.TransportMode.WALK);
+                routeCopy.get(index+1).setCoCarPoolerShiftID(null);
+            }}
+        return routeCopy;
     }
+    
+
+    /**
+     * Find which visits that must be removed, depending on if the shift is motorized and if the visit is a carpool task or not.
+     * @param solution
+     * @param shift
+     * @param currentVisitIndex
+     * @return Map of shift and which visits to remove from the corresponding shift. 
+     */
+    private Map<Integer, List<Integer>> findVisitsToRemove(Solution solution, Shift shift, Integer currentVisitIndex){
+        return shift.isMotorized() ? findVisitsToRemoveMotorizedShift(solution, shift, currentVisitIndex) : findVisitsToRemoveNonMotorizedShift(solution, shift, currentVisitIndex);
+    }
+
+    private Map<Integer, List<Integer>> findVisitsToRemoveMotorizedShift(Solution solution, Shift shift, Integer currentVisitIndex){
+        Map<Integer, List<Integer>> removeVisits = new HashMap<>();
+        removeVisits.put(shift.getId(), new ArrayList<>(currentVisitIndex));
+        List<Visit> route = solution.getRoute(shift);
+        Integer predecessorIndex = 0 < currentVisitIndex ? currentVisitIndex-1 : null;
+        Integer successorIndex = route.size() > currentVisitIndex ? currentVisitIndex+1 : null;
+        if (route.get(currentVisitIndex).getVisitType() == Constants.VisitType.DROP_OF){
+            // The current visit is a drop off visit in a motorized shift
+            // Case 1 driver in PP
+            // Remove Pick-up node
+            // When current is a drop-off, the previous node always has to be a pick-up.
+            if (predecessorIndex == null || route.get(predecessorIndex).getVisitType() != Constants.VisitType.PICK_UP) {throw new IllegalStateException("The previous node in route should be a pick up");}
+            removeVisits.get(shift.getId()).add(predecessorIndex);
+
+            // Get the person that is dropped off
+            int passengerShiftID = route.get(currentVisitIndex).getCoCarPoolerShiftID();
+            // Get the pickup point for coDrive arc
+            List<Integer> transportVisitIndices = solution.getTransportVisitIndices(passengerShiftID, route.get(predecessorIndex));
+            // Remove the pickup point for that arc
+            if (!transportVisitIndices.isEmpty()){
+                removeVisits.put(passengerShiftID, transportVisitIndices);
+            }
+        }
+        else if (route.get(currentVisitIndex).getVisitType() == Constants.VisitType.PICK_UP){
+            // The current visit is a pick up visit in a motorized shift
+            // Case 2 driver in PP
+
+            // Remove Drop-off node
+            // When current is a pick-up, the successor has to be a drop-off
+            if (successorIndex == null || route.get(successorIndex).getVisitType() != Constants.VisitType.DROP_OF) {throw new IllegalStateException("The successor node in the route should be a drop off");}
+            removeVisits.get(shift.getId()).add(successorIndex); // When current is a pick-up, the next node always has to be a drop off.
+            // Get the person that is dropped off
+            int passengerShiftID = route.get(currentVisitIndex).getCoCarPoolerShiftID();
+            // Get the pickup point for coDrive arc
+            List<Integer> transportVisitIndices = solution.getTransportVisitIndices(passengerShiftID, route.get(currentVisitIndex));
+            // Remove the pickup point for that arc
+            if (!transportVisitIndices.isEmpty()){
+                removeVisits.put(passengerShiftID, transportVisitIndices);
+            }
+        }
+        else if (route.get(currentVisitIndex).isSynced()) {
+            // Removing a complete task during a carpool route.
+            // Case 3 driver in PP 
+            if (predecessorIndex == null || successorIndex == null || 
+                route.get(predecessorIndex).getVisitType() != Constants.VisitType.DROP_OF || 
+                route.get(successorIndex).getVisitType() != Constants.VisitType.PICK_UP) {throw new IllegalStateException("Removing a CT during a carpool the predecessor is not a drop off or/and the successor is not a pick up");}
+            // Remove drop-off
+            removeVisits.get(shift.getId()).add(predecessorIndex);
+            // Remove pick-up
+            removeVisits.get(shift.getId()).add(successorIndex);
+            // Remove join motorized for coDrive arc
+            int passengerShiftID = route.get(currentVisitIndex).getCoCarPoolerShiftID();
+            List<Integer> transportVisitIndices = solution.getTransportVisitIndices(passengerShiftID, route.get(currentVisitIndex));
+            if (!transportVisitIndices.isEmpty()){
+                removeVisits.put(passengerShiftID, transportVisitIndices);
+            }
+        }
+        // Else the visit is a complete task visit, and only that one should be removed
+        return removeVisits;
+    }
+
+    private Map<Integer, List<Integer>> findVisitsToRemoveNonMotorizedShift(Solution solution, Shift shift, Integer currentVisitIndex){
+        Map<Integer, List<Integer>> removeVisits = new HashMap<>();
+        removeVisits.put(shift.getId(), new ArrayList<>(currentVisitIndex));
+        List<Visit> route = solution.getRoute(shift);
+        Integer successorIndex = route.size()>currentVisitIndex ? currentVisitIndex+1 : null;
+        Integer predecessorIndex = 0 < currentVisitIndex ? currentVisitIndex-1 : null;
+
+        if (successorIndex != null && route.get(successorIndex).getVisitType() == Constants.VisitType.JOIN_MOTORIZED){
+            // The employee is non-motorized and does carpooling to the next visit
+            removeVisits.get(shift.getId()).add(successorIndex); // Case 1 in PP
+            if (predecessorIndex != null && route.get(predecessorIndex).getVisitType() == Constants.VisitType.JOIN_MOTORIZED){
+                // The employee also did carpooling to current visit
+                int coDriverShiftID = route.get(predecessorIndex).getCoCarPoolerShiftID();
+                if (coDriverShiftID == route.get(successorIndex).getCoCarPoolerShiftID()){
+                    // Carpooling was with the same driver from previous -> current -> successor node. 
+                    // Case 4 walker in PP
+                    List<Integer> transportVisitIndices = solution.getTransportVisitIndices(coDriverShiftID, route.get(currentVisitIndex));
+                    removeVisits.put(coDriverShiftID, transportVisitIndices);
+                }
+            }
+        }
+        else if (predecessorIndex != null && route.get(predecessorIndex).getVisitType() == Constants.VisitType.JOIN_MOTORIZED){
+            // Non-motorized employee carpooled to current visit.
+            // Case 2 walker in PP
+            removeVisits.get(shift.getId()).add(predecessorIndex);
+        }
+        return removeVisits;
+    }
+
 
     private int updateRandomShifts(int totalShifts, int randInt, int shiftIndex) {
         shiftIndices[randInt] = shiftIndices[totalShifts - 1];
@@ -139,14 +269,18 @@ public abstract class GreedyDestroyAbstract extends DestroyOperatorAbstract {
      * @return Null if no improvement is found, otherwise the same NeighborhoodMoveInfo as provided.
      */
     private NeighborhoodMoveInfo update(NeighborhoodMoveInfo neighborhoodMoveInfo, double bestIntraObjective,
-                                        double bestExtraObjective, Shift removeShift, int removeIndex) {
-        if (removeShift != null) {
-            neighborhoodMoveInfo.getProblem().unAssignTaskByRouteIndex(removeShift, removeIndex, bestIntraObjective, bestExtraObjective); // updates the objective when the task (remove index) is removed from the shift
-            double deltaObjectiveValue = bestIntraObjective + bestExtraObjective + neighborhoodMoveInfo.getDeltaObjectiveValue();
-            neighborhoodMoveInfo.setDeltaObjectiveValue(deltaObjectiveValue);
-            return neighborhoodMoveInfo;
-        } else
-            return null;
+                                        Map<Integer, List<Integer>> removeVisits) {
+
+        for (Map.Entry<Integer, List<Integer>> entry: removeVisits.entrySet()){
+            Shift removeShift = model.getShifts().get(entry.getKey());
+            neighborhoodMoveInfo.getProblem().unAssignVisitsByRouteIndices(removeShift, entry.getValue(), bestIntraObjective); // updates the objective when the task (remove index) is removed from the shift
+            
+        
+        }
+        double deltaObjectiveValue = bestIntraObjective + neighborhoodMoveInfo.getDeltaObjectiveValue();
+        neighborhoodMoveInfo.setDeltaObjectiveValue(deltaObjectiveValue);
+        return neighborhoodMoveInfo;
+        
     }
 
 }
