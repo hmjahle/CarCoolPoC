@@ -1,0 +1,6 @@
+type: object
+description: Solver specific status of optimization
+properties:
+  hasLikelyConverged:
+    description: Boolean representing whether it is likely that the algorithm has converged and that it is safe to stop the solver.
+    type: boolean

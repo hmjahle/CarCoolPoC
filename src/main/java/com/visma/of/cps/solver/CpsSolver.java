@@ -39,15 +39,15 @@ public class CpsSolver extends Solver {
 
     @Override
     public void solve() throws Exception {
-        superSolver.solve();
         Problem solution = superSolver.getCurrentBestSolution();
-        JSONObject jsonSolution = Solver.objectToJsonObject(solution);
+        JSONObject jsonSolution = Solver.objectToJsonObject("new CarPoolResult");
         hasLikelyConverged = true;
 
 
         for (SolverListener listener : getListeners()) {
             listener.newBestSolutionFound(jsonSolution);
         }
+        superSolver.solve();
     }
 
     @Override

@@ -1,0 +1,13 @@
+type: object
+description: Depot config
+required:
+  - return_time
+  - x_coord
+  - y_coord
+properties:
+  return_time:
+    type: integer
+  x_coord:
+    type: integer
+  y_coord:
+    type: integer

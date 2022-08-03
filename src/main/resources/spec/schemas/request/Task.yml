@@ -8,10 +8,17 @@ required:
   - x_coord
   - y_coord
 properties:
-  id: integer
-  care_time: integer
-  demand: integer
-  end_time: integer
-  start_time: integer
-  x_coord: integer
-  y_coord: integer
+  id:
+    type: integer
+  care_time:
+    type: integer
+  demand:
+    type: integer
+  end_time:
+    type: integer
+  start_time:
+    type: integer
+  x_coord:
+    type: integer
+  y_coord:
+    type: integer

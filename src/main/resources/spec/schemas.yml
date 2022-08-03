@@ -1,4 +1,10 @@
 Request:
   $ref: "./schemas/request/Request.yml"
+Task:
+  $ref: "./schemas/request/Task.yml"
+Depot:
+  $ref: "./schemas/request/Depot.yml"
 CarpoolResult:
   $ref: "./schemas/response/CarpoolResult.yml"
+SolverStatus:
+  $ref: "./schemas/response/SolverStatus.yml"

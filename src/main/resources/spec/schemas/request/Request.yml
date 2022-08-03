@@ -10,14 +10,16 @@ required:
   - patients
   - travel_times
 properties:
-  instance_name: string
-  nbr_nurses: integer
-  capacity_nurse: integer
-  benchmark: double
+  instance_name:
+    type: string
+  nbr_nurses:
+    type: integer
+  capacity_nurse:
+    type: integer
+  benchmark:
+    type: double
   depot:
-    return_time: integer
-    x_coord: integer
-    y_coord: integer
+    $ref: "./Depot.yml"
   tasks:
     description: Array of patients that
     type: array
