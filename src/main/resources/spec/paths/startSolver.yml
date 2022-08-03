@@ -13,7 +13,7 @@ responses:
   default:
     description: This is used for having a valid open api spec. The response for start solver is specified in solver service
 requestBody:
-  description: Lorum Ipsum
+  description: This is a great body. Best body ever built
   required: true
   content:
     application/json:

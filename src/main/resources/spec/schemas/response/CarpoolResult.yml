@@ -1,0 +1,8 @@
+type: object
+required:
+  - shifts
+properties:
+  shifts:
+    type: array
+    visits:
+      type: integer

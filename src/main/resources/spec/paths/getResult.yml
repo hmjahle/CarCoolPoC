@@ -24,4 +24,4 @@ responses:
         schema:
           type: array
           items:
-            $ref: "../schemas/response/BinPackingResult.yml"
+            $ref: "../schemas/response/CarpoolResult.yml"
