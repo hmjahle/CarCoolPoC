@@ -19,12 +19,12 @@ properties:
   benchmark:
     type: double
   depot:
-    $ref: "./Depot.yml"
+    $ref: "./RequestDepot.yml"
   tasks:
     description: Array of patients that
     type: array
     items:
-      $ref: "./Task.yml"
+      $ref: "./RequestTask.yml"
   travel_times:
     description: Travel time matrix for the driving between patients, given as a matrix consisting of doubles.
     type: array

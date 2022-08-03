@@ -25,13 +25,13 @@
             "type": "double"
         },
         "depot": {
-            "$ref": "./Depot.yml"
+            "$ref": "./RequestDepot.yml"
         },
         "tasks": {
             "description": "Array of patients that",
             "type": "array",
             "items": {
-                "$ref": "./Task.yml"
+                "$ref": "./RequestTask.yml"
             }
         },
         "travel_times": {
