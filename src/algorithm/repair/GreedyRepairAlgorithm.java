@@ -59,9 +59,7 @@ public class GreedyRepairAlgorithm implements IRepairAlgorithm {
         var solution = problem.getSolution();
         var objective = problem.getObjective();
         double bestDeltaObjectiveValue = Double.MAX_VALUE;
-        Shift bestShift = null;
-        Visit bestVisit = null;
-        InsertVisitResult bestRoute = null;
+        InsertVisitResult bestInsertVisitResult = null;
 
         double deltaObjectiveValue;
 
@@ -77,29 +75,30 @@ public class GreedyRepairAlgorithm implements IRepairAlgorithm {
 
                     if (objectiveNoise(random) * deltaObjectiveValue < bestDeltaObjectiveValue) {
                         bestDeltaObjectiveValue = deltaObjectiveValue;
-                        bestShift = shift;
-                        bestVisit = insertVisit;
-                        bestRoute = result;
+                        bestInsertVisitResult = result;
                     }
                 }
             } else {
 
             }
         }
-        if (bestRoute == null) return null;
+        if (bestInsertVisitResult == null) return null;
 
-        Double deltaObjective = updateSolution(problem, bestDeltaObjectiveValue, bestShift, bestVisit, bestRoute);
-        unallocatedVisits.remove(bestVisit); // remove unallocated if not already removed
-
+        Double deltaObjective = updateSolution(problem, bestDeltaObjectiveValue, bestInsertVisitResult);
+        for ( Visit insertedVisit : bestInsertVisitResult.getAllInsertedVisits()){
+            unallocatedVisits.remove(insertedVisit); // remove unallocated if not already removed
+        }
         return deltaObjective;
     }
 
     private InsertVisitResult findRouteForMotorized(Problem problem, Visit insertVisit, Solution solution, Shift motorizedShift){
+        List<Visit> insertedVisitsMotorized = new ArrayList<>();
+        insertedVisitsMotorized.add(insertVisit);
         RouteEvaluatorResult resultMotorized = findRoute(problem, insertVisit, solution, motorizedShift);
         int insertIndex = resultMotorized.getRoute().findIndexInRouteVisit(insertVisit);
         Visit predecessor = resultMotorized.getRoute().getVisitSolution().get(insertIndex-1);
         // Inserted a complete task not during carpooling. Case 2: m in PP
-        if(insertIndex == 0 || !predecessor.isPickUp()){return new InsertVisitResult(resultMotorized, motorizedShift.getId());}
+        if(insertIndex == 0 || !predecessor.isPickUp()){return new InsertVisitResult(resultMotorized, motorizedShift.getId(), insertedVisitsMotorized);}
         // Else we inserted a complete task during a carpooling.
         // Find non motorized carpooling shift ID
         Integer coCarPoolerShiftID = predecessor.getCoCarPoolerShiftID();
@@ -132,7 +131,7 @@ public class GreedyRepairAlgorithm implements IRepairAlgorithm {
         // If the coCarPoolerShiftId is not sat, the carpooling is no longer active, but the pick up is still present
         // Case 1.2: m in PP  
         // Will not create time depended pairs or sync them.
-        if (coCarPoolerShiftID == null){return new InsertVisitResult(resultMotorized, motorizedShift.getId());}
+        if (coCarPoolerShiftID == null){return new InsertVisitResult(resultMotorized, motorizedShift.getId(), insertedVisitsMotorized);}
 
         // Create time dependent pairs
         List<TimeDependentVisitPair> newTimeDependentVisitPairs = new ArrayList<>();
@@ -151,7 +150,10 @@ public class GreedyRepairAlgorithm implements IRepairAlgorithm {
 
         RouteEvaluatorResult resultNonMotorized = getEvaluatorResultByTheOrderOfVisits(newNonMotorizedRoute.getVisitSolution(), problem, motorizedShift);
 
-        return new InsertVisitResult(resultMotorized, resultNonMotorized, newTimeDependentVisitPairs, carpoolSyncedVisitStartTime, motorizedShift.getId(), coCarPoolerShiftID);
+        InsertVisitResult insertVisitResult = new InsertVisitResult(resultMotorized, resultNonMotorized, newTimeDependentVisitPairs, carpoolSyncedVisitStartTime, motorizedShift.getId(), coCarPoolerShiftID);
+        insertVisitResult.setInsertedVisits(motorizedShift.getId(), insertedVisitsMotorized);
+        insertVisitResult.setInsertedVisits(coCarPoolerShiftID, new ArrayList<Visit>(Arrays.asList(newJM)));
+        return insertVisitResult;
     }
 
     private void setTimeWindows(Map<Visit, List<Integer>> timeWindows){
@@ -162,11 +164,27 @@ public class GreedyRepairAlgorithm implements IRepairAlgorithm {
     }
 
 
-    protected Double updateSolution(Problem problem, double bestObjective, Shift bestShift, Visit bestVisit, RouteEvaluatorResult bestRoute) {
-        Integer index = bestRoute.getRoute().findIndexInRouteVisit(bestVisit);
-        problem.assignVisitToShiftByIndex(bestShift, bestVisit, index, bestObjective);
+    protected Double updateSolutionOneShift(Problem problem, double bestObjective, int bestShiftId, List<Visit> bestVisits, RouteEvaluatorResult bestRoute) {
+        Shift bestShift = model.getShift(bestShiftId);
+        for (Visit bestVisit: bestVisits){
+            // NB NB!!!! Must be inserted in the correct order, because the index is dependent on the size of the list.
+            Integer index = bestRoute.getRoute().findIndexInRouteVisit(bestVisit);
+            problem.assignVisitToShiftByIndex(bestShift, bestVisit, index, bestObjective);
+        }
         return bestObjective;
     }
+
+    protected Double updateSolution(Problem problem, double bestObjective, InsertVisitResult bestInsertVisitResult ) {
+        int shiftIdOne = bestInsertVisitResult.getShiftIdOne();
+        updateSolutionOneShift(problem, bestObjective, shiftIdOne, bestInsertVisitResult.getInsertedVisits(shiftIdOne), bestInsertVisitResult.getRouteEvaluatorOne());
+        if (bestInsertVisitResult.isMultipleRoutesAffected()) {
+            int shiftIdTwo = bestInsertVisitResult.getShiftIdTwo();
+            updateSolutionOneShift(problem, bestObjective, shiftIdTwo, bestInsertVisitResult.getInsertedVisits(shiftIdTwo), bestInsertVisitResult.getRouteEvaluatorTwo());
+        }
+        return bestObjective;
+    }
+
+
     
     /**
      * Insert a list of vistis into a shift and calculate the objective value result. The visit order
