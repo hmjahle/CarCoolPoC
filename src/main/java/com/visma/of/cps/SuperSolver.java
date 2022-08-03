@@ -15,17 +15,22 @@ import java.util.Map;
 
 
 
-public class Solver {
+public class SuperSolver {
 
     private Model model;
     public String name;
     private Problem currentBestSolution;
     private LargeNeighborhoodSearch lns;
 
-    public Solver() {
+    public SuperSolver() {
     }
     public void intialize(int modelInstance) {
         this.model = new Model(4);
+        model.loadData();
+    }
+
+    public void intialize(Model model) {
+        this.model = model;
         model.loadData();
     }
 
