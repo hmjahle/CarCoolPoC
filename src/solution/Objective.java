@@ -197,6 +197,10 @@ public class Objective {
         return shiftIntraRouteValues[shift.getId()];
     }
 
+    public double getShiftIntraRouteObjectiveValue(int shiftId) {
+        return shiftIntraRouteValues[shiftId];
+    }
+
     /**
      * Objective value for the entire shift.
      *

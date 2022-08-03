@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import model.Shift;
+import model.TimeDependentVisitPair;
 import model.Visit;
 
 public class CarPoolingTimeDependentPairsUtils {
@@ -185,5 +186,13 @@ public class CarPoolingTimeDependentPairsUtils {
         timeWindowStartTime.add(getTimeWindowStart(route, currentVisit, syncedVisitsStartTimes, employeeShift));
         timeWindowStartTime.add(getTimeWindowEnd(route, currentVisit, syncedVisitsStartTimes, employeeShift));
         return timeWindowStartTime;
+    }
+
+    public TimeDependentVisitPair createCarpoolTimeDependentPair(Visit masterVisit, int masterShiftId, Visit dependentVisit, int dependentShiftId, int syncedStartTime, int intervalOffset, Map<Visit, Integer> carpoolSyncedVisitStartTime){
+        masterVisit.setCarpooling(dependentShiftId, syncedStartTime, 0);
+        dependentVisit.setCarpooling(masterShiftId, syncedStartTime, intervalOffset);
+        carpoolSyncedVisitStartTime.put(masterVisit, syncedStartTime);
+        carpoolSyncedVisitStartTime.put(dependentVisit, syncedStartTime);
+        return new TimeDependentVisitPair(masterVisit, dependentVisit, 0, intervalOffset);
     }
 }

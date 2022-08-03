@@ -215,8 +215,8 @@ public class Solution {
         return getRoute(shift.getId());
     }
 
-    public List<Visit> getRoute(int shiftid) {
-        return shiftRoutes.get(shiftid);
+    public List<Visit> getRoute(int shiftId) {
+        return shiftRoutes.get(shiftId);
     }
 
     @Override

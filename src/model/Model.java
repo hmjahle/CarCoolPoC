@@ -29,7 +29,7 @@ public class Model {
     private Map<Integer, Location> locations = new HashMap<Integer,Location>();
     
 
-    private Map<Short, Shift> idsShifts; // denne trenger vi egentlig ikke her fordi sykepleierne er homogene
+    private Map<Integer, Shift> idsShifts; // denne trenger vi egentlig ikke her fordi sykepleierne er homogene
     private Map<Integer, TravelTimeMatrix> travelTimeMatrix;
     private Collection<Visit> visits;
     private Collection<TimeDependentVisitPair> timeDependentVisitPairs = new HashSet<>();
@@ -58,7 +58,10 @@ public class Model {
         return locations.get(0);
     }
 
-    public Map<Short, Shift> getIdsShifts(){ return this.idsShifts;}
+    public Map<Integer, Shift> getIdsShifts(){ return this.idsShifts;}
+
+    public Shift getShift(int shiftId){ return this.idsShifts.get(shiftId);}
+
 
     public Map<Integer, TravelTimeMatrix> getTravelTimeMatrix(){ return this.travelTimeMatrix; }
 
@@ -83,7 +86,9 @@ public class Model {
             for(int i = 0; i < numWorkers; i ++) {
                 Boolean motorised = i != 5 && i != 3 ? true : false;
                 // NB! Need to get carpoolable from dataset
-                shifts.add(new Shift(i, true, motorised));
+                Shift newShift = new Shift(i, true, motorised);
+                shifts.add(newShift);
+                idsShifts.put(i, newShift);
             }
             for(int i = 0; i < this.shifts.size(); i++){
                 Shift shift = shifts.get(i);
