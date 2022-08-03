@@ -17,8 +17,8 @@ public class Visit {
 
     // 0 = drive, 1 = walk
     private Integer timeDependentOffsetInterval; //NB!!! når vi setter offset må det være lovlig innenfor time intervallet for tasken
-    private Integer startTime;
-    private Integer endTime;
+    private Integer timeWindowEnd;
+    private Integer timeWindowStart;
     private Integer transportType;
     private Integer coCarPoolerShiftID; // Shift id to the person you are carpooling with
     private boolean isSynced = false;
@@ -32,8 +32,8 @@ public class Visit {
         if (this.id == this.task.getId()) {
             // We can only initialize time interval if this
             // is a task completing visit
-            this.startTime = this.task.getStartTime();
-            this.endTime = this.task.getEndTime();
+            this.timeWindowStart= this.task.getStartTime();
+            this.timeWindowEnd = this.task.getEndTime();
         }
     }
 
@@ -43,8 +43,8 @@ public class Visit {
         this.visitType = visit.visitType;
         this.transportType = visit.transportType;
         this.coCarPoolerShiftID = visit.coCarPoolerShiftID;
-        this.startTime = visit.startTime;
-        this.endTime = visit.endTime;
+        this.timeWindowStart = visit.timeWindowStart;
+        this.timeWindowEnd= visit.timeWindowEnd;
         this.travelTime = visit.travelTime;
         this.timeDependentOffsetInterval = visit.timeDependentOffsetInterval;
 
@@ -74,9 +74,9 @@ public class Visit {
 
     public int getTaskEndTime(){ return this.task.getEndTime(); }
 
-    public Integer getStartTime(){ return this.startTime;}
+    public Integer getTimeWindowStart(){ return this.timeWindowStart;}
 
-    public Integer getEndTime(){ return this.endTime;}
+    public Integer getTimeWindowEnd(){ return this.timeWindowEnd;}
 
     public int getVisitDuration(){ if (this.isTransportTask){ return TransportMode.TRANSPORTTIME; } else { return this.getTask().getDuration(); } }
     
@@ -97,9 +97,9 @@ public class Visit {
 
 
     // Setters
-    public void setStartTime(int startTime){ this.startTime = startTime;}
+    public void setTimeWindowStart(int timeWindowStart){ this.timeWindowStart= timeWindowStart;}
     
-    public void setEndTime(int endTime){ this.endTime = endTime;}
+    public void setTimeWindowEnd(int timeWindowEnd){ this.timeWindowEnd = timeWindowEnd;}
 
     public void setTravleTime(int travelTime){
         this.travelTime = travelTime;
