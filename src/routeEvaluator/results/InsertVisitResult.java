@@ -1,5 +1,7 @@
 package routeEvaluator.results;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -16,6 +18,7 @@ public class InsertVisitResult {
     private List<TimeDependentVisitPair> newTimeDependentVisitPairs;
     private Map<Visit, Integer> carpoolSyncedVisitStartTime;
     private boolean multipleRoutesAffected = false;
+    private Map<Integer, List<Visit>> insertedVisits = new HashMap<>();
 
     public InsertVisitResult(RouteEvaluatorResult routeEvaluatorOne, RouteEvaluatorResult routeEvaluatorTwo,
             List<TimeDependentVisitPair> newTimeDependentVisitPairs,
@@ -28,15 +31,41 @@ public class InsertVisitResult {
         this.multipleRoutesAffected = true;
         this.shiftIdOne = shiftIdOne;
         this.shiftIdTwo = shiftIdTwo;
+        this.insertedVisits = new HashMap<>();
     }
 
-    public InsertVisitResult(RouteEvaluatorResult routeEvaluatorOne, int shiftIdOne) {
+    public InsertVisitResult(RouteEvaluatorResult routeEvaluatorOne, int shiftIdOne, List<Visit> insertVisits) {
         this.routeEvaluatorOne = routeEvaluatorOne;
         this.shiftIdOne = shiftIdOne;
+        this.insertedVisits = new HashMap<>();
+        setInsertedVisits(shiftIdOne, insertVisits);
+    }
+    public void setInsertedVisits(int shiftId, List<Visit> insertVisits){
+        this.insertedVisits.put(shiftId, insertVisits);
     }
 
     public Map<Visit, Integer> getCarpoolSyncedVisitStartTime() {
         return carpoolSyncedVisitStartTime;
+    }
+
+    public int getShiftIdOne() {
+        return this.shiftIdOne;
+    }
+
+    public int getShiftIdTwo() {
+        return this.shiftIdTwo;
+    }
+
+    public List<Visit> getInsertedVisits(int shiftId){
+        return insertedVisits.get(shiftId);
+    }
+
+    public List<Visit> getAllInsertedVisits() {
+        List<Visit> mergedVisits = new ArrayList<>();
+        for (Map.Entry<Integer, List<Visit>> entry: insertedVisits.entrySet()){
+            mergedVisits.addAll(entry.getValue());
+        }
+        return mergedVisits;
     }
 
     public RouteEvaluatorResult getRouteEvaluatorOne() {
