@@ -15,8 +15,8 @@ public class SynchronizedTaskUtils {
             return false;
         }
 
-        int masterStartTime = solution.getSyncedVisitStartTimes().get(pair.getMasterVisit());
-        int dependentStartTime = solution.getSyncedVisitStartTimes().get(pair.getDependentVisit());
+        int masterStartTime = solution.getCarpoolSyncedTaskStartTimes().get(pair.getMasterVisit());
+        int dependentStartTime = solution.getCarpoolSyncedTaskStartTimes().get(pair.getDependentVisit());
 
         return isStartTimeInvalid(masterStartTime, dependentStartTime, pair.getIntervalStart(), pair.getIntervalEnd());
     }

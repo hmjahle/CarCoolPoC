@@ -33,7 +33,7 @@ public class Visit {
             // We can only initialize time interval if this
             // is a task completing visit
             this.timeWindowStart= this.task.getStartTime();
-            this.timeWindowEnd = this.task.getEndTime();
+            this.timeWindowEnd = this.task.getTimeWindowEnd();
         }
     }
 
@@ -72,7 +72,7 @@ public class Visit {
 
     public int getTaskStartTime(){ return this.task.getStartTime(); }
 
-    public int getTaskEndTime(){ return this.task.getEndTime(); }
+    public int getTaskEndTime(){ return this.task.getTimeWindowEnd(); }
 
     public Integer getTimeWindowStart(){ return this.timeWindowStart;}
 
@@ -127,7 +127,7 @@ public class Visit {
         setIsSynced(true);
         setCoCarPoolerShiftID(coCarPoolerShiftID);
         setTimeDependentOffsetInterval(timeDependentOffsetInterval);
-        setStartTime(syncedStartTime);
+        setTimeWindowStart(syncedStartTime);
     }
     
     public void setTimeDependentOffsetInterval(Integer timeDependentOffsetInterval){

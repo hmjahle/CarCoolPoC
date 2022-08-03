@@ -126,7 +126,7 @@ public class GreedyRepairAlgorithm implements IRepairAlgorithm {
         // NB!!! In the following code we change the visits. Should they be copied and not changed directly??
 
         // Set time windows for D, P and JM
-        setTimeWindows(calculateTimeWindos(/*Input all visits etc*/));
+        // setTimeWindows(calculateTimeWindos(/*Input all visits etc*/));
         
         // If the coCarPoolerShiftId is not sat, the carpooling is no longer active, but the pick up is still present
         // Case 1.2: m in PP  
@@ -137,7 +137,7 @@ public class GreedyRepairAlgorithm implements IRepairAlgorithm {
         List<TimeDependentVisitPair> newTimeDependentVisitPairs = new ArrayList<>();
         Map<Visit, Integer> carpoolSyncedVisitStartTime = new HashMap<>();
 
-        int syncedStartTimeDropOff = carpoolingUtils.getVisitStartTime(resultMotorized.getRoute().getVisitSolution(), dropOff, solution.getSyncedVisitStartTimes(), motorizedShift);
+        int syncedStartTimeDropOff = carpoolingUtils.getTimeWindowStart(resultMotorized.getRoute().getVisitSolution(), dropOff, solution.getCarpoolSyncedTaskStartTimes(), motorizedShift);
         newTimeDependentVisitPairs.add(carpoolingUtils.createCarpoolTimeDependentPair(dropOff, motorizedShift.getId(), completeTask, motorizedShift.getId(), syncedStartTimeDropOff, 0, carpoolSyncedVisitStartTime));
         int syncedStartTimePickUp = syncedStartTimeDropOff + insertVisit.getVisitDuration();
         newTimeDependentVisitPairs.add(carpoolingUtils.createCarpoolTimeDependentPair(pickUp, motorizedShift.getId(), newJM, motorizedShift.getId(), syncedStartTimePickUp, 0, carpoolSyncedVisitStartTime));
@@ -158,8 +158,8 @@ public class GreedyRepairAlgorithm implements IRepairAlgorithm {
 
     private void setTimeWindows(Map<Visit, List<Integer>> timeWindows){
         for(Map.Entry<Visit, List<Integer>> entry : timeWindows.entrySet()){
-            entry.getKey().setStartTime(entry.getValue().get(0));
-            entry.getKey().setStartTime(entry.getValue().get(1));
+            entry.getKey().setTimeWindowStart(entry.getValue().get(0));
+            entry.getKey().setTimeWindowEnd(entry.getValue().get(1));
         }
     }
 
@@ -197,12 +197,12 @@ public class GreedyRepairAlgorithm implements IRepairAlgorithm {
     protected RouteEvaluatorResult getEvaluatorResultWithMultipleVisits(List<Visit> visits, Problem problem, Shift shift) {
         var solution = problem.getSolution();
         return problem.getRouteEvaluators().get(shift.getId()).evaluateRouteByTheOrderOfVisitsInsertVisits(
-                solution.getRoute(shift), visits, solution.getSyncedVisitStartTimes(), shift);
+                solution.getRoute(shift), visits, solution.getCarpoolSyncedTaskStartTimes(), shift);
     }
 
     protected RouteEvaluatorResult getEvaluatorResultByTheOrderOfVisits(List<Visit> visits, Problem problem, Shift shift){
         var solution = problem.getSolution();
-        return problem.getRouteEvaluators().get(shift.getId()).evaluateRouteByTheOrderOfVisits(visits, solution.getSyncedVisitStartTimes(), shift);
+        return problem.getRouteEvaluators().get(shift.getId()).evaluateRouteByTheOrderOfVisits(visits, solution.getCarpoolSyncedTaskStartTimes(), shift);
     }
 
 
@@ -222,8 +222,8 @@ public class GreedyRepairAlgorithm implements IRepairAlgorithm {
 
         RouteEvaluatorResult result = getEvaluatorResult(visit, problem, shift);
 
-        int case = getInsertCaseForNonMotorizedShift(result.getRoute() visit);
-
+        //int case = getInsertCaseForNonMotorizedShift(result.getRoute() visit);
+        return affectedRoutes;
     }
 
     /**
@@ -256,7 +256,7 @@ public class GreedyRepairAlgorithm implements IRepairAlgorithm {
     protected RouteEvaluatorResult getEvaluatorResult(Visit visit, Problem problem, Shift shift) {
         var solution = problem.getSolution();
         return problem.getRouteEvaluators().get(shift.getId()).evaluateRouteByTheOrderOfVisitsInsertVisit(
-                solution.getRoute(shift), visit, solution.getSyncedVisitStartTimes(), shift);
+                solution.getRoute(shift), visit, solution.getCarpoolSyncedTaskStartTimes(), shift);
     }
 
     private RouteEvaluatorResult findRoute(Problem problem, Visit visit, Solution solution, Shift shift) {

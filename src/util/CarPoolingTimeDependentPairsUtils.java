@@ -151,7 +151,7 @@ public class CarPoolingTimeDependentPairsUtils {
      * @throws NullPointerException if the visit is not in the route
      */
     private Integer getTimeWindowEnd(List<Visit> route, Visit currentVisit, Map<Visit, Integer> syncedVisitsStartTimes, Shift employeeShift){
-        int latestStartTime = Math.min(route.get(-1).getTaskEndTime(), employeeShift.getEndTime());
+        int latestStartTime = Math.min(route.get(-1).getTaskEndTime(), employeeShift.getTimeWindowEnd());
         int previousVisitTravelTime = 0;
         for (int i=route.size(); i-- > 0;){
             Visit visit = route.get(i);

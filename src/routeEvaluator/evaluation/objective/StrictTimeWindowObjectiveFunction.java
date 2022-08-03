@@ -22,7 +22,7 @@ public class StrictTimeWindowObjectiveFunction implements IObjectiveFunctionIntr
         if (objectiveInfo.isDepot() || objectiveInfo.isStrict())
             return 0;
         else {
-            long timeWindowBreak = objectiveInfo.getVisitEnd() - objectiveInfo.getVisit().getEndTime();
+            long timeWindowBreak = objectiveInfo.getVisitEnd() - objectiveInfo.getVisit().getTimeWindowEnd();
             return penalty * Math.max(0, timeWindowBreak);
         }
     }

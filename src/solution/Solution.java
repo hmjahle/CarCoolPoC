@@ -198,6 +198,11 @@ public class Solution {
         return this.carpoolTimeDependentVisitStartTime.get(visit);
     }
 
+    // Carpool-sync-starttime-getter
+    public Map<Visit, Integer> getCarpoolSyncedTaskStartTimes() {
+        return this.carpoolTimeDependentVisitStartTime;
+    }
+
     // Carpool-Visit-pairs getter
     public Collection<TimeDependentVisitPair> getCarpoolTimeDependentVisitPairs(){
         return this.carpoolTimeDependentVisitPairs;

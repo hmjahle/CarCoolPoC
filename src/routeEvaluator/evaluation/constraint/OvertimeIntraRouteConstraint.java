@@ -25,7 +25,7 @@ public class OvertimeIntraRouteConstraint extends OvertimeAbstract implements IC
     private Integer getLatestAllowedEndOfShift(Model model, Shift shift) {
         return (model.getMaximumOvertime() != null ?
                 model.getMaximumOvertime().getOrDefault(shift, DEFAULT_MAXIMUM_OVERTIME) : DEFAULT_MAXIMUM_OVERTIME)
-                + shift.getEndTime();
+                + shift.getTimeWindowEnd();
     }
     
     @Override

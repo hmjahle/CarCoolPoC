@@ -22,6 +22,6 @@ public class TimeWindowLateArrivalConstraint extends CustomCriteriaConstraint{
     }
 
     private static Function<ConstraintInfo, Boolean> constraintFunction(int maximumLateArrival) {
-        return i -> i.getStartOfServiceNextTask() + i.getVisit().getVisitDuration() <= i.getVisit().getEndTime() + maximumLateArrival;
+        return i -> i.getStartOfServiceNextTask() + i.getVisit().getVisitDuration() <= i.getVisit().getTimeWindowEnd() + maximumLateArrival;
     }
 }

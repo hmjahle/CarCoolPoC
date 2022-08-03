@@ -250,7 +250,7 @@ public class Objective {
 
         for (Shift shift : model.getShifts()) {
             RouteEvaluator routeEvaluator = routeEvaluators.get(shift.getId());
-            Double intraObjective = routeEvaluator.evaluateRouteObjective(solution.getRoute(shift), solution.getSyncedVisitStartTimes(), shift);
+            Double intraObjective = routeEvaluator.evaluateRouteObjective(solution.getRoute(shift), solution.getCarpoolSyncedTaskStartTimes(), shift);
             if (intraObjective == null)
                 return false;
             // double extraObjective = calcExtraRouteObjectiveValue(shift, solution.getRoute(shift));

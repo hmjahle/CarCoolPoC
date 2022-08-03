@@ -45,7 +45,7 @@ public class Task {
 
     public int getStartTime(){ return this.startTime; }
 
-    public int getEndTime(){ return this.endTime; }
+    public int getTimeWindowEnd(){ return this.endTime; }
 
     public int getDuration(){ return this.duration; }
 

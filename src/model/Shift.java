@@ -39,7 +39,7 @@ public class Shift {
 
     public int getStartTime(){ return this.startTime; }
 
-    public int getEndTime(){ return this.endTime;}
+    public int getTimeWindowEnd(){ return this.endTime;}
 
     public int getShiftDuration(){ return (this.endTime - this.startTime); }
 

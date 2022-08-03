@@ -14,7 +14,7 @@ public class RouteEvaluationInfoAbstract {
     public RouteEvaluationInfoAbstract(Visit visit, Shift employeeWorkShift) {
         this.visit = visit;
         this.shiftId = employeeWorkShift.getId();
-        this.endOfWorkShift = employeeWorkShift.getEndTime();
+        this.endOfWorkShift = employeeWorkShift.getTimeWindowEnd();
     }
 
     public int getSyncedTaskStartTime() {

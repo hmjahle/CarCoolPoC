@@ -176,7 +176,7 @@ public class Problem {
      * @param startTime
      */
     public void setTimeDependentTaskStartTime(Visit visit, int startTime) {
-        solution.setSyncedVisitStartTime(visit, startTime);
+        solution.setCarpoolSyncedVisitStartTime(visit, startTime);
     }
 
 

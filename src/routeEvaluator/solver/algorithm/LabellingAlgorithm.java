@@ -295,7 +295,7 @@ public class LabellingAlgorithm {
 
     private int addVisit(int visitCnt, Label currentLabel) {
         Visit visit = currentLabel.getNode().getVisit();
-        visit.setStartTime(currentLabel.getCurrentTime());
+        visit.setTimeWindowStart(currentLabel.getCurrentTime());
         visit.setTravleTime(currentLabel.getTravelTime());
         visits.set(visitCnt++, visit);
         return visitCnt;
