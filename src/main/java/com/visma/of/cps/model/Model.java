@@ -11,6 +11,8 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 public class Model {
     // Stuff that goes in the model here
@@ -42,6 +44,9 @@ public class Model {
     public Collection<Task> getTasks(){ return this.tasks;}
 
     public List<Shift> getCarpoolAbleShifts(){ return this.carpoolAbleShifts;}
+
+    public List<Shift> getCarpoolAbleMotorizedShifts(){ return this.carpoolAbleShifts.stream().filter(Shift::isMotorized).collect(Collectors.toList());} // Make faster by storing?
+
 
     // Needs to be sat if we want to allow overtime
     public Map<Shift, Integer> getMaximumOvertime() { return null;}
