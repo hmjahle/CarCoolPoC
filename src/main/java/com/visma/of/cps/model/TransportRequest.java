@@ -28,6 +28,9 @@ public class TransportRequest implements IVisit {
                    "windows and traveltime between PickUp and DropOff."
            );
        }
+       this.pickUp = pickUp;
+       this.dropOff = dropOff;
+       this.isSynced = true;
     }
 
     @Override
@@ -48,5 +51,13 @@ public class TransportRequest implements IVisit {
     @Override
     public boolean isSynced() {
         return this.isSynced;
+    }
+
+    public Visit getPickUp() {
+        return this.pickUp;
+    }
+
+    public Visit getDropOff() {
+        return this.dropOff;
     }
 }
