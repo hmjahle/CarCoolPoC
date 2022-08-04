@@ -1,5 +1,5 @@
 {
-    "instance_name": "train_4",
+    "instance_name": "Carpool api test",
     "nbr_nurses": 25,
     "capacity_nurse": 1000,
     "benchmark": 1051.1,
@@ -8,8 +8,9 @@
         "x_coord": 40,
         "y_coord": 50
     },
-    "patients": {
-        "1": {
+    "tasks": [
+        {
+            "id": 1,
             "care_time": 10,
             "demand": 20,
             "end_time": 863,
@@ -17,7 +18,8 @@
             "x_coord": 25,
             "y_coord": 85
         },
-        "2": {
+        {
+            "id": 2,
             "care_time": 10,
             "demand": 30,
             "end_time": 342,
@@ -25,7 +27,8 @@
             "x_coord": 22,
             "y_coord": 75
         },
-        "3": {
+        {
+            "id": 3,
             "care_time": 10,
             "demand": 10,
             "end_time": 661,
@@ -33,7 +36,8 @@
             "x_coord": 22,
             "y_coord": 85
         },
-        "4": {
+        {
+            "id": 4,
             "care_time": 10,
             "demand": 40,
             "end_time": 834,
@@ -41,7 +45,8 @@
             "x_coord": 20,
             "y_coord": 80
         },
-        "5": {
+        {
+            "id": 5,
             "care_time": 10,
             "demand": 20,
             "end_time": 290,
@@ -49,7 +54,8 @@
             "x_coord": 20,
             "y_coord": 85
         },
-        "6": {
+        {
+            "id": 6,
             "care_time": 10,
             "demand": 20,
             "end_time": 578,
@@ -57,7 +63,8 @@
             "x_coord": 18,
             "y_coord": 75
         },
-        "7": {
+        {
+            "id": 7,
             "care_time": 10,
             "demand": 20,
             "end_time": 490,
@@ -65,7 +72,8 @@
             "x_coord": 15,
             "y_coord": 75
         },
-        "8": {
+        {
+            "id": 8,
             "care_time": 10,
             "demand": 10,
             "end_time": 557,
@@ -73,7 +81,8 @@
             "x_coord": 15,
             "y_coord": 80
         },
-        "9": {
+        {
+            "id": 9,
             "care_time": 10,
             "demand": 20,
             "end_time": 561,
@@ -81,7 +90,8 @@
             "x_coord": 10,
             "y_coord": 35
         },
-        "10": {
+        {
+            "id": 10,
             "care_time": 10,
             "demand": 30,
             "end_time": 709,
@@ -89,7 +99,8 @@
             "x_coord": 10,
             "y_coord": 40
         },
-        "11": {
+        {
+            "id": 11,
             "care_time": 10,
             "demand": 40,
             "end_time": 385,
@@ -97,7 +108,8 @@
             "x_coord": 8,
             "y_coord": 40
         },
-        "12": {
+        {
+            "id": 12,
             "care_time": 10,
             "demand": 20,
             "end_time": 413,
@@ -105,7 +117,8 @@
             "x_coord": 8,
             "y_coord": 45
         },
-        "13": {
+        {
+            "id": 13,
             "care_time": 10,
             "demand": 10,
             "end_time": 843,
@@ -113,7 +126,8 @@
             "x_coord": 5,
             "y_coord": 35
         },
-        "14": {
+        {
+            "id": 14,
             "care_time": 10,
             "demand": 10,
             "end_time": 285,
@@ -121,7 +135,8 @@
             "x_coord": 5,
             "y_coord": 45
         },
-        "15": {
+        {
+            "id": 15,
             "care_time": 10,
             "demand": 20,
             "end_time": 364,
@@ -129,7 +144,8 @@
             "x_coord": 2,
             "y_coord": 40
         },
-        "16": {
+        {
+            "id": 16,
             "care_time": 10,
             "demand": 20,
             "end_time": 445,
@@ -137,7 +153,8 @@
             "x_coord": 0,
             "y_coord": 40
         },
-        "17": {
+        {
+            "id": 17,
             "care_time": 10,
             "demand": 20,
             "end_time": 893,
@@ -145,7 +162,8 @@
             "x_coord": 0,
             "y_coord": 45
         },
-        "18": {
+        {
+            "id": 18,
             "care_time": 10,
             "demand": 20,
             "end_time": 525,
@@ -153,7 +171,8 @@
             "x_coord": 44,
             "y_coord": 5
         },
-        "19": {
+        {
+            "id": 19,
             "care_time": 10,
             "demand": 40,
             "end_time": 444,
@@ -161,7 +180,8 @@
             "x_coord": 42,
             "y_coord": 10
         },
-        "20": {
+        {
+            "id": 20,
             "care_time": 10,
             "demand": 10,
             "end_time": 727,
@@ -169,7 +189,8 @@
             "x_coord": 42,
             "y_coord": 15
         },
-        "21": {
+        {
+            "id": 21,
             "care_time": 10,
             "demand": 10,
             "end_time": 405,
@@ -177,7 +198,8 @@
             "x_coord": 40,
             "y_coord": 5
         },
-        "22": {
+        {
+            "id": 22,
             "care_time": 10,
             "demand": 40,
             "end_time": 565,
@@ -185,7 +207,8 @@
             "x_coord": 40,
             "y_coord": 15
         },
-        "23": {
+        {
+            "id": 23,
             "care_time": 10,
             "demand": 30,
             "end_time": 391,
@@ -193,7 +216,8 @@
             "x_coord": 38,
             "y_coord": 5
         },
-        "24": {
+        {
+            "id": 24,
             "care_time": 10,
             "demand": 10,
             "end_time": 871,
@@ -201,7 +225,8 @@
             "x_coord": 38,
             "y_coord": 15
         },
-        "25": {
+        {
+            "id": 25,
             "care_time": 10,
             "demand": 20,
             "end_time": 914,
@@ -209,7 +234,8 @@
             "x_coord": 35,
             "y_coord": 5
         },
-        "26": {
+        {
+            "id": 26,
             "care_time": 10,
             "demand": 30,
             "end_time": 719,
@@ -217,7 +243,8 @@
             "x_coord": 95,
             "y_coord": 30
         },
-        "27": {
+        {
+            "id": 27,
             "care_time": 10,
             "demand": 20,
             "end_time": 336,
@@ -225,7 +252,8 @@
             "x_coord": 95,
             "y_coord": 35
         },
-        "28": {
+        {
+            "id": 28,
             "care_time": 10,
             "demand": 10,
             "end_time": 339,
@@ -233,7 +261,8 @@
             "x_coord": 92,
             "y_coord": 30
         },
-        "29": {
+        {
+            "id": 29,
             "care_time": 10,
             "demand": 10,
             "end_time": 384,
@@ -241,7 +270,8 @@
             "x_coord": 90,
             "y_coord": 35
         },
-        "30": {
+        {
+            "id": 30,
             "care_time": 10,
             "demand": 10,
             "end_time": 436,
@@ -249,7 +279,8 @@
             "x_coord": 88,
             "y_coord": 30
         },
-        "31": {
+        {
+            "id": 31,
             "care_time": 10,
             "demand": 20,
             "end_time": 355,
@@ -257,7 +288,8 @@
             "x_coord": 88,
             "y_coord": 35
         },
-        "32": {
+        {
+            "id": 32,
             "care_time": 10,
             "demand": 10,
             "end_time": 811,
@@ -265,7 +297,8 @@
             "x_coord": 87,
             "y_coord": 30
         },
-        "33": {
+        {
+            "id": 33,
             "care_time": 10,
             "demand": 10,
             "end_time": 301,
@@ -273,7 +306,8 @@
             "x_coord": 85,
             "y_coord": 25
         },
-        "34": {
+        {
+            "id": 34,
             "care_time": 10,
             "demand": 30,
             "end_time": 677,
@@ -281,7 +315,8 @@
             "x_coord": 85,
             "y_coord": 35
         },
-        "35": {
+        {
+            "id": 35,
             "care_time": 10,
             "demand": 20,
             "end_time": 847,
@@ -289,7 +324,8 @@
             "x_coord": 67,
             "y_coord": 85
         },
-        "36": {
+        {
+            "id": 36,
             "care_time": 10,
             "demand": 40,
             "end_time": 293,
@@ -297,7 +333,8 @@
             "x_coord": 65,
             "y_coord": 85
         },
-        "37": {
+        {
+            "id": 37,
             "care_time": 10,
             "demand": 10,
             "end_time": 747,
@@ -305,7 +342,8 @@
             "x_coord": 65,
             "y_coord": 82
         },
-        "38": {
+        {
+            "id": 38,
             "care_time": 10,
             "demand": 30,
             "end_time": 468,
@@ -313,7 +351,8 @@
             "x_coord": 62,
             "y_coord": 80
         },
-        "39": {
+        {
+            "id": 39,
             "care_time": 10,
             "demand": 10,
             "end_time": 286,
@@ -321,7 +360,8 @@
             "x_coord": 60,
             "y_coord": 80
         },
-        "40": {
+        {
+            "id": 40,
             "care_time": 10,
             "demand": 30,
             "end_time": 519,
@@ -329,7 +369,8 @@
             "x_coord": 60,
             "y_coord": 85
         },
-        "41": {
+        {
+            "id": 41,
             "care_time": 10,
             "demand": 20,
             "end_time": 566,
@@ -337,7 +378,8 @@
             "x_coord": 58,
             "y_coord": 75
         },
-        "42": {
+        {
+            "id": 42,
             "care_time": 10,
             "demand": 10,
             "end_time": 283,
@@ -345,7 +387,8 @@
             "x_coord": 55,
             "y_coord": 80
         },
-        "43": {
+        {
+            "id": 43,
             "care_time": 10,
             "demand": 20,
             "end_time": 764,
@@ -353,7 +396,8 @@
             "x_coord": 55,
             "y_coord": 85
         },
-        "44": {
+        {
+            "id": 44,
             "care_time": 10,
             "demand": 10,
             "end_time": 407,
@@ -361,7 +405,8 @@
             "x_coord": 55,
             "y_coord": 82
         },
-        "45": {
+        {
+            "id": 45,
             "care_time": 10,
             "demand": 10,
             "end_time": 287,
@@ -369,7 +414,8 @@
             "x_coord": 20,
             "y_coord": 82
         },
-        "46": {
+        {
+            "id": 46,
             "care_time": 10,
             "demand": 10,
             "end_time": 679,
@@ -377,7 +423,8 @@
             "x_coord": 18,
             "y_coord": 80
         },
-        "47": {
+        {
+            "id": 47,
             "care_time": 10,
             "demand": 10,
             "end_time": 295,
@@ -385,7 +432,8 @@
             "x_coord": 2,
             "y_coord": 45
         },
-        "48": {
+        {
+            "id": 48,
             "care_time": 10,
             "demand": 10,
             "end_time": 914,
@@ -393,7 +441,8 @@
             "x_coord": 42,
             "y_coord": 5
         },
-        "49": {
+        {
+            "id": 49,
             "care_time": 10,
             "demand": 10,
             "end_time": 630,
@@ -401,7 +450,8 @@
             "x_coord": 42,
             "y_coord": 12
         },
-        "50": {
+        {
+            "id": 50,
             "care_time": 10,
             "demand": 30,
             "end_time": 697,
@@ -409,7 +459,8 @@
             "x_coord": 72,
             "y_coord": 35
         },
-        "51": {
+        {
+            "id": 51,
             "care_time": 10,
             "demand": 19,
             "end_time": 516,
@@ -417,7 +468,8 @@
             "x_coord": 55,
             "y_coord": 20
         },
-        "52": {
+        {
+            "id": 52,
             "care_time": 10,
             "demand": 3,
             "end_time": 365,
@@ -425,7 +477,8 @@
             "x_coord": 25,
             "y_coord": 30
         },
-        "53": {
+        {
+            "id": 53,
             "care_time": 10,
             "demand": 5,
             "end_time": 565,
@@ -433,7 +486,8 @@
             "x_coord": 20,
             "y_coord": 50
         },
-        "54": {
+        {
+            "id": 54,
             "care_time": 10,
             "demand": 16,
             "end_time": 791,
@@ -441,7 +495,8 @@
             "x_coord": 55,
             "y_coord": 60
         },
-        "55": {
+        {
+            "id": 55,
             "care_time": 10,
             "demand": 16,
             "end_time": 789,
@@ -449,7 +504,8 @@
             "x_coord": 30,
             "y_coord": 60
         },
-        "56": {
+        {
+            "id": 56,
             "care_time": 10,
             "demand": 19,
             "end_time": 747,
@@ -457,7 +513,8 @@
             "x_coord": 50,
             "y_coord": 35
         },
-        "57": {
+        {
+            "id": 57,
             "care_time": 10,
             "demand": 23,
             "end_time": 587,
@@ -465,7 +522,8 @@
             "x_coord": 30,
             "y_coord": 25
         },
-        "58": {
+        {
+            "id": 58,
             "care_time": 10,
             "demand": 20,
             "end_time": 912,
@@ -473,7 +531,8 @@
             "x_coord": 15,
             "y_coord": 10
         },
-        "59": {
+        {
+            "id": 59,
             "care_time": 10,
             "demand": 19,
             "end_time": 292,
@@ -481,7 +540,8 @@
             "x_coord": 10,
             "y_coord": 20
         },
-        "60": {
+        {
+            "id": 60,
             "care_time": 10,
             "demand": 17,
             "end_time": 884,
@@ -489,7 +549,8 @@
             "x_coord": 15,
             "y_coord": 60
         },
-        "61": {
+        {
+            "id": 61,
             "care_time": 10,
             "demand": 9,
             "end_time": 448,
@@ -497,7 +558,8 @@
             "x_coord": 45,
             "y_coord": 65
         },
-        "62": {
+        {
+            "id": 62,
             "care_time": 10,
             "demand": 3,
             "end_time": 357,
@@ -505,7 +567,8 @@
             "x_coord": 65,
             "y_coord": 35
         },
-        "63": {
+        {
+            "id": 63,
             "care_time": 10,
             "demand": 6,
             "end_time": 289,
@@ -513,7 +576,8 @@
             "x_coord": 65,
             "y_coord": 20
         },
-        "64": {
+        {
+            "id": 64,
             "care_time": 10,
             "demand": 17,
             "end_time": 381,
@@ -521,7 +585,8 @@
             "x_coord": 45,
             "y_coord": 30
         },
-        "65": {
+        {
+            "id": 65,
             "care_time": 10,
             "demand": 16,
             "end_time": 261,
@@ -529,7 +594,8 @@
             "x_coord": 35,
             "y_coord": 40
         },
-        "66": {
+        {
+            "id": 66,
             "care_time": 10,
             "demand": 16,
             "end_time": 756,
@@ -537,7 +603,8 @@
             "x_coord": 41,
             "y_coord": 37
         },
-        "67": {
+        {
+            "id": 67,
             "care_time": 10,
             "demand": 9,
             "end_time": 458,
@@ -545,7 +612,8 @@
             "x_coord": 64,
             "y_coord": 42
         },
-        "68": {
+        {
+            "id": 68,
             "care_time": 10,
             "demand": 21,
             "end_time": 802,
@@ -553,7 +621,8 @@
             "x_coord": 40,
             "y_coord": 60
         },
-        "69": {
+        {
+            "id": 69,
             "care_time": 10,
             "demand": 27,
             "end_time": 347,
@@ -561,7 +630,8 @@
             "x_coord": 31,
             "y_coord": 52
         },
-        "70": {
+        {
+            "id": 70,
             "care_time": 10,
             "demand": 23,
             "end_time": 940,
@@ -569,7 +639,8 @@
             "x_coord": 35,
             "y_coord": 69
         },
-        "71": {
+        {
+            "id": 71,
             "care_time": 10,
             "demand": 14,
             "end_time": 431,
@@ -577,7 +648,8 @@
             "x_coord": 65,
             "y_coord": 55
         },
-        "72": {
+        {
+            "id": 72,
             "care_time": 10,
             "demand": 8,
             "end_time": 277,
@@ -585,7 +657,8 @@
             "x_coord": 63,
             "y_coord": 65
         },
-        "73": {
+        {
+            "id": 73,
             "care_time": 10,
             "demand": 5,
             "end_time": 476,
@@ -593,7 +666,8 @@
             "x_coord": 2,
             "y_coord": 60
         },
-        "74": {
+        {
+            "id": 74,
             "care_time": 10,
             "demand": 8,
             "end_time": 835,
@@ -601,7 +675,8 @@
             "x_coord": 20,
             "y_coord": 20
         },
-        "75": {
+        {
+            "id": 75,
             "care_time": 10,
             "demand": 16,
             "end_time": 422,
@@ -609,7 +684,8 @@
             "x_coord": 5,
             "y_coord": 5
         },
-        "76": {
+        {
+            "id": 76,
             "care_time": 10,
             "demand": 31,
             "end_time": 458,
@@ -617,7 +693,8 @@
             "x_coord": 60,
             "y_coord": 12
         },
-        "77": {
+        {
+            "id": 77,
             "care_time": 10,
             "demand": 7,
             "end_time": 910,
@@ -625,7 +702,8 @@
             "x_coord": 23,
             "y_coord": 3
         },
-        "78": {
+        {
+            "id": 78,
             "care_time": 10,
             "demand": 27,
             "end_time": 555,
@@ -633,7 +711,8 @@
             "x_coord": 8,
             "y_coord": 56
         },
-        "79": {
+        {
+            "id": 79,
             "care_time": 10,
             "demand": 30,
             "end_time": 542,
@@ -641,7 +720,8 @@
             "x_coord": 6,
             "y_coord": 68
         },
-        "80": {
+        {
+            "id": 80,
             "care_time": 10,
             "demand": 13,
             "end_time": 952,
@@ -649,7 +729,8 @@
             "x_coord": 47,
             "y_coord": 47
         },
-        "81": {
+        {
+            "id": 81,
             "care_time": 10,
             "demand": 10,
             "end_time": 545,
@@ -657,7 +738,8 @@
             "x_coord": 49,
             "y_coord": 58
         },
-        "82": {
+        {
+            "id": 82,
             "care_time": 10,
             "demand": 9,
             "end_time": 342,
@@ -665,7 +747,8 @@
             "x_coord": 27,
             "y_coord": 43
         },
-        "83": {
+        {
+            "id": 83,
             "care_time": 10,
             "demand": 14,
             "end_time": 295,
@@ -673,7 +756,8 @@
             "x_coord": 37,
             "y_coord": 31
         },
-        "84": {
+        {
+            "id": 84,
             "care_time": 10,
             "demand": 18,
             "end_time": 585,
@@ -681,7 +765,8 @@
             "x_coord": 57,
             "y_coord": 29
         },
-        "85": {
+        {
+            "id": 85,
             "care_time": 10,
             "demand": 2,
             "end_time": 534,
@@ -689,7 +774,8 @@
             "x_coord": 63,
             "y_coord": 23
         },
-        "86": {
+        {
+            "id": 86,
             "care_time": 10,
             "demand": 28,
             "end_time": 539,
@@ -697,7 +783,8 @@
             "x_coord": 21,
             "y_coord": 24
         },
-        "87": {
+        {
+            "id": 87,
             "care_time": 10,
             "demand": 13,
             "end_time": 549,
@@ -705,7 +792,8 @@
             "x_coord": 12,
             "y_coord": 24
         },
-        "88": {
+        {
+            "id": 88,
             "care_time": 10,
             "demand": 19,
             "end_time": 450,
@@ -713,7 +801,8 @@
             "x_coord": 24,
             "y_coord": 58
         },
-        "89": {
+        {
+            "id": 89,
             "care_time": 10,
             "demand": 25,
             "end_time": 903,
@@ -721,7 +810,8 @@
             "x_coord": 67,
             "y_coord": 5
         },
-        "90": {
+        {
+            "id": 90,
             "care_time": 10,
             "demand": 6,
             "end_time": 549,
@@ -729,7 +819,8 @@
             "x_coord": 37,
             "y_coord": 47
         },
-        "91": {
+        {
+            "id": 91,
             "care_time": 10,
             "demand": 13,
             "end_time": 909,
@@ -737,7 +828,8 @@
             "x_coord": 49,
             "y_coord": 42
         },
-        "92": {
+        {
+            "id": 92,
             "care_time": 10,
             "demand": 14,
             "end_time": 264,
@@ -745,7 +837,8 @@
             "x_coord": 53,
             "y_coord": 43
         },
-        "93": {
+        {
+            "id": 93,
             "care_time": 10,
             "demand": 3,
             "end_time": 938,
@@ -753,7 +846,8 @@
             "x_coord": 61,
             "y_coord": 52
         },
-        "94": {
+        {
+            "id": 94,
             "care_time": 10,
             "demand": 23,
             "end_time": 582,
@@ -761,7 +855,8 @@
             "x_coord": 57,
             "y_coord": 48
         },
-        "95": {
+        {
+            "id": 95,
             "care_time": 10,
             "demand": 6,
             "end_time": 290,
@@ -769,7 +864,8 @@
             "x_coord": 56,
             "y_coord": 37
         },
-        "96": {
+        {
+            "id": 96,
             "care_time": 10,
             "demand": 26,
             "end_time": 752,
@@ -777,7 +873,8 @@
             "x_coord": 55,
             "y_coord": 54
         },
-        "97": {
+        {
+            "id": 97,
             "care_time": 10,
             "demand": 35,
             "end_time": 737,
@@ -785,7 +882,8 @@
             "x_coord": 4,
             "y_coord": 18
         },
-        "98": {
+        {
+            "id": 98,
             "care_time": 10,
             "demand": 9,
             "end_time": 362,
@@ -793,7 +891,8 @@
             "x_coord": 26,
             "y_coord": 52
         },
-        "99": {
+        {
+            "id": 99,
             "care_time": 10,
             "demand": 15,
             "end_time": 498,
@@ -801,7 +900,8 @@
             "x_coord": 26,
             "y_coord": 35
         },
-        "100": {
+        {
+            "id": 100,
             "care_time": 10,
             "demand": 3,
             "end_time": 940,
@@ -809,7 +909,7 @@
             "x_coord": 31,
             "y_coord": 67
         }
-    },
+    ],
     "travel_times": [
         [
             0,
