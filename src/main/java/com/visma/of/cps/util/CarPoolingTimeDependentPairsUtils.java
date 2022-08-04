@@ -120,6 +120,9 @@ public class CarPoolingTimeDependentPairsUtils {
     public Integer getTimeWindowStart(List<Visit> route, Visit currentVisit, Map<Visit, Integer> syncedVisitsStartTimes, Shift employeeShift) throws NullPointerException{
         int startTime;
         int previousVisitEndTime = employeeShift.getStartTime();
+        if (syncedVisitsStartTimes.containsKey(currentVisit)){
+            return syncedVisitsStartTimes.get(currentVisit);
+        }
         for(Visit visit : route){
             if (visit.getTimeWindowStart() == null){
                 throw new NullPointerException("Time window start of visit is not initialized");
@@ -153,6 +156,9 @@ public class CarPoolingTimeDependentPairsUtils {
     private Integer getTimeWindowEnd(List<Visit> route, Visit currentVisit, Map<Visit, Integer> syncedVisitsStartTimes, Shift employeeShift){
         int latestStartTime = Math.min(route.get(-1).getTaskEndTime(), employeeShift.getTimeWindowEnd());
         int previousVisitTravelTime = 0;
+        if (syncedVisitsStartTimes.containsKey(currentVisit)){
+            return syncedVisitsStartTimes.get(currentVisit) + currentVisit.getTimeDependentOffsetInterval();
+        }
         for (int i=route.size(); i-- > 0;){
             Visit visit = route.get(i);
             if (visit.getTimeWindowEnd() == null){
