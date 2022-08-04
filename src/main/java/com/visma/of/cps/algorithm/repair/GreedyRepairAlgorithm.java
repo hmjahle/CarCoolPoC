@@ -5,7 +5,7 @@ import com.visma.of.cps.model.Model;
 import com.visma.of.cps.model.Shift;
 import com.visma.of.cps.model.TimeDependentVisitPair;
 import com.visma.of.cps.model.Visit;
-import com.visma.of.cps.routeEvaluator.results.InsertVisitResult;
+import com.visma.of.cps.routeEvaluator.results.MultiRouteEvaluatorResult;
 import com.visma.of.cps.routeEvaluator.results.Route;
 import com.visma.of.cps.routeEvaluator.results.RouteEvaluatorResult;
 import com.visma.of.cps.solution.Problem;
@@ -15,6 +15,7 @@ import com.visma.of.cps.util.Constants.VisitType;
 
 import java.util.*;
 import java.util.function.Function;
+import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 import static com.visma.of.cps.util.RandomUtils.objectiveNoise;
@@ -55,7 +56,7 @@ public class GreedyRepairAlgorithm implements IRepairAlgorithm {
         var solution = problem.getSolution();
         var objective = problem.getObjective();
         double bestDeltaObjectiveValue = Double.MAX_VALUE;
-        InsertVisitResult bestInsertVisitResult = null;
+        MultiRouteEvaluatorResult bestInsertVisitResult = null;
 
         double deltaObjectiveValue;
 
@@ -65,7 +66,7 @@ public class GreedyRepairAlgorithm implements IRepairAlgorithm {
         for (Shift shift : shifts) {
             if (shift.isMotorized()){
                 for (Visit insertVisit : legalMotorizedVisits){
-                    InsertVisitResult result = findRouteForMotorized(problem, insertVisit, solution, shift);
+                    MultiRouteEvaluatorResult result = findRouteForMotorized(problem, insertVisit, solution, shift);
                     if (result.isInfeasibleInsert()) continue;
                     deltaObjectiveValue = result.getDeltaObjective(objective);
 
@@ -75,6 +76,11 @@ public class GreedyRepairAlgorithm implements IRepairAlgorithm {
                     }
                 }
             } else {
+                for(Visit insertVisit : unallocatedVisits){
+                    if (!legalInsertNonMotorizedShift(solution, insertVisit, shift)) continue;
+                    MultiRouteEvaluatorResult result = findRouteForNonMotorized(problem, insertVisit, solution, shift);
+
+                }
 
             }
         }
@@ -87,26 +93,22 @@ public class GreedyRepairAlgorithm implements IRepairAlgorithm {
         return deltaObjective;
     }
 
-    private InsertVisitResult findRouteForMotorized(Problem problem, Visit insertVisit, Solution solution, Shift motorizedShift){
+
+
+    private MultiRouteEvaluatorResult findRouteForMotorized(Problem problem, Visit insertVisit, Solution solution, Shift motorizedShift){
         List<Visit> insertedVisitsMotorized = new ArrayList<>();
         insertedVisitsMotorized.add(insertVisit);
         RouteEvaluatorResult resultMotorized = findRoute(problem, insertVisit, solution, motorizedShift);
+        // If the insert was infeasible return null
+        if (resultMotorized == null) return null; 
         int insertIndex = resultMotorized.getRoute().findIndexInRouteVisit(insertVisit);
-        Visit predecessor = resultMotorized.getRoute().getVisitSolution().get(insertIndex-1);
+        Visit predecessor = insertIndex == 0 ? null : resultMotorized.getRoute().getVisitSolution().get(insertIndex-1);
         // Inserted a complete task not during carpooling. Case 2: m in PP
-        if(insertIndex == 0 || !predecessor.isPickUp()){return new InsertVisitResult(resultMotorized, motorizedShift.getId(), insertedVisitsMotorized);}
+        if(predecessor == null || !predecessor.isPickUp()){return new MultiRouteEvaluatorResult(resultMotorized, motorizedShift.getId(), insertedVisitsMotorized);}
         // Else we inserted a complete task during a carpooling.
-        // Find non motorized carpooling shift ID
-        Integer coCarPoolerShiftID = predecessor.getCoCarPoolerShiftID();
-        // Find corresponding drop-off, pick-up and JM
-        Map<Integer, Visit> correspondingTransportVisits = model.getVisits().stream().filter(v -> v.getTask() == insertVisit.getTask()).collect(Collectors.toMap(Visit::getVisitType, Function.identity()));
         
-        // Check if state is correct. Can be removed, because this should never happen. But is nice for debugging
-        if (correspondingTransportVisits.size() != 4 || 
-            correspondingTransportVisits.containsKey(VisitType.COMPLETE_TASK) ||
-            correspondingTransportVisits.containsKey(VisitType.DROP_OF) ||
-            correspondingTransportVisits.containsKey(VisitType.PICK_UP) ||
-            correspondingTransportVisits.containsKey(VisitType.JOIN_MOTORIZED)) {throw new IllegalStateException("The model do not have 4 visits for each task");}
+        // Find corresponding drop-off, pick-up and JM
+        Map<Integer, Visit> correspondingTransportVisits = findCorrespondingTransportVisits(insertVisit);
 
         Visit pickUp = correspondingTransportVisits.get(VisitType.PICK_UP);
         Visit dropOff = correspondingTransportVisits.get(VisitType.DROP_OF);
@@ -117,27 +119,23 @@ public class GreedyRepairAlgorithm implements IRepairAlgorithm {
         resultMotorized.getRoute().addVisitAtIndex(pickUp, insertIndex+1);
         // Insert drop off behind complete task    
         resultMotorized.getRoute().addVisitAtIndex(dropOff, insertIndex-1);
-        insertIndex ++;
 
-        // NB!!! In the following code we change the visits. Should they be copied and not changed directly??
+        // NB!!! In the following code we change the time window of the visits. Should they be copied and not changed directly??
 
         // Set time windows for D, P and JM
-        // setTimeWindows(calculateTimeWindos(/*Input all visits etc*/));
+        setTimeWindows(carpoolingUtils.calculateTimeWindowsForMotorized(resultMotorized.getRoute().getVisitSolution(), newJM, dropOff, pickUp, completeTask, solution.getCarpoolSyncedTaskStartTimes(), motorizedShift));
         
-        // If the coCarPoolerShiftId is not sat, the carpooling is no longer active, but the pick up is still present
-        // Case 1.2: m in PP  
-        // Will not create time depended pairs or sync them.
-        if (coCarPoolerShiftID == null){return new InsertVisitResult(resultMotorized, motorizedShift.getId(), insertedVisitsMotorized);}
-
         // Create time dependent pairs
-        List<TimeDependentVisitPair> newTimeDependentVisitPairs = new ArrayList<>();
         Map<Visit, Integer> carpoolSyncedVisitStartTime = new HashMap<>();
+        List<TimeDependentVisitPair> newTimeDependentVisitPairs = new ArrayList<>();
 
         int syncedStartTimeDropOff = carpoolingUtils.getTimeWindowStart(resultMotorized.getRoute().getVisitSolution(), dropOff, solution.getCarpoolSyncedTaskStartTimes(), motorizedShift);
         newTimeDependentVisitPairs.add(carpoolingUtils.createCarpoolTimeDependentPair(dropOff, motorizedShift.getId(), completeTask, motorizedShift.getId(), syncedStartTimeDropOff, 0, carpoolSyncedVisitStartTime));
         int syncedStartTimePickUp = syncedStartTimeDropOff + insertVisit.getVisitDuration();
         newTimeDependentVisitPairs.add(carpoolingUtils.createCarpoolTimeDependentPair(pickUp, motorizedShift.getId(), newJM, motorizedShift.getId(), syncedStartTimePickUp, 0, carpoolSyncedVisitStartTime));
-
+        
+        // Find non motorized carpooling shift ID
+        Integer coCarPoolerShiftID = predecessor.getCoCarPoolerShiftID();
         // Add the corresponding JM to the non motorized route after the predecessor JM 
         Route newNonMotorizedRoute = new Route();
         newNonMotorizedRoute.addVisits(solution.getRoute(coCarPoolerShiftID));
@@ -146,18 +144,86 @@ public class GreedyRepairAlgorithm implements IRepairAlgorithm {
 
         RouteEvaluatorResult resultNonMotorized = getEvaluatorResultByTheOrderOfVisits(newNonMotorizedRoute.getVisitSolution(), problem, motorizedShift);
 
-        InsertVisitResult insertVisitResult = new InsertVisitResult(resultMotorized, resultNonMotorized, newTimeDependentVisitPairs, carpoolSyncedVisitStartTime, motorizedShift.getId(), coCarPoolerShiftID);
-        insertVisitResult.setInsertedVisits(motorizedShift.getId(), insertedVisitsMotorized);
-        insertVisitResult.setInsertedVisits(coCarPoolerShiftID, new ArrayList<Visit>(Arrays.asList(newJM)));
-        return insertVisitResult;
+        MultiRouteEvaluatorResult multiRouteEvaluatorResult = new MultiRouteEvaluatorResult(resultMotorized, resultNonMotorized, newTimeDependentVisitPairs, carpoolSyncedVisitStartTime, motorizedShift.getId(), coCarPoolerShiftID);
+        multiRouteEvaluatorResult.setInsertedVisits(motorizedShift.getId(), insertedVisitsMotorized);
+        multiRouteEvaluatorResult.setInsertedVisits(coCarPoolerShiftID, new ArrayList<>(Arrays.asList(newJM)));
+        return multiRouteEvaluatorResult;
     }
 
-    private void setTimeWindows(Map<Visit, List<Integer>> timeWindows){
-        for(Map.Entry<Visit, List<Integer>> entry : timeWindows.entrySet()){
-            entry.getKey().setTimeWindowStart(entry.getValue().get(0));
-            entry.getKey().setTimeWindowEnd(entry.getValue().get(1));
-        }
+
+    
+    private MultiRouteEvaluatorResult findRouteForNonMotorized(Problem problem, Visit insertVisit, Solution solution, Shift nonMotorizedShift){
+        if (insertVisit.completesTask()) insertCompleteTaskNonMotorized(problem, insertVisit, solution, nonMotorizedShift);
+        return null;
+
     }
+
+    private MultiRouteEvaluatorResult insertCompleteTaskNonMotorized(Problem problem, Visit insertVisit, Solution solution, Shift nonMotorizedShift){
+        List<Visit> insertedVisitsNonMotorized = new ArrayList<>();
+        insertedVisitsNonMotorized.add(insertVisit);
+        RouteEvaluatorResult resultNonMotorized = findRoute(problem, insertVisit, solution, nonMotorizedShift);
+        // If the insert was infeasible return null
+        if (resultNonMotorized == null) return null;
+        int insertIndex = resultNonMotorized.getRoute().findIndexInRouteVisit(insertVisit);
+        Visit predecessor = insertIndex == 0 ? null : resultNonMotorized.getRoute().getVisitSolution().get(insertIndex-1);
+        Visit successor = insertIndex < resultNonMotorized.getRoute().getVisitSolution().size() ? null : resultNonMotorized.getRoute().getVisitSolution().get(insertIndex+1);
+        if (predecessor == null || !predecessor.isJoinMotorized()){return new MultiRouteEvaluatorResult(resultNonMotorized, nonMotorizedShift.getId(), insertedVisitsNonMotorized);}
+
+        // Else we have "broken-up" a carpooling route. Case 4 in PP
+        if (successor == null) throw new IllegalStateException("Non motorized is never dropped of");
+        // Find corresponding drop-off, pick-up and JM
+        Map<Integer, Visit> correspondingTransportVisits = findCorrespondingTransportVisits(insertVisit);
+
+        Visit pickUp = correspondingTransportVisits.get(VisitType.PICK_UP);
+        Visit dropOff = correspondingTransportVisits.get(VisitType.DROP_OF);
+        Visit newJM = correspondingTransportVisits.get(VisitType.JOIN_MOTORIZED);
+
+        // Insert new JM after the complete task
+        resultNonMotorized.getRoute().addVisitAtIndex(newJM, insertIndex+1);
+        insertedVisitsNonMotorized.add(newJM);
+
+        // Create time dependent pairs
+        // Find driver shift id
+        int motorizedShiftId = predecessor.getCoCarPoolerShiftID();
+        Map<Visit, Integer> carpoolSyncedVisitStartTime = new HashMap<>();
+        List<TimeDependentVisitPair> newTimeDependentVisitPairs = new ArrayList<>();
+
+        // Find previous pick up visit
+        Visit prevPickUp = findCorrespondingTransportVisits(predecessor).get(VisitType.PICK_UP);
+        // Calculate time window for previous JM + Complete task (insertVisit) + previous P + insert Drop off
+        setTimeWindows(carpoolingUtils.calculateTimeWindowsForNonMotorized(resultNonMotorized.getRoute().getVisitSolution(), predecessor, dropOff, prevPickUp, insertVisit, solution.getCarpoolSyncedTaskStartTimes(), nonMotorizedShift));
+        
+        // Sync insert visit and insert drop off
+        int syncedStartTimeDropOff = insertVisit.getTimeWindowStart();
+        int intervalOffset = insertVisit.getTimeWindowEnd() - syncedStartTimeDropOff;
+        newTimeDependentVisitPairs.add(carpoolingUtils.createCarpoolTimeDependentPair(dropOff, motorizedShiftId, insertVisit, nonMotorizedShift.getId(), syncedStartTimeDropOff, intervalOffset, carpoolSyncedVisitStartTime));
+        
+        // Find successor motorized
+        Visit nextDropOff = findCorrespondingTransportVisits(successor).get(VisitType.DROP_OF);
+        // Calculate time window for new JM + P + successor Drop off + successor nonMotorized
+        setTimeWindows(carpoolingUtils.calculateTimeWindowsForNonMotorized(resultNonMotorized.getRoute().getVisitSolution(), newJM, pickUp, nextDropOff, successor, solution.getCarpoolSyncedTaskStartTimes(), nonMotorizedShift));
+
+        // Sync new JM and insert pick up
+        int syncedStartTimeJM = newJM.getTimeWindowStart();
+        newTimeDependentVisitPairs.add(carpoolingUtils.createCarpoolTimeDependentPair(pickUp, motorizedShiftId, newJM, nonMotorizedShift.getId(), syncedStartTimeJM, 0, carpoolSyncedVisitStartTime));
+
+        // Add the new Pick upp and Drop off to the motorized shift
+        Route newMotorizedRoute = new Route();
+        newMotorizedRoute.addVisits(solution.getRoute(motorizedShiftId));
+        int indexPreviousPickUp = newMotorizedRoute.findIndexInRouteVisitTypeTask(predecessor.getTask(), VisitType.PICK_UP);
+        newMotorizedRoute.addVisitAtIndex(dropOff, indexPreviousPickUp+1);
+        newMotorizedRoute.addVisitAtIndex(pickUp, indexPreviousPickUp+1);
+
+        RouteEvaluatorResult resultMotorized = getEvaluatorResultByTheOrderOfVisits(newMotorizedRoute.getVisitSolution(), problem, model.getShift(motorizedShiftId));
+
+        MultiRouteEvaluatorResult multiRouteEvaluatorResult = new MultiRouteEvaluatorResult(resultNonMotorized, resultMotorized, newTimeDependentVisitPairs, carpoolSyncedVisitStartTime, nonMotorizedShift.getId(), motorizedShiftId);
+        multiRouteEvaluatorResult.setInsertedVisits(nonMotorizedShift.getId(), insertedVisitsNonMotorized);
+        multiRouteEvaluatorResult.setInsertedVisits(motorizedShiftId, new ArrayList<>(Arrays.asList(dropOff, pickUp)));
+        return multiRouteEvaluatorResult;
+    }
+    
+    
+
 
 
     protected Double updateSolutionOneShift(Problem problem, double bestObjective, int bestShiftId, List<Visit> bestVisits, RouteEvaluatorResult bestRoute) {
@@ -170,7 +236,7 @@ public class GreedyRepairAlgorithm implements IRepairAlgorithm {
         return bestObjective;
     }
 
-    protected Double updateSolution(Problem problem, double bestObjective, InsertVisitResult bestInsertVisitResult ) {
+    protected Double updateSolution(Problem problem, double bestObjective, MultiRouteEvaluatorResult bestInsertVisitResult ) {
         int shiftIdOne = bestInsertVisitResult.getShiftIdOne();
         updateSolutionOneShift(problem, bestObjective, shiftIdOne, bestInsertVisitResult.getInsertedVisits(shiftIdOne), bestInsertVisitResult.getRouteEvaluatorOne());
         if (bestInsertVisitResult.isMultipleRoutesAffected()) {
@@ -213,7 +279,7 @@ public class GreedyRepairAlgorithm implements IRepairAlgorithm {
      * @param shift The non-motorized shift we wish to insert the visit into
      * @return A list of route evaluator results with affected routes. Empty list if none is feasible
      */
-    private List<RouteEvaluatorResult> findRouteForNonMotorized(Problem problem, Visit visit, Solution solution, Shift shift) {
+    private List<RouteEvaluatorResult> findRouteForNonMotorized2(Problem problem, Visit visit, Solution solution, Shift shift) {
         List<RouteEvaluatorResult> affectedRoutes = new ArrayList<>();
 
         RouteEvaluatorResult result = getEvaluatorResult(visit, problem, shift);
@@ -258,24 +324,38 @@ public class GreedyRepairAlgorithm implements IRepairAlgorithm {
     private RouteEvaluatorResult findRoute(Problem problem, Visit visit, Solution solution, Shift shift) {
         return getEvaluatorResult(visit, problem, shift);
     }
+
+    private boolean legalInsertNonMotorizedShift(Solution solution, Visit visit, Shift shift){
+        return visit.completesTask() || (visit.isJoinMotorized() && completeTaskIsInShift(solution, shift, visit));
+    }
+
+    private boolean completeTaskIsInShift(Solution solution, Shift shift, Visit joinMotorized){
+        for (Visit visit: solution.getRoute(shift.getId())){
+            if (visit.getTask() == joinMotorized.getTask()){return true;}
+        }
+        return false;
+    }
+
+    private void setTimeWindows(Map<Visit, List<Integer>> timeWindows){
+        for(Map.Entry<Visit, List<Integer>> entry : timeWindows.entrySet()){
+            entry.getKey().setTimeWindowStart(entry.getValue().get(0));
+            entry.getKey().setTimeWindowEnd(entry.getValue().get(1));
+        }
+    }
+
+    private Map<Integer, Visit> findCorrespondingTransportVisits(Visit visit){
+        // Find corresponding drop-off, pick-up and JM
+        Map<Integer, Visit> correspondingTransportVisits = model.getVisits().stream().filter(v -> v.getTask() == visit.getTask()).collect(Collectors.toMap(Visit::getVisitType, Function.identity()));
+        
+        // Check if state is correct. Can be removed, because this should never happen. But is nice for debugging
+        if (correspondingTransportVisits.size() != 4 || 
+            correspondingTransportVisits.containsKey(VisitType.COMPLETE_TASK) ||
+            correspondingTransportVisits.containsKey(VisitType.DROP_OF) ||
+            correspondingTransportVisits.containsKey(VisitType.PICK_UP) ||
+            correspondingTransportVisits.containsKey(VisitType.JOIN_MOTORIZED)) {throw new IllegalStateException("The model do not have 4 visits for each task");}
+
+        return correspondingTransportVisits;
+    }
+
+
 }
-
-
-/*private RouteEvaluatorResult findRoute(Problem problem, Task task, Solution solution, Shift shift) {
- *      Boolean feasible, VisitPair (P1, D1), VisitPair (P2, D2) = insertVisitInShift(Visit, Shift);
- *      if not feasible:
- *           return null 
- *      else if P1, D1, P2, D2 is null:
- *           same logic as before: evaluateRouteByTheOrderOfTasksInsertTask()
- *      else:
- *           Iterate over all drivers shifts:
- *               Test inserting (P1, D2) in driver shift and get delta objective
- *               Test inserting (P2, D2) in driver shift and get delta objective
- *               Test inserting both (P1, D1) and (P2, D2) in driver shift and get delta objective
- *           Choose to insert P1, D1, P2, D2 where the objective is best.
- *           Total change in objective = delta objective for non-motarised worker
- *                                       + delta objective motorized worker 1
- *                                       + delta objective motorized worker 2 
- * }
- * Do updates in all shifts affected by the greedy chosen repair visit 
- */
