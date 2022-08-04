@@ -18,7 +18,7 @@ public class CarPoolingTimeDependentPairsUtils {
      * Assumes:
      *  - That the route (and therefore the shift) is non motorized
      *  - That the join motorized visit and the complete task visit is already added to the shift
-     *  - That both of the visits have a time window 
+     *  - That time widow is sat for all other visits in the route
      * @param route The route for the non motorized shift
      * @param joinMotorized The join motorized visit
      * @param dropOff The drop of visit in the transport request
@@ -64,8 +64,8 @@ public class CarPoolingTimeDependentPairsUtils {
      * 
      * Assumes:
      *  - Drop-of, Complete Task, and Pick-up is already in the route (in that order)
-     *  - Time windows are set for all these visits 
-     * @param route The route for the motorized shift 
+     *  - That time widow is sat for all other visits in the route
+     * @param route The route for the motorized shift
      * @param joinMotorized The JM-visit that is to be synced with the Pick-up
      * @param dropOff The drop-of visit that corresponds to the completeTask-visit
      * @param pickUp The pick-up visit that corresponds to the completeTask-visit
@@ -111,9 +111,9 @@ public class CarPoolingTimeDependentPairsUtils {
     /**
      * Calculates the time window start (i.e., the earliest possible start time) for the visit. Calculation is done so that the route is feasible 
      * with respect to time windows
-     * @param route
-     * @param currentVisit
-     * @param syncedVisitsStartTime
+     * @param route The route that contains the visit
+     * @param currentVisit The visit we want to fond the time window start for
+     * @param syncedVisitsStartTimes List of visits that have a fixed start time due to synchronization
      * @return time window start for the visit. Null if visit is not in the route 
      * @throws NullPointerException if the start time of any visit of the route is not set
      */
@@ -175,7 +175,7 @@ public class CarPoolingTimeDependentPairsUtils {
     /**
      * Calculate the time window for a visit. A time window is an interval of the earliest possible start time
      * and the latest possible start time for the given visit in the given route.
-     * @param route The route we use to cacluate the time window 
+     * @param route The route we use to calculate the time window
      * @param currentVisit The visit we wish to find the time window for
      * @param syncedVisitsStartTimes Start times of synced visits we have to take into account when calculating the time window
      * @param employeeShift The shift that owns the route
@@ -188,6 +188,21 @@ public class CarPoolingTimeDependentPairsUtils {
         return timeWindowStartTime;
     }
 
+    /**
+     * Create the necessary information to handle time dependent pairs that arises from carpooling.
+     * @param masterVisit The master visit in the carpool pairs
+     * @param masterShiftId Shift in which the master visit is present
+     * @param dependentVisit The dependent visit
+     * @param dependentShiftId Shift in which the dependent visit is present (can be the same as the master shift)
+     * @param syncedStartTime The time in which the master and the dependent visit currently starts in their respective
+     *                        shifts. (NB: must not be confused with time windows for these visits)
+     * @param intervalOffset The largest possible delay that the dependent start time can have with respect to the
+     *                       master start time (i.e., shift is infeasible if dependent start time > master start time +
+     *                       intervalOffset)
+     * @param carpoolSyncedVisitStartTime List that we store the time in which the visits currently start in their
+     *                                    respective shifts
+     * @return a new TimeDependentVisitPair
+     */
     public TimeDependentVisitPair createCarpoolTimeDependentPair(Visit masterVisit, int masterShiftId, Visit dependentVisit, int dependentShiftId, int syncedStartTime, int intervalOffset, Map<Visit, Integer> carpoolSyncedVisitStartTime){
         masterVisit.setCarpooling(dependentShiftId, syncedStartTime, 0);
         dependentVisit.setCarpooling(masterShiftId, syncedStartTime, intervalOffset);
