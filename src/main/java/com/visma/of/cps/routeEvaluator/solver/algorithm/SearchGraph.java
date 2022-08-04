@@ -1,6 +1,8 @@
 package com.visma.of.cps.routeEvaluator.solver.algorithm;
 
 // OBS: was  ITask,  ILocation, ITimetravelmatrix
+
+import com.visma.of.cps.model.IVisit;
 import com.visma.of.cps.model.Location;
 import com.visma.of.cps.model.TravelTimeMatrix;
 import com.visma.of.cps.model.Visit;
@@ -13,7 +15,7 @@ public class SearchGraph {
     private Node origin;
     private Node destination;
     private final List<Node> nodes;
-    private final Map< Visit, Node> visitToNodes;
+    private final Map<IVisit, Node> visitToNodes;
     private Map<Integer, Integer[][]> travelTimeMatrix;
     private int nodeIdCounter;
     private int sourceId;
@@ -156,7 +158,7 @@ public class SearchGraph {
     /**
      * Gets the location id of a task in the graph, the graph must contain the task.
      *
-     * @param task Task to find location id for.
+     * @param visit Visit to find location id for.
      * @return integer location id.
      */
     public int getLocationId(Visit visit) {
@@ -180,7 +182,7 @@ public class SearchGraph {
         return destination;
     }
 
-    public Node getNode(Visit visit) {
+    public Node getNode(IVisit visit) {
         return visitToNodes.get(visit);
     }
 
