@@ -1,14 +1,15 @@
 package com.visma.of.cps.algorithm.repair;
 
 import com.visma.of.cps.algorithm.NeighborhoodMoveInfo;
+import com.visma.of.cps.model.IVisit;
 import com.visma.of.cps.model.Model;
 import com.visma.of.cps.model.Shift;
 import com.visma.of.cps.model.TimeDependentVisitPair;
+import com.visma.of.cps.model.TransportRequest;
 import com.visma.of.cps.model.Visit;
 import com.visma.of.cps.routeEvaluator.results.MultiRouteEvaluatorResult;
 import com.visma.of.cps.routeEvaluator.results.Route;
 import com.visma.of.cps.routeEvaluator.results.RouteEvaluatorResult;
-import com.visma.of.cps.routeEvaluator.solver.RouteEvaluator;
 import com.visma.of.cps.solution.Problem;
 import com.visma.of.cps.solution.Solution;
 import com.visma.of.cps.util.CarPoolingTimeDependentPairsUtils;
@@ -18,7 +19,6 @@ import com.visma.of.cps.util.Constants.VisitType;
 
 import java.util.*;
 import java.util.function.Function;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 import static com.visma.of.cps.util.RandomUtils.objectiveNoise;
@@ -70,7 +70,7 @@ public class GreedyRepairAlgorithm implements IRepairAlgorithm {
 
         List<Visit> visits = new ArrayList<>(unallocatedVisits);
         Collections.shuffle(visits);
-        List<Visit> legalMotorizedVisits = visits.stream().filter(v -> v.completesTask()).collect(Collectors.toList());
+        List<Visit> legalMotorizedVisits = visits.stream().filter(Visit::completesTask).collect(Collectors.toList());
         for (Shift shift : shifts) {
             if (shift.isMotorized()){
                 for (Visit insertVisit : legalMotorizedVisits){
@@ -354,7 +354,8 @@ public class GreedyRepairAlgorithm implements IRepairAlgorithm {
 
     protected RouteEvaluatorResult getEvaluatorResultByTheOrderOfVisits(List<Visit> visits, Problem problem, Shift shift){
         var solution = problem.getSolution();
-        return problem.getRouteEvaluators().get(shift.getId()).evaluateRouteByTheOrderOfVisits(visits, solution.getCarpoolSyncedTaskStartTimes(), shift);
+        return problem.getRouteEvaluators().get(shift.getId()).evaluateRouteByTheOrderOfVisits(
+            visits, solution.getCarpoolSyncedTaskStartTimes(), shift);
     }
 
 
@@ -369,11 +370,12 @@ public class GreedyRepairAlgorithm implements IRepairAlgorithm {
      */
     private ShiftRouteEvaluatorPair getBestMotorizedShift(Problem problem, Visit pickUp, Visit dropOf) {
         RouteEvaluatorResult bestResult = null;
-        List<Visit> transportRequest = new ArrayList<>(Arrays.asList(pickUp, dropOf)); // Change this to be aggregated node???
+        int travelTimeBetween = model.getTravelTimeMatrix().get(Constants.TransportMode.DRIVE).getTravelTime(pickUp.getLocation(), dropOf.getLocation());
+        TransportRequest transportRequest = new TransportRequest(pickUp, dropOf, travelTimeBetween); // Change this to be aggregated node???
         Shift bestShift = null;
 
         for (Shift mShift : model.getCarpoolAbleMotorizedShifts()) {
-            RouteEvaluatorResult result = getEvaluatorResultWithMultipleVisits(transportRequest, problem, mShift);
+            RouteEvaluatorResult result = findRoute(problem, transportRequest, mShift);
 
             if (result == null) continue;
             if (bestResult == null) {
@@ -389,13 +391,13 @@ public class GreedyRepairAlgorithm implements IRepairAlgorithm {
         return bestResult == null ? null : carpoolingUtils.new ShiftRouteEvaluatorPair(bestShift, bestResult);
     }
 
-    protected RouteEvaluatorResult getEvaluatorResult(Visit visit, Problem problem, Shift shift) {
+    protected RouteEvaluatorResult getEvaluatorResult(IVisit visit, Problem problem, Shift shift) {
         var solution = problem.getSolution();
         return problem.getRouteEvaluators().get(shift.getId()).evaluateRouteByTheOrderOfVisitsInsertVisit(
                 solution.getRoute(shift), visit, solution.getCarpoolSyncedTaskStartTimes(), shift);
     }
 
-    private RouteEvaluatorResult findRoute(Problem problem, Visit visit, Shift shift) {
+    private RouteEvaluatorResult findRoute(Problem problem, IVisit visit, Shift shift) {
         return getEvaluatorResult(visit, problem, shift);
     }
 
