@@ -29,13 +29,11 @@ public class GreedyRepairAlgorithm implements IRepairAlgorithm {
 
     protected final Model model;
     private final Random random;
-    //private final FeasibilityChecker feasibilityChecker;
     private final CarPoolingTimeDependentPairsUtils carpoolingUtils = new CarPoolingTimeDependentPairsUtils();
 
     public GreedyRepairAlgorithm(Model model, Random random) {
         this.model = model;
         this.random = random;
-        //this.feasibilityChecker = FeasibilityChecker.getInstance();
     }
 
     /**
@@ -55,6 +53,13 @@ public class GreedyRepairAlgorithm implements IRepairAlgorithm {
         return neighborhoodMoveInfo;
     }
 
+    /**
+     * Finds the best next visit to be inserted in one of the shifts.
+     * @param problem
+     * @param shifts
+     * @param unallocatedVisits
+     * @return delta objective of best insert
+     */
     protected Double findBestGreedyInsert(Problem problem, List<Shift> shifts, Set<Visit> unallocatedVisits) {
         var solution = problem.getSolution();
         var objective = problem.getObjective();
@@ -103,10 +108,18 @@ public class GreedyRepairAlgorithm implements IRepairAlgorithm {
 
 
 
+    /** Finds where to insert a visit in a motorized shift, and possibly what non motorized shift that is affected. 
+     * @param problem
+     * @param insertVisit the visit to be inserted
+     * @param solution
+     * @param motorizedShift the motorized where the visit should be inserted
+     * @return A class containing the affected routes when inserting a visit and the new objective obtained by doing this. 
+     * Returns null if insert is infeasible
+     */
     private MultiRouteEvaluatorResult findRouteForMotorized(Problem problem, Visit insertVisit, Solution solution, Shift motorizedShift){
         List<Visit> insertedVisitsMotorized = new ArrayList<>();
         insertedVisitsMotorized.add(insertVisit);
-        RouteEvaluatorResult resultMotorized = findRoute(problem, insertVisit, solution, motorizedShift);
+        RouteEvaluatorResult resultMotorized = findRoute(problem, insertVisit, motorizedShift);
         // If the insert was infeasible return null
         if (resultMotorized == null) return null; 
         int insertIndex = resultMotorized.getRoute().findIndexInRouteVisit(insertVisit);
@@ -160,15 +173,31 @@ public class GreedyRepairAlgorithm implements IRepairAlgorithm {
 
 
     
+    /** Finds where to insert a visit in a non-motorized shift, and possibly which motorized shift that is affected. 
+     * @param problem
+     * @param insertVisit the visit to be inserted
+     * @param solution
+     * @param motorizedShift the non-motorized where the visit should be inserted
+     * @return A class containing the affected routes when inserting a visit and the new objective obtained by doing this. 
+     * Returns null if insert is infeasible
+     */
     private MultiRouteEvaluatorResult findRouteForNonMotorized(Problem problem, Visit insertVisit, Solution solution, Shift nonMotorizedShift){
         if (insertVisit.completesTask()) return insertCompleteTaskNonMotorized(problem, insertVisit, solution, nonMotorizedShift);
         return insertJoinMotorizedNonMotorized(problem, insertVisit, solution, nonMotorizedShift);
     }
-
+    
+    /** Finds where to insert a complete task visit in a non-motorized shift, and possibly which motorized shift that is affected. 
+     * @param problem
+     * @param insertVisit the visit to be inserted
+     * @param solution
+     * @param motorizedShift the non-motorized where the visit should be inserted
+     * @return A class containing the affected routes when inserting a visit and the new objective obtained by doing this. 
+     * Returns null if insert is infeasible
+     */
     private MultiRouteEvaluatorResult insertCompleteTaskNonMotorized(Problem problem, Visit insertVisit, Solution solution, Shift nonMotorizedShift){
         List<Visit> insertedVisitsNonMotorized = new ArrayList<>();
         insertedVisitsNonMotorized.add(insertVisit);
-        RouteEvaluatorResult resultNonMotorized = findRoute(problem, insertVisit, solution, nonMotorizedShift);
+        RouteEvaluatorResult resultNonMotorized = findRoute(problem, insertVisit, nonMotorizedShift);
         // If the insert was infeasible return null
         if (resultNonMotorized == null) return null;
         int insertIndex = resultNonMotorized.getRoute().findIndexInRouteVisit(insertVisit);
@@ -230,7 +259,14 @@ public class GreedyRepairAlgorithm implements IRepairAlgorithm {
         return multiRouteEvaluatorResult;
     }
     
-    
+    /** Finds where to insert a join motorized visit in a non-motorized shift, and possibly which motorized shift that is affected. 
+     * @param problem
+     * @param insertVisit the visit to be inserted
+     * @param solution
+     * @param motorizedShift the non-motorized where the visit should be inserted
+     * @return A class containing the affected routes when inserting a visit and the new objective obtained by doing this. 
+     * Possibly null if insert is infeasible
+     */
     private MultiRouteEvaluatorResult insertJoinMotorizedNonMotorized(Problem problem, Visit insertVisit, Solution solution, Shift nonMotorizedShift){
         List<Visit> route = solution.getRoute(nonMotorizedShift.getId());
 
@@ -280,7 +316,6 @@ public class GreedyRepairAlgorithm implements IRepairAlgorithm {
 
 
 
-
     protected Double updateSolutionOneShift(Problem problem, double bestObjective, int bestShiftId, List<Visit> bestVisits, RouteEvaluatorResult bestRoute) {
         Shift bestShift = model.getShift(bestShiftId);
         for (Visit bestVisit: bestVisits){
@@ -304,7 +339,7 @@ public class GreedyRepairAlgorithm implements IRepairAlgorithm {
 
     
     /**
-     * Insert a list of vistis into a shift and calculate the objective value result. The visit order
+     * Insert a list of visits into a shift and calculate the objective value result. The visit order
      * from the list will be upheld in the resulting route
      * @param visits Visits to be inserted into the shift
      * @param problem The current problem
@@ -322,25 +357,6 @@ public class GreedyRepairAlgorithm implements IRepairAlgorithm {
         return problem.getRouteEvaluators().get(shift.getId()).evaluateRouteByTheOrderOfVisits(visits, solution.getCarpoolSyncedTaskStartTimes(), shift);
     }
 
-
-    /**
-     * This method:
-     *  1.  Insert the visit into the shift and runs the route evaluator
-     *  2.  Discover which case we have, based on the visits location in the route
-     *  3.  Handles potential inserts in other shifts (e.g., Pick-up and drop-off inserts in motorized shifts) 
-     * @param problem The current problem
-     * @param visit The visit we wish to insert
-     * @param solution The current solution
-     * @param shift The non-motorized shift we wish to insert the visit into
-     * @return A list of route evaluator results with affected routes. Empty list if none is feasible
-     */
-    private List<RouteEvaluatorResult> findRouteForNonMotorized2(Problem problem, Visit visit, Solution solution, Shift shift) {
-        List<RouteEvaluatorResult> affectedRoutes = new ArrayList<>();
-
-        RouteEvaluatorResult result = getEvaluatorResult(visit, problem, shift);
-        //int case = getInsertCaseForNonMotorizedShift(result.getRoute() visit);
-        return affectedRoutes;
-    }
 
     /**
      * This method tries to insert the pick-up and drop-of pair into all motorized shifts, run the route evaluator, and
@@ -379,7 +395,7 @@ public class GreedyRepairAlgorithm implements IRepairAlgorithm {
                 solution.getRoute(shift), visit, solution.getCarpoolSyncedTaskStartTimes(), shift);
     }
 
-    private RouteEvaluatorResult findRoute(Problem problem, Visit visit, Solution solution, Shift shift) {
+    private RouteEvaluatorResult findRoute(Problem problem, Visit visit, Shift shift) {
         return getEvaluatorResult(visit, problem, shift);
     }
 
@@ -401,6 +417,11 @@ public class GreedyRepairAlgorithm implements IRepairAlgorithm {
         }
     }
 
+    /**
+     * Finds the three corresponding visits of the input visit
+     * @param visit
+     * @return Map of visit type and visit
+     */
     private Map<Integer, Visit> findCorrespondingTransportVisits(Visit visit){
         // Find corresponding drop-off, pick-up and JM
         Map<Integer, Visit> correspondingTransportVisits = model.getVisits().stream().filter(v -> v.getTask() == visit.getTask()).collect(Collectors.toMap(Visit::getVisitType, Function.identity()));
