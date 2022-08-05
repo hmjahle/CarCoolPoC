@@ -1,9 +1,6 @@
 package com.visma.of.cps.routeEvaluator.solver;
 
-import com.visma.of.cps.model.Location;
-import com.visma.of.cps.model.Shift;
-import com.visma.of.cps.model.TravelTimeMatrix;
-import com.visma.of.cps.model.Visit;
+import com.visma.of.cps.model.*;
 import com.visma.of.cps.routeEvaluator.evaluation.constraint.ConstraintsIntraRouteHandler;
 import com.visma.of.cps.routeEvaluator.evaluation.constraint.IConstraintIntraRoute;
 import com.visma.of.cps.routeEvaluator.evaluation.objective.IObjectiveFunctionIntraRoute;
@@ -199,7 +196,7 @@ public class RouteEvaluator {
      * @param employeeWorkShift    Employee the route applies to.
      * @return A routeEvaluator result for the evaluated route.
      */
-    public RouteEvaluatorResult evaluateRouteByTheOrderOfVisitsInsertVisit(List<Visit> visits, Visit insertVisit, Map<Visit, Integer> syncedVisitsStartTime, Shift employeeWorkShift) {
+    public RouteEvaluatorResult evaluateRouteByTheOrderOfVisitsInsertVisit(List<Visit> visits, IVisit insertVisit, Map<Visit, Integer> syncedVisitsStartTime, Shift employeeWorkShift) {
         return calcRouteEvaluatorResult(new WeightedObjective(), visits, insertVisit, syncedVisitsStartTime, employeeWorkShift);
     }
 
@@ -310,7 +307,7 @@ public class RouteEvaluator {
     /**
      * Used to calculate routes when inserting one new task
      */
-    private RouteEvaluatorResult calcRouteEvaluatorResult(IRouteEvaluatorObjective objective, List<Visit> visits, Visit insertVisit, 
+    private RouteEvaluatorResult calcRouteEvaluatorResult(IRouteEvaluatorObjective objective, List<Visit> visits, IVisit insertVisit,
                                                           Map<Visit, Integer> syncedVisitsStartTime, Shift employeeWorkShift) {
         setSyncedNodesStartTimes(syncedVisitsStartTime, visits);
         setSyncedNodesStartTime(syncedVisitsStartTime, insertVisit);
@@ -359,8 +356,8 @@ public class RouteEvaluator {
         firstNodeList.initializeWithNodes(graph, visits, skipVisitsAtIndices);
     }
 
-    private void updateSecondNodeList(Visit task) {
-        secondNodeList.initializeWithNode(graph, task);
+    private void updateSecondNodeList(IVisit visit) {
+        secondNodeList.initializeWithNode(graph, visit);
     }
 
     private void updateSecondNodeList(List<Visit> visits) {
@@ -372,7 +369,7 @@ public class RouteEvaluator {
             setSyncedNodesStartTime(syncedVisitsStartTime, visit);
     }
 
-    private void setSyncedNodesStartTime(Map<Visit, Integer> syncedVisitsStartTime, Visit visit) {
+    private void setSyncedNodesStartTime(Map<Visit, Integer> syncedVisitsStartTime, IVisit visit) {
         if (visit.isSynced())
             setStartTime(visit, syncedVisitsStartTime.get(visit));
     }
@@ -381,7 +378,7 @@ public class RouteEvaluator {
         return objectiveFunctions.hasObjective(name);
     }
 
-    private void setStartTime(Visit visit, int startTime) {
+    private void setStartTime(IVisit visit, int startTime) {
         Node node = graph.getNode(visit);
         syncedNodesStartTime[node.getNodeId()] = startTime;
     }

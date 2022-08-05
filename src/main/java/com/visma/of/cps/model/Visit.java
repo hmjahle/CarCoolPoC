@@ -4,7 +4,7 @@ import com.visma.of.cps.util.Constants.TransportMode;
 import com.visma.of.cps.util.Constants.VisitType;
 
 
-public class Visit {
+public class Visit implements IVisit {
 
     private int id;
     private Task task;
