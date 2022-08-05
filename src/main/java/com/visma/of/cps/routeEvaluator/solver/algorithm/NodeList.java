@@ -1,5 +1,6 @@
 package com.visma.of.cps.routeEvaluator.solver.algorithm;
 
+import com.visma.of.cps.model.IVisit;
 import com.visma.of.cps.model.Visit;
 
 import java.util.List;
@@ -87,9 +88,9 @@ public class NodeList {
     }
 
 
-    public void initializeWithNode(SearchGraph graph, Visit task) {
+    public void initializeWithNode(SearchGraph graph, IVisit visit) {
         nodesCnt = 1;
-        nodes[0] = graph.getNode(task);
+        nodes[0] = graph.getNode(visit);
     }
 
     public void addNode(SearchGraph graph, Visit task) {
