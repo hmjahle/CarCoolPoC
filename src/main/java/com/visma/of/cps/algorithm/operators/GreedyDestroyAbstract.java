@@ -161,59 +161,58 @@ public abstract class GreedyDestroyAbstract extends DestroyOperatorAbstract {
         List<Visit> route = solution.getRoute(shift);
         Integer predecessorIndex = 0 < currentVisitIndex ? currentVisitIndex-1 : null;
         Integer successorIndex = route.size() > currentVisitIndex ? currentVisitIndex+1 : null;
-        if (route.get(currentVisitIndex).getVisitType() == Constants.VisitType.DROP_OF){
+        if (route.get(currentVisitIndex).isDropOff()){
             // The current visit is a drop off visit in a motorized shift
             // Case 1 driver in PP
-            // Remove Pick-up node
-            // When current is a drop-off, the previous node always has to be a pick-up.
+            // Remove Pick-up node (When current is a drop-off, the previous node always has to be a pick-up)
             if (predecessorIndex == null || route.get(predecessorIndex).getVisitType() != Constants.VisitType.PICK_UP) {throw new IllegalStateException("The previous node in route should be a pick up");}
             removeVisits.get(shift.getId()).add(predecessorIndex);
-
-            // Get the person that is dropped off
-            int passengerShiftID = route.get(currentVisitIndex).getCoCarPoolerShiftID();
-            // Get the pickup point for coDrive arc
-            List<Integer> transportVisitIndices = solution.getTransportVisitIndices(passengerShiftID, route.get(predecessorIndex));
-            // Remove the pickup point for that arc
-            if (!transportVisitIndices.isEmpty()){
-                removeVisits.put(passengerShiftID, transportVisitIndices);
-            }
+            // Remove the join motorized from the non motorized shift
+            removeJoinMotorizedFromNonMotorizedShift(solution, route, predecessorIndex, removeVisits);
         }
-        else if (route.get(currentVisitIndex).getVisitType() == Constants.VisitType.PICK_UP){
+        else if (route.get(currentVisitIndex).isPickUp()){
             // The current visit is a pick up visit in a motorized shift
             // Case 2 driver in PP
-
             // Remove Drop-off node
             // When current is a pick-up, the successor has to be a drop-off
             if (successorIndex == null || route.get(successorIndex).getVisitType() != Constants.VisitType.DROP_OF) {throw new IllegalStateException("The successor node in the route should be a drop off");}
             removeVisits.get(shift.getId()).add(successorIndex); // When current is a pick-up, the next node always has to be a drop off.
-            // Get the person that is dropped off
-            int passengerShiftID = route.get(currentVisitIndex).getCoCarPoolerShiftID();
-            // Get the pickup point for coDrive arc
-            List<Integer> transportVisitIndices = solution.getTransportVisitIndices(passengerShiftID, route.get(currentVisitIndex));
-            // Remove the pickup point for that arc
-            if (!transportVisitIndices.isEmpty()){
-                removeVisits.put(passengerShiftID, transportVisitIndices);
-            }
+            // Remove the join motorized from the non motorized shift
+            removeJoinMotorizedFromNonMotorizedShift(solution, route, currentVisitIndex, removeVisits);
+
         }
         else if (route.get(currentVisitIndex).isSynced()) {
             // Removing a complete task during a carpool route.
             // Case 3 driver in PP 
             if (predecessorIndex == null || successorIndex == null || 
                 route.get(predecessorIndex).getVisitType() != Constants.VisitType.DROP_OF || 
-                route.get(successorIndex).getVisitType() != Constants.VisitType.PICK_UP) {throw new IllegalStateException("Removing a CT during a carpool the predecessor is not a drop off or/and the successor is not a pick up");}
+                route.get(successorIndex).getVisitType() != Constants.VisitType.PICK_UP) {
+                    throw new IllegalStateException("Removing a CT during a carpool the predecessor is not a drop off or/and the successor is not a pick up");}
             // Remove drop-off
             removeVisits.get(shift.getId()).add(predecessorIndex);
             // Remove pick-up
             removeVisits.get(shift.getId()).add(successorIndex);
-            // Remove join motorized for coDrive arc
-            int passengerShiftID = route.get(currentVisitIndex).getCoCarPoolerShiftID();
-            List<Integer> transportVisitIndices = solution.getTransportVisitIndices(passengerShiftID, route.get(currentVisitIndex));
-            if (!transportVisitIndices.isEmpty()){
-                removeVisits.put(passengerShiftID, transportVisitIndices);
-            }
+            // Remove the join motorized from the non motorized shift
+            removeJoinMotorizedFromNonMotorizedShift(solution, route, currentVisitIndex, removeVisits);
         }
         // Else the visit is a complete task visit, and only that one should be removed
         return removeVisits;
+    }
+
+    /**
+     * When removing a visit from a motorized shift, and we also need to remove the corresponding join motorized from a non motorized shift
+     * @param solution          current solution
+     * @param route             current route
+     * @param pickUpIndex       the pick up visit removed from the motorized shift
+     * @param removeVisits      Ma of shift id and the index of the visits to remove from the shift
+     */
+    private void removeJoinMotorizedFromNonMotorizedShift(Solution solution, List<Visit> route, int pickUpIndex, Map<Integer, List<Integer>> removeVisits){
+        // Get the person that is dropped off
+        int passengerShiftID = route.get(pickUpIndex).getCoCarPoolerShiftID();
+        // Get the pickup point (join motorized) for coDrive arc
+        Integer joinMotorizedIndex = solution.getCorrespondingVisitOfTypeIndex(passengerShiftID, route.get(pickUpIndex), Constants.VisitType.JOIN_MOTORIZED);
+        // Remove the pickup point for that arc
+        removeVisits.put(passengerShiftID, List.of(joinMotorizedIndex));
     }
 
     private Map<Integer, List<Integer>> findVisitsToRemoveNonMotorizedShift(Solution solution, Shift shift, Integer currentVisitIndex){
@@ -222,27 +221,37 @@ public abstract class GreedyDestroyAbstract extends DestroyOperatorAbstract {
         List<Visit> route = solution.getRoute(shift);
         Integer successorIndex = route.size()>currentVisitIndex ? currentVisitIndex+1 : null;
         Integer predecessorIndex = 0 < currentVisitIndex ? currentVisitIndex-1 : null;
-
-        if (successorIndex != null && route.get(successorIndex).getVisitType() == Constants.VisitType.JOIN_MOTORIZED){
-            // The employee is non-motorized and does carpooling to the next visit
-            removeVisits.get(shift.getId()).add(successorIndex); // Case 1 in PP
-            if (predecessorIndex != null && route.get(predecessorIndex).getVisitType() == Constants.VisitType.JOIN_MOTORIZED){
-                // The employee also did carpooling to current visit
+        if (route.get(currentVisitIndex).isJoinMotorized()){
+            if (successorIndex == null){throw new IllegalStateException("There has to be a task after a JM");}
+            removePickUpDropOff(solution, route, currentVisitIndex, removeVisits);
+        }
+        else if (predecessorIndex != null && route.get(predecessorIndex).isJoinMotorized()){
+            if (successorIndex != null && (route.get(predecessorIndex).getCoCarPoolerShiftID().equals(route.get(successorIndex).getCoCarPoolerShiftID()))){
+                // Carpooling was with the same driver from previous -> current -> successor node. 
+                // Case 4 walker in PP
                 int coDriverShiftID = route.get(predecessorIndex).getCoCarPoolerShiftID();
-                if (coDriverShiftID == route.get(successorIndex).getCoCarPoolerShiftID()){
-                    // Carpooling was with the same driver from previous -> current -> successor node. 
-                    // Case 4 walker in PP
-                    List<Integer> transportVisitIndices = solution.getTransportVisitIndices(coDriverShiftID, route.get(currentVisitIndex));
-                    removeVisits.put(coDriverShiftID, transportVisitIndices);
-                }
+                Map<Integer, Integer> transportVisitIndices = solution.getTransportVisitIndices(coDriverShiftID, route.get(currentVisitIndex));
+                removeVisits.put(coDriverShiftID, List.of(transportVisitIndices.get(Constants.VisitType.PICK_UP), transportVisitIndices.get(Constants.VisitType.DROP_OF)));
+            } else {
+                removePickUpDropOff(solution, route, predecessorIndex, removeVisits);
             }
         }
-        else if (predecessorIndex != null && route.get(predecessorIndex).getVisitType() == Constants.VisitType.JOIN_MOTORIZED){
-            // Non-motorized employee carpooled to current visit.
-            // Case 2 walker in PP
-            removeVisits.get(shift.getId()).add(predecessorIndex);
-        }
         return removeVisits;
+    }
+
+    /**
+     * WARNING: adds elements to remove motorized list
+     * @param solution
+     * @param route
+     * @param joinMotorizedSuccessorIndex
+     * @param joinMotorizedIndex
+     * @param removeVisits
+     */
+    private void removePickUpDropOff(Solution solution, List<Visit> route, Integer joinMotorizedIndex, Map<Integer, List<Integer>> removeVisits){
+        int coDriverShiftID = route.get(joinMotorizedIndex).getCoCarPoolerShiftID();
+        int pickUp = solution.getCorrespondingVisitOfTypeIndex(coDriverShiftID, route.get(joinMotorizedIndex), Constants.VisitType.PICK_UP);
+        int dropOff = solution.getCorrespondingVisitOfTypeIndex(coDriverShiftID, route.get(joinMotorizedIndex+1), Constants.VisitType.DROP_OF);
+        removeVisits.put(coDriverShiftID, new ArrayList<>(List.of(pickUp, dropOff)));
     }
 
 
