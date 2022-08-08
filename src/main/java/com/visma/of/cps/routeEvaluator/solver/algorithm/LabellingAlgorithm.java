@@ -7,6 +7,7 @@ import com.visma.of.cps.routeEvaluator.evaluation.info.ConstraintInfo;
 import com.visma.of.cps.routeEvaluator.evaluation.objective.ObjectiveFunctionsIntraRouteHandler;
 import com.visma.of.cps.routeEvaluator.results.Route;
 import com.visma.of.cps.routeEvaluator.results.RouteEvaluatorResult;
+import com.visma.of.cps.util.Constants;
 
 import java.util.*;
 
@@ -234,7 +235,9 @@ public class LabellingAlgorithm {
             return 0.0; */
 
         //var locationB = newLocation == thisLabel.getCurrentLocationId() ? newLocation : nextNode.getLocationId();
-        return graph.getTravelTime(thisLabel.getCurrentLocationId(), nextNode.getLocationId(), nextNode.getTransportMode());
+        int transportMode = Constants.TransportMode.WALK;
+        if (thisLabel.getNode().getVisit().isJoinMotorized() || employeeWorkShift.isMotorized()) transportMode = Constants.TransportMode.DRIVE;
+        return graph.getTravelTime(thisLabel.getCurrentLocationId(), nextNode.getLocationId(), transportMode);
     }
 
     private int calcEarliestPossibleReturnToOfficeTime(Node nextNode, Integer newLocation, int startOfServiceNextTask) {
