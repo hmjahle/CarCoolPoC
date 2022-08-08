@@ -101,27 +101,6 @@ public class Model {
 
             JSONObject patients = (JSONObject) data.get("patients");
             this.numTasks = patients.size();
-            Iterator keys  = patients.keySet().iterator();
-            while (keys.hasNext()) {
-                Object key = keys.next();
-                if (patients.get(key) instanceof JSONObject) {
-                    Task task = new Task((Integer.parseInt((String) key) - 1), (int) patients.size());
-
-                    // Creating tasks
-                    tasks.add(task);
-
-                    // Creating corresponding visits
-                    Visit visit1 = new Visit((Integer.parseInt((String) key) - 1), task, Constants.VisitType.COMPLETE_TASK);
-                    Visit visit1Virtual= new Visit((Integer.parseInt((String) key) - 1 + 2 * patients.size()), task, Constants.VisitType.JOIN_MOTORIZED);
-                    Visit visit2 = new Visit((Integer.parseInt((String) key) - 1 + patients.size()), task, Constants.VisitType.DROP_OF);
-                    Visit visit2Virtual = new Visit((Integer.parseInt((String) key) - 1 + 3 * patients.size()), task, Constants.VisitType.PICK_UP);
-
-                    this.visits.add(visit1);
-                    this.visits.add(visit1Virtual);
-                    this.visits.add(visit2);
-                    this.visits.add(visit2Virtual);
-                }
-            }
 
         } catch (FileNotFoundException e) {
             e.printStackTrace();
@@ -148,7 +127,20 @@ public class Model {
             Location location = new Location(i, (Long) jsonAttributes.get("x_coord"), (Long) jsonAttributes.get("x_coord"));
             locations.put(i, location);
             task.setLocation(location);
+            if (location == null){
+                location = null;
+            }
             allTasks.add(task);
+            // Creating corresponding visits
+            Visit visit1 = new Visit((i), task, Constants.VisitType.COMPLETE_TASK);
+            Visit visit1Virtual= new Visit(i + 2 * jsonTasks.size(), task, Constants.VisitType.JOIN_MOTORIZED);
+            Visit visit2 = new Visit(i + jsonTasks.size(), task, Constants.VisitType.DROP_OF);
+            Visit visit2Virtual = new Visit(i + 3 * jsonTasks.size(), task, Constants.VisitType.PICK_UP);
+
+            this.visits.add(visit1);
+            this.visits.add(visit1Virtual);
+            this.visits.add(visit2);
+            this.visits.add(visit2Virtual);
         }
         this.tasks = allTasks;
         // Legge til depop i locations, med indeks 0
