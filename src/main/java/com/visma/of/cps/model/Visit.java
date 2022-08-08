@@ -123,11 +123,12 @@ public class Visit implements IVisit {
         setTimeDependentOffsetInterval(null);
     }
 
-    public void setCarpooling(int coCarPoolerShiftID, int syncedStartTime, int timeDependentOffsetInterval){
+    public void setCarpooling(int coCarPoolerShiftID){
         setIsSynced(true);
         setCoCarPoolerShiftID(coCarPoolerShiftID);
-        setTimeDependentOffsetInterval(timeDependentOffsetInterval);
-        setTimeWindowStart(syncedStartTime);
+        if (this.timeWindowStart == null || this.timeWindowEnd ==  null) {
+            throw new IllegalStateException("Tried to set carpooling in visit without time windows being set first");
+        }
     }
     
     public void setTimeDependentOffsetInterval(Integer timeDependentOffsetInterval){

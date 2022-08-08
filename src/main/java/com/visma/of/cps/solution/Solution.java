@@ -152,23 +152,6 @@ public class Solution {
         getRoute(shift).add(index, visit);
     }
 
-    /**
-     * Add a carpool time dependent pair to the solution. The start times can be both feasible or unfeasible
-     * with respect to the intervalStart and intervalEnd. This depends on whether infeasible solutions can be
-     * created or not
-     * @param master The master visit
-     * @param masterStartTime The actual time when the master visit have to start in its given shift
-     * @param dependent The visit that is dependent on the master
-     * @param dependentStartTime The actual time when the dependent visit have to start in the given shift
-     * @param intervalStart start of the slack-interval for the dependent start time
-     * @param intervalEnd end of the slack-interval for the dependent start time
-     */
-    protected void addCarpoolTimeDependentVisitPair(Visit master, int masterStartTime, Visit dependent, int dependentStartTime, int intervalStart, int intervalEnd){
-        TimeDependentVisitPair carpoolPair = new TimeDependentVisitPair(master, dependent, intervalStart, intervalEnd);
-        this.carpoolTimeDependentVisitPairs.add(carpoolPair);
-        this.carpoolTimeDependentVisitStartTime.put(master, masterStartTime);
-        this.carpoolTimeDependentVisitStartTime.put(dependent, dependentStartTime);
-    }
 
     // Method to add new carpoolTimeDependentVisitPair, because this list is initially empty. Input: TimeDependentVisitPair
     protected void addCarpoolTimeDependentVisitPair(TimeDependentVisitPair pair, int masterStartTime, int dependentStartTime){
@@ -178,7 +161,8 @@ public class Solution {
     }
 
     /**
-     * Method to remove carpoolTimeDependentVisitPair, and ensuring it gets deleted from both lists
+     * Method to remove carpoolTimeDependentVisitPair, and ensuring it gets deleted from both lists.
+     * Also removes carpool variables from the pairs.
      * @param visit Visit we want to remove, can be either a master og a dependent visit
      */
     protected void removeCarpoolTimeDependentVisitPair(Visit visit) {
@@ -187,12 +171,15 @@ public class Solution {
                 this.carpoolTimeDependentVisitStartTime.remove(pair.getDependentVisit());
                 this.carpoolTimeDependentVisitStartTime.remove(visit);
                 this.carpoolTimeDependentVisitPairs.remove(pair);
+                pair.getDependentVisit().removeCarPooling();
             }
             else if (pair.getDependentVisit().equals(visit)){
                 this.carpoolTimeDependentVisitStartTime.remove(pair.getMasterVisit());
                 this.carpoolTimeDependentVisitStartTime.remove(visit);
                 this.carpoolTimeDependentVisitPairs.remove(pair);
+                pair.getMasterVisit().removeCarPooling();
             }
+            visit.removeCarPooling();
         }
     }
 
