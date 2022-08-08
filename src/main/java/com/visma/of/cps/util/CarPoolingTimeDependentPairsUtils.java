@@ -3,6 +3,8 @@ package com.visma.of.cps.util;
 import com.visma.of.cps.model.Shift;
 import com.visma.of.cps.model.TimeDependentVisitPair;
 import com.visma.of.cps.model.Visit;
+import com.visma.of.cps.routeEvaluator.results.RouteEvaluatorResult;
+import com.visma.of.cps.routeEvaluator.solver.RouteEvaluator;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -216,4 +218,23 @@ public class CarPoolingTimeDependentPairsUtils {
         carpoolSyncedVisitStartTime.put(dependentVisit, syncedStartTime);
         return new TimeDependentVisitPair(masterVisit, dependentVisit, 0, intervalOffset);
     }
+
+    public class ShiftRouteEvaluatorPair {
+        Shift shift;
+        RouteEvaluatorResult routeEvaluatorResult;
+
+        public ShiftRouteEvaluatorPair(Shift shift, RouteEvaluatorResult routeEvaluatorResult){
+            this.shift = shift;
+            this.routeEvaluatorResult = routeEvaluatorResult;
+        }
+
+        public Shift getShift() {
+            return shift;
+        }
+
+        public RouteEvaluatorResult getRouteEvaluatorResult() {
+            return routeEvaluatorResult;
+        }
+    }
 }
+

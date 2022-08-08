@@ -18,3 +18,4 @@ docs/
 *.log
 src/main/resources/openapi.json
 src/main/resources/openapi.yaml
+bin

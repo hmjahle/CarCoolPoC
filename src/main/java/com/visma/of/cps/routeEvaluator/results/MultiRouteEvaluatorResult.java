@@ -9,7 +9,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class InsertVisitResult {
+public class MultiRouteEvaluatorResult {
 
     private RouteEvaluatorResult routeEvaluatorOne;
     private RouteEvaluatorResult routeEvaluatorTwo;
@@ -20,7 +20,7 @@ public class InsertVisitResult {
     private boolean multipleRoutesAffected = false;
     private Map<Integer, List<Visit>> insertedVisits = new HashMap<>();
 
-    public InsertVisitResult(RouteEvaluatorResult routeEvaluatorOne, RouteEvaluatorResult routeEvaluatorTwo,
+    public MultiRouteEvaluatorResult(RouteEvaluatorResult routeEvaluatorOne, RouteEvaluatorResult routeEvaluatorTwo,
             List<TimeDependentVisitPair> newTimeDependentVisitPairs,
             Map<Visit, Integer> carpoolTimeDependentVisitStartTime,
             int shiftIdOne, int shiftIdTwo) {
@@ -34,7 +34,7 @@ public class InsertVisitResult {
         this.insertedVisits = new HashMap<>();
     }
 
-    public InsertVisitResult(RouteEvaluatorResult routeEvaluatorOne, int shiftIdOne, List<Visit> insertVisits) {
+    public MultiRouteEvaluatorResult(RouteEvaluatorResult routeEvaluatorOne, int shiftIdOne, List<Visit> insertVisits) {
         this.routeEvaluatorOne = routeEvaluatorOne;
         this.shiftIdOne = shiftIdOne;
         this.insertedVisits = new HashMap<>();
