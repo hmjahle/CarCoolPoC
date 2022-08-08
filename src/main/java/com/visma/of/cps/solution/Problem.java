@@ -1,9 +1,6 @@
 package com.visma.of.cps.solution;
 
-import com.visma.of.cps.model.Model;
-import com.visma.of.cps.model.Shift;
-import com.visma.of.cps.model.Task;
-import com.visma.of.cps.model.Visit;
+import com.visma.of.cps.model.*;
 import com.visma.of.cps.routeEvaluator.evaluation.constraint.IConstraintIntraRoute;
 import com.visma.of.cps.routeEvaluator.evaluation.objective.IObjectiveFunctionIntraRoute;
 import com.visma.of.cps.routeEvaluator.solver.RouteEvaluator;
@@ -154,22 +151,32 @@ public class Problem {
         objective.removeVisit(shift, removedVisit);
     }
 
-
-
     public void addVisitsToUnallocatedVisits(Collection<Visit> visits) { solution.addVisitsToUnallocatedVisits(visits);}
 
     public boolean calculateAndSetObjectiveValuesForSolution(Model model) { return objective.calculateAndSetObjectiveValues(model, solution);}
 
+    /**
+     * un assigns visits form the shift. If any visit is synced, the carpool time dependent visit pair is also removed
+     * @param removeShift The shift we want to remove the visit from
+     * @param indices Remove visits on these indices
+     * @param bestIntraObjective
+     */
 	public void unAssignVisitsByRouteIndices(Shift removeShift, List<Integer> indices, double bestIntraObjective) {
-        List<Integer> indicesSorted = indices.stream().sorted(Comparator.reverseOrder()).collect(Collectors.toList());  
+        List<Integer> indicesSorted = indices.stream().sorted(Comparator.reverseOrder()).collect(Collectors.toList());
+        List<Visit> route = this.solution.getRoute(removeShift);
         for(int index : indicesSorted){
+            // Checking if carpool time dependent visit pairs must be removed
+            Visit visit = route.get(index);
+            if (visit.isSynced()) {
+                this.solution.removeCarpoolTimeDependentVisitPair(visit);
+            }
             unAssignVisitByRouteIndex(removeShift, index, 0.0);
         }
         // Only update intra route objective once, when removing multiple shifts. 
         objective.updateIntraRouteObjective(removeShift, bestIntraObjective);
 	}
 
-/**
+    /**
      * Any objective affected will not be updated.
      *
      * @param visit
@@ -179,5 +186,13 @@ public class Problem {
         solution.setCarpoolSyncedVisitStartTime(visit, startTime);
     }
 
-
+    /**
+     *  Updates the problem with a time dependent visit pair that arises from carpooling
+     * @param pair The time dependent visit pair that we wish to update the problem with
+     * @param masterStartTime startTime of the master visit in the pair
+     * @param dependentStartTime start time of the dependent visit in the pair
+     */
+    public void addCarpoolTimeDependentVisitPair(TimeDependentVisitPair pair, int masterStartTime, int dependentStartTime) {
+        this.solution.addCarpoolTimeDependentVisitPair(pair, masterStartTime, dependentStartTime);
+    }
 }

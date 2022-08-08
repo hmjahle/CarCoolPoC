@@ -4,7 +4,6 @@ import com.visma.of.cps.model.Shift;
 import com.visma.of.cps.model.TimeDependentVisitPair;
 import com.visma.of.cps.model.Visit;
 import com.visma.of.cps.routeEvaluator.results.RouteEvaluatorResult;
-import com.visma.of.cps.routeEvaluator.solver.RouteEvaluator;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -212,11 +211,11 @@ public class CarPoolingTimeDependentPairsUtils {
      * @return a new TimeDependentVisitPair
      */
     public TimeDependentVisitPair createCarpoolTimeDependentPair(Visit masterVisit, int masterShiftId, Visit dependentVisit, int dependentShiftId, int syncedStartTime, int intervalOffset, Map<Visit, Integer> carpoolSyncedVisitStartTime){
-        masterVisit.setCarpooling(dependentShiftId, syncedStartTime, 0);
-        dependentVisit.setCarpooling(masterShiftId, syncedStartTime, intervalOffset);
+        // masterVisit.setCarpooling(dependentShiftId);
+        // dependentVisit.setCarpooling(masterShiftId);
         carpoolSyncedVisitStartTime.put(masterVisit, syncedStartTime);
         carpoolSyncedVisitStartTime.put(dependentVisit, syncedStartTime);
-        return new TimeDependentVisitPair(masterVisit, dependentVisit, 0, intervalOffset);
+        return new TimeDependentVisitPair(masterVisit, masterShiftId, dependentVisit, dependentShiftId, 0, intervalOffset);
     }
 
     public class ShiftRouteEvaluatorPair {
