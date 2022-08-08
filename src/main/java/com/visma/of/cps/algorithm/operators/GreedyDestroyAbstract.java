@@ -1,12 +1,5 @@
 package com.visma.of.cps.algorithm.operators;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-
 import com.visma.of.cps.algorithm.NeighborhoodMoveInfo;
 import com.visma.of.cps.model.Model;
 import com.visma.of.cps.model.Shift;
@@ -15,6 +8,8 @@ import com.visma.of.cps.solution.Objective;
 import com.visma.of.cps.solution.Problem;
 import com.visma.of.cps.solution.Solution;
 import com.visma.of.cps.util.Constants;
+
+import java.util.*;
 
 public abstract class GreedyDestroyAbstract extends DestroyOperatorAbstract {
 
@@ -274,8 +269,6 @@ public abstract class GreedyDestroyAbstract extends DestroyOperatorAbstract {
         for (Map.Entry<Integer, List<Integer>> entry: removeVisits.entrySet()){
             Shift removeShift = model.getShifts().get(entry.getKey());
             neighborhoodMoveInfo.getProblem().unAssignVisitsByRouteIndices(removeShift, entry.getValue(), bestIntraObjective); // updates the objective when the task (remove index) is removed from the shift
-            
-        
         }
         double deltaObjectiveValue = bestIntraObjective + neighborhoodMoveInfo.getDeltaObjectiveValue();
         neighborhoodMoveInfo.setDeltaObjectiveValue(deltaObjectiveValue);
