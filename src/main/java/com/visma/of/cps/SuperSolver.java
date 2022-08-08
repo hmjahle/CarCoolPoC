@@ -26,7 +26,7 @@ public class SuperSolver {
     }
     public void initialize(int modelInstance) {
         this.model = new Model(4);
-        model.loadData();
+        model.initialize();
     }
 
     public void initialize(Model model) {

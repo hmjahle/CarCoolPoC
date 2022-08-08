@@ -37,6 +37,13 @@ public class Model {
         this.shifts = new ArrayList<>();
         this.carpoolAbleShifts = new ArrayList<>();
         this.visits = new ArrayList<>();
+        this.idsShifts = new HashMap<>();
+    }
+
+    public void initialize(){
+        loadData();
+        setTasks();
+        setTravelTime();
     }
 
     public List<Shift> getShifts() { return this.shifts; }
@@ -167,6 +174,11 @@ public class Model {
                 if (indJsonTravelTimes.get(j) instanceof Long){
                     indDrivingTimes.put(this.locations.get(j), ((Long) indJsonTravelTimes.get(j)).intValue());
                     indWalkingTimes.put(this.locations.get(j), (((Long) indJsonTravelTimes.get(j)).intValue())*10); // Ganger med 10 fordi walk
+                    // System.out.println(i + " " +this.locations.get(j).getId()+ " " + ((Long) indJsonTravelTimes.get(j)).doubleValue());
+                }
+                else if (indJsonTravelTimes.get(j) instanceof Double){
+                    indDrivingTimes.put(this.locations.get(j), ((Double) indJsonTravelTimes.get(j)).intValue());
+                    indWalkingTimes.put(this.locations.get(j), (((Double) indJsonTravelTimes.get(j)).intValue())*10); // Ganger med 10 fordi walk
                     // System.out.println(i + " " +this.locations.get(j).getId()+ " " + ((Long) indJsonTravelTimes.get(j)).doubleValue());
                 }
                 else {

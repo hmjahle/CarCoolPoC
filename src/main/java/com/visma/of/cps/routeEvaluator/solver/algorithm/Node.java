@@ -17,7 +17,7 @@ public class Node {
         this.visit = visit;
         this.nodeId = nodeId;
         // If there is no task connected to the visit, the visit location is depot, hence id = 0
-        this.locationId = visit.getTask() == null ? 0 : visit.getTask().getLocation().getId();
+        this.locationId = visit == null || visit.getTask() == null ? 0 : visit.getTask().getLocation().getId();
     }
 
     public Node(Node other) {
