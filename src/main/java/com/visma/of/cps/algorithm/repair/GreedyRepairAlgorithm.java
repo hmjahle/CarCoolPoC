@@ -72,29 +72,12 @@ public class GreedyRepairAlgorithm implements IRepairAlgorithm {
         Collections.shuffle(visits);
         List<Visit> legalMotorizedVisits = visits.stream().filter(Visit::completesTask).collect(Collectors.toList());
         for (Shift shift : shifts) {
-            if (shift.isMotorized()) {
-                for (Visit insertVisit : legalMotorizedVisits) {
-                    MultiRouteEvaluatorResult result = findRouteForMotorized(problem, insertVisit, solution, shift);
-                    if (result == null || result.isInfeasibleInsert()) continue;
-                    deltaObjectiveValue = result.getDeltaObjective(objective);
-
-                    if (objectiveNoise(random) * deltaObjectiveValue < bestDeltaObjectiveValue) {
-                        bestDeltaObjectiveValue = deltaObjectiveValue;
-                        bestInsertVisitResult = result;
-                    }
-                }
-            } else {
-                for (Visit insertVisit : unallocatedVisits) {
-                    if (!legalInsertNonMotorizedShift(solution, insertVisit, shift)) continue;
-                    MultiRouteEvaluatorResult result = findRouteForNonMotorized(problem, insertVisit, solution, shift);
-                    if (result == null || result.isInfeasibleInsert()) continue;
-                    deltaObjectiveValue = result.getDeltaObjective(objective);
-
-                    if (objectiveNoise(random) * deltaObjectiveValue < bestDeltaObjectiveValue) {
-                        bestDeltaObjectiveValue = deltaObjectiveValue;
-                        bestInsertVisitResult = result;
-                    }
-                }
+            MultiRouteEvaluatorResult result = findBestInsertInShift(problem, solution, shift, unallocatedVisits, legalMotorizedVisits);
+            if (result == null || result.isInfeasibleInsert()) continue;
+            deltaObjectiveValue = result.getDeltaObjective(objective);
+            if (objectiveNoise(random) * deltaObjectiveValue < bestDeltaObjectiveValue) {
+                bestDeltaObjectiveValue = deltaObjectiveValue;
+                bestInsertVisitResult = result;
             }
         }
         if (bestInsertVisitResult == null) return null;
@@ -104,6 +87,49 @@ public class GreedyRepairAlgorithm implements IRepairAlgorithm {
             unallocatedVisits.remove(insertedVisit); // remove unallocated if not already removed
         }
         return deltaObjective;
+    }
+
+    private MultiRouteEvaluatorResult findBestInsertInShift(Problem problem, Solution solution, Shift shift, Set<Visit> unallocatedVisits, List<Visit> legalMotorizedVisits){
+        return shift.isMotorized() ? findBestInsertInShiftMotorized(problem, solution, shift, legalMotorizedVisits) : findBestInsertInShiftNonMotorized(problem, solution, shift, unallocatedVisits);
+    }
+
+    private MultiRouteEvaluatorResult findBestInsertInShiftMotorized(Problem problem, Solution solution, Shift shift, List<Visit> legalMotorizedVisits){
+        double bestDeltaObjectiveValue = Double.MAX_VALUE;
+        MultiRouteEvaluatorResult bestInsertVisitResult = null;
+        double deltaObjectiveValue;
+        var objective = problem.getObjective();
+
+        for (Visit insertVisit : legalMotorizedVisits) {
+            MultiRouteEvaluatorResult result = findRouteForMotorized(problem, insertVisit, solution, shift);
+            if (result == null || result.isInfeasibleInsert()) continue;
+            deltaObjectiveValue = result.getDeltaObjective(objective);
+
+            if (objectiveNoise(random) * deltaObjectiveValue < bestDeltaObjectiveValue) {
+                bestDeltaObjectiveValue = deltaObjectiveValue;
+                bestInsertVisitResult = result;
+            }
+        }
+        return bestInsertVisitResult;
+    }
+
+    private MultiRouteEvaluatorResult findBestInsertInShiftNonMotorized(Problem problem, Solution solution, Shift shift, Set<Visit> unallocatedVisits){
+        double bestDeltaObjectiveValue = Double.MAX_VALUE;
+        MultiRouteEvaluatorResult bestInsertVisitResult = null;
+        double deltaObjectiveValue;
+        var objective = problem.getObjective();
+
+        for (Visit insertVisit : unallocatedVisits) {
+            if (!legalInsertNonMotorizedShift(solution, insertVisit, shift)) continue;
+            MultiRouteEvaluatorResult result = findRouteForNonMotorized(problem, insertVisit, solution, shift);
+            if (result == null || result.isInfeasibleInsert()) continue;
+            deltaObjectiveValue = result.getDeltaObjective(objective);
+
+            if (objectiveNoise(random) * deltaObjectiveValue < bestDeltaObjectiveValue) {
+                bestDeltaObjectiveValue = deltaObjectiveValue;
+                bestInsertVisitResult = result;
+            }
+        }
+        return bestInsertVisitResult;
     }
 
 
@@ -118,8 +144,7 @@ public class GreedyRepairAlgorithm implements IRepairAlgorithm {
      * Returns null if insert is infeasible
      */
     private MultiRouteEvaluatorResult findRouteForMotorized(Problem problem, Visit insertVisit, Solution solution, Shift motorizedShift) {
-        List<Visit> insertedVisitsMotorized = new ArrayList<>();
-        insertedVisitsMotorized.add(insertVisit);
+        List<Visit> insertedVisitsMotorized = new ArrayList<>(List.of(insertVisit));
         RouteEvaluatorResult resultMotorized = findRoute(problem, insertVisit, motorizedShift);
         // If the insert was infeasible return null
         if (resultMotorized == null) return null;
@@ -264,7 +289,7 @@ public class GreedyRepairAlgorithm implements IRepairAlgorithm {
 
         MultiRouteEvaluatorResult multiRouteEvaluatorResult = new MultiRouteEvaluatorResult(resultNonMotorized, resultMotorized, newTimeDependentVisitPairs, carpoolSyncedVisitStartTime, nonMotorizedShift.getId(), motorizedShiftId);
         multiRouteEvaluatorResult.setInsertedVisits(nonMotorizedShift.getId(), insertedVisitsNonMotorized);
-        multiRouteEvaluatorResult.setInsertedVisits(motorizedShiftId, new ArrayList<>(Arrays.asList(dropOff, pickUp)));
+        multiRouteEvaluatorResult.setInsertedVisits(motorizedShiftId, List.of(dropOff, pickUp));
         return multiRouteEvaluatorResult;
     }
 
