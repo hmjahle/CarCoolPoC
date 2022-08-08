@@ -3,13 +3,19 @@ package com.visma.of.cps.model;
 public class TimeDependentVisitPair {
 
     private Visit masterVisit;
+    private int masterShiftId;
     private Visit dependentVisit;
+    private int dependentShiftId;
     private int intervalStart;
     private int intervalEnd;
 
-    public TimeDependentVisitPair(Visit masterVisit, Visit dependentVisit, int intervalStart, int intervalEnd) {
+    public TimeDependentVisitPair(Visit masterVisit, int masterShiftId, Visit dependentVisit, int dependentShiftId, int intervalStart, int intervalEnd) {
         this.masterVisit = masterVisit;
         this.dependentVisit = dependentVisit;
+
+        this.masterShiftId = masterShiftId;
+        this.dependentShiftId = dependentShiftId;
+
         this.intervalStart = intervalStart;
         this.intervalEnd = intervalEnd;
     }
@@ -28,6 +34,13 @@ public class TimeDependentVisitPair {
 
     public int getIntervalEnd() {
         return intervalEnd;
-    }    
-    
+    }
+
+    public int getMasterShiftId() {
+        return masterShiftId;
+    }
+
+    public int getDependentShiftId() {
+        return dependentShiftId;
+    }
 }

@@ -367,6 +367,18 @@ public class GreedyRepairAlgorithm implements IRepairAlgorithm {
             int shiftIdTwo = bestInsertVisitResult.getShiftIdTwo();
             updateSolutionOneShift(problem, bestObjective, shiftIdTwo, bestInsertVisitResult.getInsertedVisits(shiftIdTwo), bestInsertVisitResult.getRouteEvaluatorTwo());
         }
+
+        // Adding time dependent visit pairs that arises from carpooling
+        for (TimeDependentVisitPair pair: bestInsertVisitResult.getNewTimeDependentVisitPairs()) {
+            problem.addCarpoolTimeDependentVisitPair(
+                    pair,
+                    bestInsertVisitResult.getCarpoolSyncedVisitStartTime(pair.getMasterVisit()),
+                    bestInsertVisitResult.getCarpoolSyncedVisitStartTime(pair.getDependentVisit())
+            );
+            // Updating info in visit class as well
+            pair.getMasterVisit().setCarpooling(pair.getDependentShiftId());
+            pair.getDependentVisit().setCarpooling(pair.getMasterShiftId());
+        }
         return bestObjective;
     }
 
