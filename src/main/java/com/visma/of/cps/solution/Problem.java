@@ -179,5 +179,13 @@ public class Problem {
         solution.setCarpoolSyncedVisitStartTime(visit, startTime);
     }
 
-
+    /**
+     *  Updates the problem with a time dependent visit pair that arises from carpooling
+     * @param pair The time dependent visit pair that we wish to update the problem with
+     * @param masterStartTime startTime of the master visit in the pair
+     * @param dependentStartTime start time of the dependent visit in the pair
+     */
+    public void addCarpoolTimeDependentVisitPair(TimeDependentVisitPair pair, int masterStartTime, int dependentStartTime) {
+        this.solution.addCarpoolTimeDependentVisitPair(pair, masterStartTime, dependentStartTime);
+    }
 }

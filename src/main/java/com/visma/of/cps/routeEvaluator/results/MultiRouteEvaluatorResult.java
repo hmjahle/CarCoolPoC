@@ -98,6 +98,13 @@ public class MultiRouteEvaluatorResult {
         return routeEvaluatorOne == null;
     }
 
-    
+    /**
+     * Returns the synced start time for the visit
+     * @param visit visit that is part of a carpool time dependent pair
+     * @return integer with the synced start time for this visit
+     */
+    public int getCarpoolSyncedVisitStartTime(Visit visit) {
+       return this.carpoolSyncedVisitStartTime.get(visit);
+    }
 
 }

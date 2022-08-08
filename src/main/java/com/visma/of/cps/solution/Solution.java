@@ -171,10 +171,10 @@ public class Solution {
     }
 
     // Method to add new carpoolTimeDependentVisitPair, because this list is initially empty. Input: TimeDependentVisitPair
-    protected void addCarpoolTimeDependentVisitPair(TimeDependentVisitPair pair, int masterStartTime){
+    protected void addCarpoolTimeDependentVisitPair(TimeDependentVisitPair pair, int masterStartTime, int dependentStartTime){
         this.carpoolTimeDependentVisitPairs.add(pair);
         this.carpoolTimeDependentVisitStartTime.put(pair.getMasterVisit(), masterStartTime); 
-        this.carpoolTimeDependentVisitStartTime.put(pair.getDependentVisit(), masterStartTime); 
+        this.carpoolTimeDependentVisitStartTime.put(pair.getDependentVisit(), dependentStartTime);
     }
 
     /**
