@@ -99,17 +99,36 @@ public class Solution {
         return removedVisits;
     }
 
-    public List<Integer> getTransportVisitIndices(int shiftId, Visit visit){
-        List<Integer> transportVisitIndices = new ArrayList<>();
+    public Map<Integer, Integer> getTransportVisitIndices(int shiftId, Visit visit){
+        Map<Integer, Integer> transportVisitIndices = new HashMap<>();
         int i = 0;
         for(Visit v : getRoute(shiftId)){
             if(!v.completesTask() && v.getTask() == visit.getTask()){
-                transportVisitIndices.add(i);
+                transportVisitIndices.put(v.getVisitType(), i);
             }
             i++;
         }
         return transportVisitIndices;
     }
+
+     /**
+     * Finds corresponding visit of the one inputted with the given visit type
+     * @param shiftId
+     * @param visit
+     * @param visitType
+     * @return
+     */
+    public Integer getCorrespondingVisitOfTypeIndex(int shiftId, Visit visit, int visitType){
+        int i = 0;
+        for(Visit v : getRoute(shiftId)){
+            if(v.getVisitType() == visitType && v.getTask() == visit.getTask()){
+                return i;
+            }
+            i++;
+        }
+        return null;
+    }
+
 
     public Shift shiftForVisit(Visit visit) { return shiftForVisit(visit.getId());}
 
