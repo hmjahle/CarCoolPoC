@@ -274,7 +274,7 @@ public abstract class GreedyDestroyAbstract extends DestroyOperatorAbstract {
      */
     private NeighborhoodMoveInfo update(NeighborhoodMoveInfo neighborhoodMoveInfo, double bestIntraObjective,
                                         Map<Integer, List<Integer>> removeVisits) {
-
+        if (removeVisits.size() == 0) return null;
         for (Map.Entry<Integer, List<Integer>> entry: removeVisits.entrySet()){
             Shift removeShift = model.getShifts().get(entry.getKey());
             neighborhoodMoveInfo.getProblem().unAssignVisitsByRouteIndices(removeShift, entry.getValue(), bestIntraObjective); // updates the objective when the task (remove index) is removed from the shift

@@ -235,13 +235,21 @@ public class LabellingAlgorithm {
             return 0.0; */
 
         //var locationB = newLocation == thisLabel.getCurrentLocationId() ? newLocation : nextNode.getLocationId();
-        int transportMode = Constants.TransportMode.WALK;
-        if (thisLabel.getNode().getVisit().isJoinMotorized() || employeeWorkShift.isMotorized()) transportMode = Constants.TransportMode.DRIVE;
-        return graph.getTravelTime(thisLabel.getCurrentLocationId(), nextNode.getLocationId(), transportMode);
+
+        return graph.getTravelTime(thisLabel.getCurrentLocationId(), nextNode.getLocationId(), getTransportMode(thisLabel.getNode()));
     }
 
     private int calcEarliestPossibleReturnToOfficeTime(Node nextNode, Integer newLocation, int startOfServiceNextTask) {
         return startOfServiceNextTask + nextNode.getDurationSeconds() + getTravelTimeToDestination(newLocation);
+    }
+
+    private int getTransportMode(Node node) {
+        int transportMode = Constants.TransportMode.WALK;
+        if (node.getVisit() == null){
+            if (employeeWorkShift.isMotorized()) transportMode = Constants.TransportMode.DRIVE;
+        }
+        else if (node.getVisit().isJoinMotorized() || employeeWorkShift.isMotorized()) transportMode = Constants.TransportMode.DRIVE;
+        return transportMode;
     }
 
     private int getTravelTimeToDestination(Integer currentLocation) {
@@ -249,7 +257,7 @@ public class LabellingAlgorithm {
         /* if (currentLocation == 0 || currentLocation == graph.getDestination().getLocationId() || graph.getDestination() instanceof VirtualNode) {
             return 0.0;
         } */
-        Integer travelTime = graph.getTravelTime(currentLocation, graph.getDestination().getLocationId(), graph.getDestination().getTransportMode());
+        Integer travelTime = graph.getTravelTime(currentLocation, graph.getDestination().getLocationId(), getTransportMode(graph.getDestination()));
         return travelTime == null ? 0 : travelTime;
     }
 

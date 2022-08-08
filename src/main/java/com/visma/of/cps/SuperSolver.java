@@ -48,6 +48,7 @@ public class SuperSolver {
         lns.setUnallocatedTasksAreHierarchical(true);
         Problem problem = new Problem(model);
         problem.addVisitsToUnallocatedVisits(model.getVisits());
+        problem.addTasksToUnallocatedTasks(model.getTasks());
 
         lns.initializeStandardOperators();
 

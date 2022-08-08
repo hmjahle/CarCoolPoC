@@ -26,6 +26,7 @@ public class NeighborhoodMoveInfo {
 
     public NeighborhoodMoveInfo(Problem problem) {
         this.problem = problem;
+        this.deltaObjectiveValue = 0.0;
     }
 
     public NeighborhoodMoveInfo(INeighborhoodMove neighborhoodMove) {

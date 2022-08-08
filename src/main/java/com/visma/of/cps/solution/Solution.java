@@ -41,6 +41,8 @@ public class Solution {
             this.shiftRoutes.add(new ArrayList<>(route));
         this.taskAssignedToShift = Arrays.copyOf(other.taskAssignedToShift, other.taskAssignedToShift.length);
         this.unallocatedTasks = new HashSet<>(other.unallocatedTasks);
+        this.unallocatedVisits = new HashSet<>(other.unallocatedVisits);
+
     }
 
     protected void update(Solution other) {
@@ -262,7 +264,9 @@ public class Solution {
     public void addVisitsToUnallocatedVisits(Collection<Visit> visits) {
         unallocatedVisits.addAll(visits);
     }
-
+    public void addTasksToUnallocatedTasks(Collection<Task> tasks) {
+        unallocatedTasks.addAll(tasks);
+    }
     public static void main(String[] args) {
         Model model = new Model(4);
         model.loadData();

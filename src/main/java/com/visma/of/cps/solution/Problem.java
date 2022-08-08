@@ -152,6 +152,8 @@ public class Problem {
     }
 
     public void addVisitsToUnallocatedVisits(Collection<Visit> visits) { solution.addVisitsToUnallocatedVisits(visits);}
+    public void addTasksToUnallocatedTasks(Collection<Task> tasks) { solution.addTasksToUnallocatedTasks(tasks);}
+
 
     public boolean calculateAndSetObjectiveValuesForSolution(Model model) { return objective.calculateAndSetObjectiveValues(model, solution);}
 
