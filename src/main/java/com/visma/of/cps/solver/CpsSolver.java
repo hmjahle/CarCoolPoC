@@ -34,7 +34,7 @@ public class CpsSolver extends Solver {
         // model = ModelFactory.generateModelFromDataProvider(dataProvider);
         model = new Model(4);
         SuperSolver superSolver = new SuperSolver();
-        superSolver.intialize(model);
+        superSolver.initialize(model);
     }
 
     @Override

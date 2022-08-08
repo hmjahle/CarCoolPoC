@@ -24,12 +24,12 @@ public class SuperSolver {
 
     public SuperSolver() {
     }
-    public void intialize(int modelInstance) {
+    public void initialize(int modelInstance) {
         this.model = new Model(4);
         model.loadData();
     }
 
-    public void intialize(Model model) {
+    public void initialize(Model model) {
         this.model = model;
         model.loadData();
     }
