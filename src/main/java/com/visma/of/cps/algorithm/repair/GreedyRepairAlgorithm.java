@@ -302,6 +302,9 @@ public class GreedyRepairAlgorithm implements IRepairAlgorithm {
      * @param nonMotorizedShift the non-motorized where the visit should be inserted
      * @return A class containing the affected routes when inserting a visit and the new objective obtained by doing this.
      * Possibly null if insert is infeasible
+     * 
+     * 
+     * NB!! For now we can not be picked up at the office because the office is not a complete task
      */
     private MultiRouteEvaluatorResult insertJoinMotorizedNonMotorized(Problem problem, Visit insertVisit, Solution solution, Shift nonMotorizedShift) {
         List<Visit> route = solution.getRoute(nonMotorizedShift.getId());
@@ -313,7 +316,7 @@ public class GreedyRepairAlgorithm implements IRepairAlgorithm {
         Visit pickUp = correspondingTransportVisits.get(VisitType.PICK_UP);
         int completeTaskIndex = route.indexOf(completeTask);
 
-        Visit successorNonMotorized = route.get(completeTaskIndex + 1);
+        Visit successorNonMotorized = route.get(completeTaskIndex + 1); // Check if successor exist. You need to be able to go back to the office, which is not a task. 
         Visit dropOff = findCorrespondingTransportVisits(successorNonMotorized).get(VisitType.DROP_OF);
 
         // Insert JM after the CT
